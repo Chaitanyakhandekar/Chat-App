@@ -37,7 +37,9 @@ const userAuth = asyncHandler(async (req,res,next)=>{
         throw new ApiError(500,"No Decoded Token Found")
     }
 
-    const user = await User.findById(decodedToken.id).select("-password")
+    // console.log("Decoded Token in Auth Middleware : ",decodedToken);
+
+    const user = await User.findById(decodedToken._id).select("-password")
 
     req.user = user
 

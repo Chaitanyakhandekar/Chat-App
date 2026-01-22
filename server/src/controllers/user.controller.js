@@ -133,7 +133,10 @@ const loginUser = asyncHandler(async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     })
     .json(
-      new ApiResponse(200, "Login Successful")
+      new ApiResponse(200,{
+        _id: user._id,
+        username: user.username,
+      } ,"Login Successful")
     )
 })
 
@@ -863,11 +866,14 @@ const resetPassword = asyncHandler(async (req,res)=>{
 const getAllUsers = asyncHandler(async(req,res)=>{
   const users = await User.find().select("-password -refreshToken");
 
+  let users1 = users.filter(user=>user._id.toString()!==req.user._id.toString())
+
   console.log("All Users Fetched :",users);
+  // console.log("loged in user:",req.user._id);
 
 
   return res.status(200).json(
-    new ApiResponse(200,users,"All Users Fetched Successfully.")
+    new ApiResponse(200,users1,"All Users Fetched Successfully.")
   )
 })
 

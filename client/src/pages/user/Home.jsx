@@ -16,6 +16,7 @@ function Home() {
     const [users,setUsers] = React.useState([])
     const context = useContext(authContext);
     const [message,setMessage] = React.useState("")
+    const [messages,setMessages] = React.useState([])
     const socketRef = React.useRef(null);
 
     const getAllUsers = async ()=>{
@@ -27,33 +28,27 @@ function Home() {
     }
 
     
-
-    const initSocket = () => {
-         socketRef.current = io("http://localhost:3000",
-            {
-                withCredentials:true
-            }
-        ); // connect to socket server
-        socketRef.current.on("connect", () => {
-            console.log("Message from server:");
-        });
-    }
-
     const handleSend = ()=>{
         console.log("Send button clicked");
         if(message.trim()===""){
             return;
         }
+        if(!socketRef.current)return
         socketRef.current.emit("message",{
             message:message,
             to:context.currentChatUser._id
         })
+        setMessages((prevMessages)=>[...prevMessages,{
+            from:context.user._id,  
+            message:message
+        }])
+        setMessage("")
     }
 
     useEffect(()=>{
         
         getAllUsers();
-        console.log("Current logged in user:",context.currentChatUser);
+        console.log("Current logged in user:",context.user);
 
       
 
@@ -72,6 +67,7 @@ function Home() {
 
         socketRef.current.on("message",(data)=>{
             console.log("Message received from server:",data);
+            setMessages((prevMessages)=>[...prevMessages,data]);
         });
 
         return ()=>{
@@ -112,6 +108,19 @@ function Home() {
                     </div>
                     <h2 className="font-bold text-xl ml-4">{context.currentChatUser.username}</h2>
                 </nav>
+
+                <div className="h-full border-1 border-blue-400 w-full relative ">
+
+                   {messages.length && messages?.map((msg,index)=>{
+                    return(
+                         context.currentChatUser._id === msg.from || msg.from === context.user._id && (
+                            <div key={index} className="ml-10 mt-10  max-w-[70%] h-auto  text-center mt-20 bg-green-400 text-black p-3 rounded-md">{msg.message}</div>
+                         )
+                            
+                    )
+                   })}
+
+                </div>
 
                 <footer className="w-full h-20 border-t absolute bottom-0 bg-white z-10 flex items-center">
                     <div className="w-5/6 h-20 border-t flex items-center px-4 absolute bottom-0 bg-white z-10">

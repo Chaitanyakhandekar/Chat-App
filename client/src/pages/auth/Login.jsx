@@ -28,7 +28,10 @@ function Login() {
         console.log("Logging in user:",user);
         const response = await userApi.loginUser(user);
         if(response.success){
-            authData.setIsLoggedIn(true);
+            authData.login(response.data);
+            // authData.setIsLoggedIn(true);
+            // authData.setUser(response.data);
+            console.log("User set in context:",response.data);
             navigate('/home')
         }
         console.log("Login response:",response);
