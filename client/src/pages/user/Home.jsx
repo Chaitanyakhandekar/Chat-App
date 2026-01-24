@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { userApi } from '../../api/user.api.js'
 import { useContext } from 'react'
 import { authContext } from '../../context/authContext.jsx'
-import { io } from 'socket.io-client'
+import {socket} from '../../socket/socket.js'
 import {
     MessageCircle,
     Send
@@ -17,7 +17,7 @@ function Home() {
     const context = useContext(authContext);
     const [message,setMessage] = React.useState("")
     const [messages,setMessages] = React.useState([])
-    const socketRef = React.useRef(null);
+   
 
     const getAllUsers = async ()=>{
         const response = await userApi.getAllUsers();
@@ -33,10 +33,12 @@ function Home() {
         if(message.trim()===""){
             return;
         }
-        if(!socketRef.current)return
-        socketRef.current.emit("message",{
+        if(!socket)return
+        socket.emit("message",{
             message:message,
             to:context.currentChatUser._id
+        },(ack)=>{
+            console.log("Ack from server:",ack);
         })
         setMessages((prevMessages)=>[...prevMessages,{
             from:context.user._id,  
@@ -55,28 +57,28 @@ function Home() {
     },[])
 
     useEffect(()=>{
-        socketRef.current = io("http://localhost:3000",
-            {
-                withCredentials:true
-            }
-        ); // connect to socket server
+       
 
-        socketRef.current.on("connect",()=>{
-            console.log("Connected to socket server with id:",socketRef.current.id);
-        })
+        socket.on("connect",()=>{
+            console.log("Connected to socket server with id:",socket.id);
 
-        socketRef.current.on("message",(data)=>{
-            console.log("Message received from server:",data);
-            setMessages((prevMessages)=>[...prevMessages,data]);
+           
         });
 
-        return ()=>{
-            if(socketRef.current){
-                socketRef.current.disconnect();
-                socketRef.current.off("message")
-                socketRef.current = null;
-            }
-        }
+         socket.on("message",(data)=>{
+            console.log("Message received from server:",data);
+            setMessages((prevMessages)=>[...prevMessages,data]);
+        })
+
+        
+
+        // return ()=>{
+          
+        //         // socket.disconnect();
+        //         // socket.off("message")
+             
+            
+        // }
     },[])
 
     useEffect(()=>{
@@ -109,11 +111,11 @@ function Home() {
                     <h2 className="font-bold text-xl ml-4">{context.currentChatUser.username}</h2>
                 </nav>
 
-                <div className="h-full border-1 border-blue-400 w-full relative ">
+                <div className="h-full border-1 border-blue-400 w-full relative overflow-y-auto">
 
                    {messages.length && messages?.map((msg,index)=>{
                     return(
-                         context.currentChatUser._id === msg.from || msg.from === context.user._id && (
+                         (context.currentChatUser._id === msg.from || msg.from === context.user._id) && (
                             <div key={index} className="ml-10 mt-10  max-w-[70%] h-auto  text-center mt-20 bg-green-400 text-black p-3 rounded-md">{msg.message}</div>
                          )
                             

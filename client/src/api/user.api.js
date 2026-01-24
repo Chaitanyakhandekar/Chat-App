@@ -62,6 +62,28 @@ class UserApi{
             }
         }
     }
+
+    authMe = async () =>{
+        try {
+            const response = await axios.get(`${this.baseUrl}/auth-me`,{
+                withCredentials:true
+            })
+
+            console.log("Auth Me Response :",response);
+
+            return {
+                success:true,
+                message:response.data.message,
+                data: response.data.data
+            }
+        } catch (error) {
+            return {
+                success:false,
+                message:error.message,
+                error: error
+            }
+        }
+    }
 }
 
 export const userApi = new UserApi();
