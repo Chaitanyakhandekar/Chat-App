@@ -70,15 +70,17 @@ function Home() {
             setMessages((prevMessages)=>[...prevMessages,data]);
         })
 
+        socket.on("message_failed",(error)=>{
+            console.log("Message Error :: ",error.message)
+        })
+
         
 
-        // return ()=>{
-          
-        //         // socket.disconnect();
-        //         // socket.off("message")
-             
+        return ()=>{
+                // socket.disconnect();
+                socket.off("message")
             
-        // }
+        }
     },[])
 
     useEffect(()=>{
@@ -116,7 +118,7 @@ function Home() {
                    {messages.length && messages?.map((msg,index)=>{
                     return(
                          (context.currentChatUser._id === msg.from || msg.from === context.user._id) && (
-                            <div key={index} className="ml-10 mt-10  max-w-[70%] h-auto  text-center mt-20 bg-green-400 text-black p-3 rounded-md">{msg.message}</div>
+                            <div key={index} className={`ml-10 mt-10 w-fit  max-w-[70%]  h-auto   mt-20 ${msg.from !== context.user._id ? "bg-blue-400" : "bg-green-400"} text-black p-3 rounded-md`}>{msg.message}</div>
                          )
                             
                     )
