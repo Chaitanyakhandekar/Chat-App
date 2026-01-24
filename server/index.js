@@ -1,10 +1,11 @@
 import connectDB from "./src/db/db.js"
-import server from "./server.js";
-import "./src/sockets/index.js";  // Initialize socket handlers
+import {httpServer} from "./server.js";
+import { initializeSocket } from "./src/sockets/index.js";
 
 connectDB().then(async () => {
+  initializeSocket(); // Initialize socket handlers
   
-  server.listen(3000, () => {
+  httpServer.listen(3000, () => {
     console.log("Server is running on port 3000");
   });
 });
