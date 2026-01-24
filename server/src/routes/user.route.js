@@ -17,7 +17,8 @@ import {
      sendOTP,
      resetPassword,
      resendEmailVerification,
-     getAllUsers
+     getAllUsers,
+     authMe
 
  } from '../controllers/user.controller.js';
  import { sendVerificationToken } from '../services/sendVerificationToken.js';
@@ -27,6 +28,7 @@ import {
 const router = Router();
 
 router.route("/register").post(registerUser, sendVerificationToken)
+router.route("/auth-me").get(userAuth,authMe)
 router.route("/login").post(loginUser)
 router.route("/logout").get(userAuth,logoutUser)
 router.route("/avatar").post(userAuth,upload.single("avatar"),uploadAvatar)

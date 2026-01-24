@@ -45,16 +45,42 @@ io.on("connection",(socket)=>{    // Listen for client connections
     socketsMap.set(socket.user?._id.toString(),socket.id)
     console.log("Current Sockets Map :",socketsMap);
 
-    socket.on("message",(data)=>{
+    socket.on("message",(data,cb)=>{
         console.log("Message received from client:",data);
+        console.log("Message data socket id to:",socketsMap.get(data.to));
 
-        socket.to(socketsMap.get(data.to)).emit("message",{
-            from:socket.user._id,
-            message:data.message
+        const to = socketsMap.get(data.to);
+
+        if(!to){
+            console.log("Recipient user is not connected to socket.");
+        }
+
+        console.log("Emitting message to socket id:",to);
+
+        socket.to(to).emit("message",{
+            from:socket.user._id || "Unknown",
+            message:data.message || "No message content"
         })
+
+         cb({
+        success: true,
+        message: "Message delivered to server"
+    });
+    })
+
+
+
+
+    socket.on("disconnect",()=>{
+        socketsMap.delete(socket.user?._id.toString())
     })
 
     socket.emit("welcome","Welcome to the WebSocket server!");
+    
+
 })
+
+
+
 
 export {io};

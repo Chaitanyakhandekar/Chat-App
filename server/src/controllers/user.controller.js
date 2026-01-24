@@ -868,13 +868,28 @@ const getAllUsers = asyncHandler(async(req,res)=>{
 
   let users1 = users.filter(user=>user._id.toString()!==req.user._id.toString())
 
-  console.log("All Users Fetched :",users);
+  // console.log("All Users Fetched :",users);
   // console.log("loged in user:",req.user._id);
 
 
   return res.status(200).json(
     new ApiResponse(200,users1,"All Users Fetched Successfully.")
   )
+})
+
+
+const authMe = asyncHandler(async (req,res)=>{
+  const user = await User.findById(req.user._id).select("-password -refreshToken");
+
+  if(!user){
+    throw new ApiError(404,"User Not Found") 
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200,user,"User Fetched Successfully.")
+    )
 })
 
 
@@ -896,5 +911,6 @@ export {
   sendOTP,
   resetPassword,
   resendEmailVerification,
-  getAllUsers
+  getAllUsers,
+  authMe
 }
