@@ -10,6 +10,8 @@ import {
     Send
 
 } from 'lucide-react'
+import Message from '../../components/message/Message.jsx'
+import { messageApi } from '../../api/message.api.js'
 
 function Home() {
 
@@ -27,6 +29,10 @@ function Home() {
         }
     }
 
+    const getConversationMessages = async (otherUserId)=>{
+        const messages = await messageApi.getConversation(otherUserId)
+    }
+
     
     const handleSend = ()=>{
         console.log("Send button clicked");
@@ -40,10 +46,20 @@ function Home() {
         },(ack)=>{
             console.log("Ack from server:",ack);
         })
-        setMessages((prevMessages)=>[...prevMessages,{
-            from:context.user._id,  
-            message:message
-        }])
+        if(messages.length){
+            setMessages((prevMessages)=>[...prevMessages,{
+                message:message,
+                from:context.user._id,
+                to:context.currentChatUser._id
+            }])
+        }
+        else{
+            setMessages([{
+                message:message,
+                from:context.user._id,
+                to:context.currentChatUser._id
+            }])
+        }
         setMessage("")
     }
 
@@ -74,7 +90,6 @@ function Home() {
             console.log("Message Error :: ",error.message)
         })
 
-        
 
         return ()=>{
                 // socket.disconnect();
@@ -85,7 +100,16 @@ function Home() {
 
     useEffect(()=>{
         console.log("Current logged in user:",context.currentChatUser);
+        // getConversationMessages(context.currentChatUser._id)
     },[context.currentChatUser])
+
+    useEffect(()=>{
+        console.log("Messages Updated :: ",context.messages);
+        setMessages(context.messages.data || [])
+    },[context.messages])
+    useEffect(()=>{
+        console.log("Messages Updated 1 :: ",messages);
+    },[messages])
 
   return (
    <div className="w-screen border-1 min-h-screen h-screen flex">
@@ -96,7 +120,7 @@ function Home() {
         <div className="users w-full mt-4">
          {
             users?.map((user)=>(
-                <ChatCard key={user._id} user={user} />
+                <ChatCard key={user._id} user={user} setMessages={setMessages}/>
             ))
          }
            
@@ -115,10 +139,10 @@ function Home() {
 
                 <div className="h-full border-1 border-blue-400 w-full relative overflow-y-auto">
 
-                   {messages.length && messages?.map((msg,index)=>{
+                   {messages?.length && messages?.map((msg,index)=>{
                     return(
-                         (context.currentChatUser._id === msg.from || msg.from === context.user._id) && (
-                            <div key={index} className={`ml-10 mt-10 w-fit  max-w-[70%]  h-auto   mt-20 ${msg.from !== context.user._id ? "bg-blue-400" : "bg-green-400"} text-black p-3 rounded-md`}>{msg.message}</div>
+                         ((context.currentChatUser._id === msg.from || (context.currentChatUser._id === msg.sender || context.currentChatUser._id === msg.receiver)) || (msg.from === context.user._id || (msg.sender === context.user._id || msg.receiver === context.user._id))) && (
+                           <Message key={index} msg={msg} index={index} />
                          )
                             
                     )
