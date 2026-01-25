@@ -31,9 +31,11 @@ app.use(express.urlencoded({
 app.use(express.static("public"))
 
 
-import userRoutes from "./src/routes/user.route.js"
+import userRouter from "./src/routes/user.route.js"
+import messageRouter from "./src/routes/message.route.js"
 
-app.use("/api/users",userRoutes)
+app.use("/api/users",userRouter)
+app.use("/api/messages",messageRouter)
 
 // const PORT = process.env.PORT || 3000;
 // httpServer.listen(PORT, () => {
