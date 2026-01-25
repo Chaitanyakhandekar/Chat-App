@@ -36,7 +36,11 @@ const getConversation = asyncHandler(async (req,res)=>{
     )
 
     if(!messages?.length){
-        return res.status(200,[],"No Messages Yet.")
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200,[],"No Messages Found in this Conversation.")
+            )
     }
 
     return res
