@@ -7,15 +7,19 @@ import Home from './pages/user/Home.jsx'
 import { useContext } from 'react'
 import { authContext } from './context/authContext.jsx'
 import { userApi } from './api/user.api.js'
+import { userAuthStore } from './store/userStore.js'
 
 function App() {
 
   const context = useContext(authContext);
+  const setUser = userAuthStore().setUser
 
   const authMe = async ()=>{
     const user = await userApi.authMe();
     if(user.success){
       context.setUser(user.data)
+      setUser(user.data)
+      
     }
     // context.setUser
   }

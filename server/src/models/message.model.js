@@ -5,6 +5,12 @@ import bcrypt from "bcrypt";
 dotenv.config({path:"./.env"})
 
 const messageSchema = new mongoose.Schema({
+
+    chatId:{
+        type:mongoose.Types.ObjectId,
+        ref:"Chat",
+        required:true
+    },
     sender:{
         type:mongoose.Types.ObjectId,
         ref:"User",
