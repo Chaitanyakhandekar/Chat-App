@@ -12,13 +12,18 @@ import {
 } from 'lucide-react'
 import Message from '../../components/message/Message.jsx'
 import { messageApi } from '../../api/message.api.js'
+import { useChatStore } from '../../store/useChatStore.js'
 
 function Home() {
 
     const [users,setUsers] = React.useState([])
     const context = useContext(authContext);
     const [message,setMessage] = React.useState("")
-    const [messages,setMessages] = React.useState([])
+    // const [messages,setMessages] = React.useState([])
+
+    const messages = useChatStore().userMessages
+    const addMessage = useChatStore().addMessage
+    const currentChatId = useChatStore().currentChatId
    
 
     const getAllUsers = async ()=>{
@@ -42,23 +47,24 @@ function Home() {
         if(!socket)return
         socket.emit("message",{
             message:message,
-            to:context.currentChatUser._id
+            receiver:context.currentChatUser._id,
+            chatId:currentChatId || null
         },(ack)=>{
             console.log("Ack from server:",ack);
         })
         if(messages.length){
-            setMessages((prevMessages)=>[...prevMessages,{
+            addMessage(currentChatId,{
                 message:message,
-                from:context.user._id,
-                to:context.currentChatUser._id
-            }])
+                sender:context.user._id,
+                receiver:context.currentChatUser._id
+            })
         }
         else{
-            setMessages([{
+            addMessage(null,{
                 message:message,
-                from:context.user._id,
-                to:context.currentChatUser._id
-            }])
+                sender:context.user._id,
+                receiver:context.currentChatUser._id
+            })
         }
         setMessage("")
     }
@@ -75,29 +81,29 @@ function Home() {
     useEffect(()=>{
        
 
-        socket.on("connect",()=>{
-            console.log("Connected to socket server with id:",socket.id);
+        // socket.on("connect",()=>{
+        //     console.log("Connected to socket server with id:",socket.id);
 
            
-        });
+        // });
 
-         socket.on("message",(data)=>{
-            console.log("Message received from server:",data);
-            setMessages((prevMessages)=>[...prevMessages,data]);
-        })
+        //  socket.on("message",(data)=>{
+        //     console.log("Message received from server:",data);
+        //     setMessages((prevMessages)=>[...prevMessages,data]);
+        // })
 
-        socket.on("message_failed",(error)=>{
-            console.log("Message Error :: ",error.message)
-        })
+        // socket.on("message_failed",(error)=>{
+        //     console.log("Message Error :: ",error.message)
+        // })
 
 
-        return ()=>{
-                // socket.disconnect();
-                socket.off("message",()=>{
-                    console.log("Socket off message event listener removed");
-                })
+        // return ()=>{
+        //         // socket.disconnect();
+        //         socket.off("message",()=>{
+        //             console.log("Socket off message event listener removed");
+        //         })
             
-        }
+        // }
     },[])
 
     useEffect(()=>{
@@ -105,10 +111,7 @@ function Home() {
         // getConversationMessages(context.currentChatUser._id)
     },[context.currentChatUser])
 
-    useEffect(()=>{
-        console.log("Messages Updated :: ",context.messages);
-        setMessages(context.messages.data || [])
-    },[context.messages])
+  
     
 
   return (
@@ -120,7 +123,7 @@ function Home() {
         <div className="users w-full mt-4">
          {
             users?.map((user)=>(
-                <ChatCard key={user._id} user={user} setMessages={setMessages}/>
+                <ChatCard key={user._id} user={user} />
             ))
          }
            
@@ -141,7 +144,7 @@ function Home() {
 
                    {messages?.length && messages?.map((msg,index)=>{
                     return(
-                         ((context.currentChatUser._id === msg.from || (context.currentChatUser._id === msg.sender || context.currentChatUser._id === msg.receiver)) || (msg.from === context.user._id || (msg.sender === context.user._id || msg.receiver === context.user._id))) && (
+                         ((context.currentChatUser._id === msg.sender || (context.currentChatUser._id === msg.sender || context.currentChatUser._id === msg.receiver)) || (msg.sender === context.user._id || (msg.sender === context.user._id || msg.receiver === context.user._id))) && (
                            <Message key={index} msg={msg} index={index} />
                          )
                             
