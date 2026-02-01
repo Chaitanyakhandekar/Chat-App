@@ -1,12 +1,21 @@
 import { socket } from "./socket";
 import { useChatStore } from "../store/useChatStore";
 import { socketEvents } from "../constants/socketEvents";
+<<<<<<< HEAD
 import { userAuthStore } from "../store/userStore";
 
 export const initializeSocketListeners = () =>{
 
     
 
+=======
+
+const {
+   
+    addMessage} = useChatStore.getState();
+
+export const initializeSocketListeners = () =>{
+>>>>>>> 9a51b3a (1 participant is null at the time of chat creation and chat is creating every time)
     socket.on(socketEvents.CONNECT,()=>{
         console.log("Connected to socket server");
     });
@@ -17,6 +26,7 @@ export const initializeSocketListeners = () =>{
 
     socket.on(socketEvents.NEW_MESSAGE,(data)=>{
         console.log("New Message Received from socket server:",data);
+<<<<<<< HEAD
         const { addMessage } = useChatStore.getState();
         if (data.sender !== userAuthStore.getState().user._id) {
             addMessage(data?.chatId,data)
@@ -31,5 +41,8 @@ export const initializeSocketListeners = () =>{
 
     socket.on(socketEvents.USER_ONLINE,(data)=>{
 
+=======
+        addMessage(data?.chatId,data)
+>>>>>>> 9a51b3a (1 participant is null at the time of chat creation and chat is creating every time)
     })
 }

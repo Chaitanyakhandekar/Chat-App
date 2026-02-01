@@ -1,28 +1,45 @@
+import { socketEvents } from "../../constants/socketEvents.js"
 import { Message } from "../../models/message.model.js"
 import { getUserSocket, socketsMap } from "../soketsMap.js"
+import { Chat } from "../../models/chat.model.js"
 
 export const messageHandler = (io,socket)=>{
     socket.on("message",async(data)=>{
 
         console.log("Message : ",data)
 
-        const savedDb = await Message.create({
-            sender:socket.user._id,
-            receiver:data.to,
-            message:data.message
-        })
+        let newChat;
 
-        if(!savedDb){
-            socket.to(data.to).emit("message_failed",{
-                success:false,
-                message:"Message Sending Failed",
-                to:data.to
+        if(!data.chatId){     // no chatId means this is new chat so create new chat in database
+             newChat = await Chat.create({
+                participants:[data?.sender,socket.user._id],
             })
+
+            if(!newChat){  // error while creating new chat (emit error event)
+                socket.emit(socketEvents.ERROR , {
+                    type:"Message Sending Error",
+                    message:"Error While Sending Message."
+                })
+            }
         }
 
-        socket.to(getUserSocket(data.to)).emit("message",{
+        const newMessage = await Message.create({    // save message to database
+            sender:socket.user._id,
+            receiver:data.receiver,
             message:data.message,
-            from:socket.user._id
+            chatId: newChat._id || data.chatId
         })
+
+        if(!newMessage){   // error while saving message to database means message sending failure
+             socket.emit(socketEvents.ERROR , {
+                    type:"Message Sending Error",
+                    message:"Error While Sending Message."
+                })
+        }
+        else{
+            socket.to(getUserSocket(data.receiver)).emit(socketEvents.NEW_MESSAGE , newMessage)
+        }
     })
 }
+
+ 

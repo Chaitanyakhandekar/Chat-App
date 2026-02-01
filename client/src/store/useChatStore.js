@@ -7,12 +7,12 @@ export const useChatStore = create(
             userMessages:{},
 
             addMessage:(chatId,message)=>(
-                set((state)=>(
-                    {
+                set((state)=>({
+                    userMessages:{
                         ...state.userMessages,
-                        [chatId]:[...(state.userMessages[chatId]),message]
+                        [chatId]:[...(state.userMessages[chatId] || []),message]
                     }
-                ))
+                }))
             ),
 
             currentChatId:null,
