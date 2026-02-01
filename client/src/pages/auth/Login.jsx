@@ -3,6 +3,7 @@ import { userApi } from '../../api/user.api'
 import { useContext } from 'react'
 import {authContext} from '../../context/authContext.jsx'
 import { useNavigate } from 'react-router-dom'
+import { userAuthStore } from '../../store/userStore.js'
 
 function Login() {
 
@@ -11,6 +12,8 @@ function Login() {
         email:"",
         password:""
     })
+    const user1 = userAuthStore().user
+    const setUser1 = userAuthStore().setUser
     const authData = useContext(authContext);
     const navigate = useNavigate()
 
@@ -29,6 +32,7 @@ function Login() {
         const response = await userApi.loginUser(user);
         if(response.success){
             authData.login(response.data);
+            setUser1(response.data)
             // authData.setIsLoggedIn(true);
             // authData.setUser(response.data);
             console.log("User set in context:",response.data);

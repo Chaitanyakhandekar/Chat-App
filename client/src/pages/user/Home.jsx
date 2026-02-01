@@ -93,7 +93,9 @@ function Home() {
 
         return ()=>{
                 // socket.disconnect();
-                socket.off("message")
+                socket.off("message",()=>{
+                    console.log("Socket off message event listener removed");
+                })
             
         }
     },[])
@@ -107,9 +109,7 @@ function Home() {
         console.log("Messages Updated :: ",context.messages);
         setMessages(context.messages.data || [])
     },[context.messages])
-    useEffect(()=>{
-        console.log("Messages Updated 1 :: ",messages);
-    },[messages])
+    
 
   return (
    <div className="w-screen border-1 min-h-screen h-screen flex">
