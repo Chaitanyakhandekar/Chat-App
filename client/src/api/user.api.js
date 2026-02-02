@@ -84,6 +84,25 @@ class UserApi{
             }
         }
     }
+
+    searchUsers = async (query) => {
+        try {
+            const response = await axios.get(`${this.baseUrl}/search/?query=${query}`,{
+                withCredentials:true
+            });
+            return {
+                success:true,
+                message:response.data.message,
+                data: response.data.data
+            }
+        } catch (error) {
+            return {
+                success:false,
+                message:error.message,
+                error: error
+            }
+        }
+    }
 }
 
 export const userApi = new UserApi();

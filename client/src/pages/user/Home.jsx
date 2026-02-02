@@ -19,6 +19,7 @@ function Home() {
     const [users,setUsers] = React.useState([])
     const context = useContext(authContext);
     const [message,setMessage] = React.useState("")
+    const [query,setQuery] = React.useState("")
     // const [messages,setMessages] = React.useState([])
 
     const messages = useChatStore().userMessages
@@ -112,13 +113,25 @@ function Home() {
     },[context.currentChatUser])
 
   
+    const searchUsers = async(query)=>{
+        setQuery(query);
+        try {
+            const response = await userApi.searchUsers(query); 
+            if(response.success){
+                setUsers(response.data);
+                console.log("Search Users Response :",response.data);
+            }
+        } catch (error) {
+            console.log("Error while searching users :",error);
+        }
+    }
     
 
   return (
    <div className="w-screen border-1 min-h-screen h-screen flex">
 
     <div className="chat-users w-1/4 h-full border flex flex-col  items-center bg-gray-100">
-        <input type="text" placeholder="Search users..." className='w-[90%] mt-3 p-3 border border-gray-300 rounded-md outline-none text-gray-500 font-semibold' />
+        <input type="text" placeholder="Search users..." className='w-[90%] mt-3 p-3 border border-gray-300 rounded-md outline-none text-gray-500 font-semibold' value={query} onChange={(e)=>searchUsers(e.target.value)} />
 
         <div className="users w-full mt-4">
          {
