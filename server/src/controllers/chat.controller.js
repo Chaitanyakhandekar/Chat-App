@@ -52,7 +52,47 @@ const createGroupChat = asyncHandler(async (req,res)=>{
    
 })
 
+const getUserChats = asyncHandler(async (req,res)=>{
+    const userChats = await Chat.aggregate([
+        {
+            $match:{
+                participants: { $in: [req.user._id] }
+            }
+        },
+        {
+            $lookup:{
+                from:"users",
+                localField:"participants",
+                foreignField:"_id",
+                as:"participants",
+                pipeline:[
+                    {
+                        $project:{
+                            username:1,
+                            name:1,
+                            avtar:1
+                        }
+                    }
+                ]
+            }
+        }
+    ])
+
+    console.log("User Chats : ",userChats);
+
+    if(!userChats.length){
+        throw new ApiError(500,"Server Error While Fetching User Chats.")
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200,userChats,"User Chats Fetched Successfully.")
+    )
+})
+
+
+
 export {
     createGroupChat,
-    createSingleChat
+    createSingleChat,
+    getUserChats
 }
