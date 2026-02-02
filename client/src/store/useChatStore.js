@@ -21,7 +21,24 @@ export const useChatStore = create(
                 set({
                     currentChatId:chatId
                 })
-            )
+            ),
+
+            userChats: [],
+
+            setUserChats: (chats)=>{
+                set({
+                    userChats:chats
+                })
+            },
+
+
+            userSearch:[],
+
+            setUserSearch:(users)=>{
+                set({
+                    userSearch:users
+                })
+            }
         })
     )
 )

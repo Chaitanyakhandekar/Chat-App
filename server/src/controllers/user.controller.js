@@ -895,7 +895,7 @@ const authMe = asyncHandler(async (req,res)=>{
 const searchUsers = asyncHandler(async (req,res)=>{
   const {query} = req.query;
 
-  console.log("Search Query :",query);
+  // console.log("Search Query :",query);
 
   if(!query || query && query.trim() === ""){
     throw new ApiError(400,"Search Query is Required.")
@@ -903,10 +903,13 @@ const searchUsers = asyncHandler(async (req,res)=>{
 
   const users = await User.find(
     {
-      $or:[
+      $and:[
+      {  _id:{$ne:req.user._id}},
+      {$or:[
         { username: { $regex: query, $options: "i" } },
         { name: { $regex: query, $options: "i" } },
         { email: { $regex: query, $options: "i" } }
+      ]}
       ]
     }
   ).select("-password -refreshToken");
