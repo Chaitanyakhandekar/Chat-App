@@ -18,6 +18,7 @@ function App() {
     const user = await userApi.authMe();
     if(user.success){
       context.setUser(user.data)
+      console.log("User Set in Context : ",user.data);
       setUser(user.data)
       
     }

@@ -1,16 +1,33 @@
-import {create} from "zustand"
+import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 
 export const userAuthStore = create(
-    devtools(
-        (set)=>(
-    {
-        user:null,
+  devtools(
+    persist(
+      (set) => ({
+        user: null,
 
-        setUser:(newUser)=>(
-          set({user:newUser})
-        )
+        setUser: (newUser) =>
+          set(
+            { user: newUser },
+            
+          ),
+
+        logout: () =>
+          set(
+            { user: null },
+           
+          ),
+      }),
+      {
+        name: "user-auth-store",
+
+        // ✅ Fix hydration issue
+       
+      }
+    ),
+    {
+        name: "UserAuthStore",
     }
-)
-    )
-)
+  )
+);
