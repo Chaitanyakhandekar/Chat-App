@@ -27,7 +27,7 @@ export const messageHandler = (io,socket)=>{
             sender:socket.user._id,
             receiver:data.receiver,
             message:data.message,
-            chatId: newChat._id || data.chatId
+            chatId: newChat?._id || data.chatId
         })
 
         if(!newMessage){   // error while saving message to database means message sending failure

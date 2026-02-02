@@ -892,6 +892,40 @@ const authMe = asyncHandler(async (req,res)=>{
     )
 })
 
+const searchUsers = asyncHandler(async (req,res)=>{
+  const {query} = req.query;
+
+  console.log("Search Query :",query);
+
+  if(!query || query && query.trim() === ""){
+    throw new ApiError(400,"Search Query is Required.")
+  }
+
+  const users = await User.find(
+    {
+      $or:[
+        { username: { $regex: query, $options: "i" } },
+        { name: { $regex: query, $options: "i" } },
+        { email: { $regex: query, $options: "i" } }
+      ]
+    }
+  ).select("-password -refreshToken");
+
+  if(!users.length){
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200,[],"No Users Found Matching the Query.")
+      )
+  }
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200,users,"Users Fetched Successfully.")
+    )
+
+})
+
 
 
 export {
@@ -912,5 +946,6 @@ export {
   resetPassword,
   resendEmailVerification,
   getAllUsers,
-  authMe
+  authMe,
+  searchUsers
 }

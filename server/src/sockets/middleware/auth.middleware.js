@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { User } from "../../models/user.model.js";
 
 export const auth = async (socket,next)=>{
-    const token = parseCookies(socket.handshake.headers);
+    const token = parseCookies(socket.handshake?.headers);
 
     let decodedToken;
 
@@ -14,21 +14,26 @@ export const auth = async (socket,next)=>{
             process.env.JWT_ACCESS_SECRET,
         )
     } catch (error) {
-        return next(new ApiError(500,"Error While Decoding AccessToken"))
+        socket.disconnect();
     }
 
-    // console.log("Decoded Token in Socket Middleware : ",decodedToken);
+    console.log("Decoded Token in Socket Middleware : ",decodedToken);
 
     if(!decodedToken){
-        return next(new ApiError(500,"No Decoded Token Found"))
+        socket.disconnect();
     }
 
 
 
-   const user = await User.findById(decodedToken._id).select("-password")
+   const user = await User.findById(decodedToken?._id).select("-password")
 
-//    console.log("Authenticated User in Socket Middleware : ",user);
+   console.log("Authenticated User in Socket Middleware : ",user);
 
-    socket.user = user;
-    next();
+   if(!user){
+        socket.disconnect();
+   }
+   else{
+        socket.user = user
+        next()
+   }
 }

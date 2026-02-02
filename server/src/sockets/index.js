@@ -29,7 +29,8 @@ io.use(auth)  // authentication middleware
 io.on("connection",(socket)=>{    // Listen for client connections
 
     console.log("User connected : ",socket.id)
-
+    
+    
   registerSocketHandlers(io,socket)
 
 })

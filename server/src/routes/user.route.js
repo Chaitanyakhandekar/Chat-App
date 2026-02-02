@@ -18,7 +18,8 @@ import {
      resetPassword,
      resendEmailVerification,
      getAllUsers,
-     authMe
+     authMe,
+     searchUsers
 
  } from '../controllers/user.controller.js';
  import { sendVerificationToken } from '../services/sendVerificationToken.js';
@@ -39,6 +40,7 @@ router.route("/password/reset").post(resetPassword)
 router.route("/avatar").get(userAuth,getUserAvatar)
 router.route("/avatar").delete(userAuth,deleteUserAvatar)
 router.route("/profile").get(userAuth,getUserProfile)
+router.route("/search/").get(userAuth,searchUsers)
 router.route("/profile/:id").get(userAuth,getPublicUserProfile)
 router.route("/profile").patch(userAuth,updateUserProfile)
 router.route("/email/verify/:token").get(verifyUser)
