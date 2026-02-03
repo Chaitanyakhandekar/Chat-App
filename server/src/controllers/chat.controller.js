@@ -15,6 +15,7 @@ import { Chat } from "../models/chat.model.js";
 const createSingleChat = asyncHandler(async (req,res)=>{
     const {userId} = req.params
 
+
     if(!userId || userId && userId.trim() === "" || !mongoose.Types.ObjectId.isValid(userId)){
         throw new ApiError(400,"Invalid UserId for New Chat.")
     }
@@ -78,7 +79,7 @@ const getUserChats = asyncHandler(async (req,res)=>{
         }
     ])
 
-    console.log("User Chats : ",userChats);
+    // console.log("User Chats : ",userChats);
 
     if(!userChats.length){
         throw new ApiError(500,"Server Error While Fetching User Chats.")

@@ -4,7 +4,7 @@ import { getUserSocket, socketsMap } from "../soketsMap.js"
 import { Chat } from "../../models/chat.model.js"
 
 export const messageHandler = (io,socket)=>{
-    socket.on("message",async(data)=>{
+    socket.on(socketEvents.NEW_MESSAGE,async(data)=>{
 
         console.log("Message : ",data)
 

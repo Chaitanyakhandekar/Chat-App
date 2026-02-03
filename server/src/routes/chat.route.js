@@ -10,6 +10,6 @@ const router = Router();
 
 // router.route("/send").post();
 // router.route("/receive").get();
-router.route("/:userId").post(userAuth,createSingleChat)
+router.route("/single/:userId").post(userAuth,createSingleChat)
 router.route("/").get(userAuth,getUserChats)
 export default router;
