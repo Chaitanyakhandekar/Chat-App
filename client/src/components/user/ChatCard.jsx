@@ -4,6 +4,7 @@ import { authContext } from '../../context/authContext.jsx'
 import { messageApi } from '../../api/message.api.js';
 import { useChatStore } from '../../store/useChatStore.js';
 import { chatApi } from '../../api/chat.api.js';
+import { userAuthStore } from '../../store/userStore.js';
 
 const {addMessage,currentChatId} = useChatStore.getState();
 
@@ -18,6 +19,7 @@ function ChatCard({
 
     const context = useContext(authContext);
     const {userChats} = useChatStore();
+    const user1 = userAuthStore().user;
 
     const createSingleChat = async ()=>{
         console.log("Creating Single Chat with User :: ",user);
@@ -25,6 +27,8 @@ function ChatCard({
         if(response.success){
             // addMessage(response.data)
             console.log("Single Chat Created :: ",response.data);
+            
+            
         }
     }
 
@@ -40,23 +44,28 @@ function ChatCard({
     }
 
     const isChatExists = ()=>{
+        // console.log("Checking if Chat Exists for User :: ",user);
+        let isExists = false;
+
         userChats.forEach((chat)=>{
-            if(chat.participants[0]?._id.toString() === user._id.toString() || chat.participants[1]?._id.toString() === user._id.toString()){
-                return true;
-                
+            // console.log("Chat Participants :: ",chat.participants);
+            // console.log("Is Chat Exists for User :: ",chat.participants[0]._id === user._id || chat.participants[1]._id === user._id)
+            if(chat.participants[0]._id === user._id || chat.participants[1]._id === user._id){
+                isExists = true;
             }
+              
         })
 
-        return false;
+        return isExists;
     }
 
   return (
     <div
     onClick={()=>{
-        if(searchMode && !isChatExists()){
-            createSingleChat();
-        }else{
+        if(isChatExists()){
             getConversationMessages();
+        }else{
+            createSingleChat();
         }
     }}
     className="user-item w-full p-3 border-b hover:bg-gray-200 cursor-pointer flex items-center gap-10">
