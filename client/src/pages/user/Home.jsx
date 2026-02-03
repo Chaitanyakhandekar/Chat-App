@@ -13,22 +13,32 @@ import {
 import Message from '../../components/message/Message.jsx'
 import { messageApi } from '../../api/message.api.js'
 import { useChatStore } from '../../store/useChatStore.js'
+import { chatApi } from '../../api/chat.api.js'
+import { userAuthStore } from '../../store/userStore.js'
+import { socketEvents } from '../../constants/socketEvents.js'
 
 function Home() {
 
-    const [users,setUsers] = React.useState([])
+    // const [users,setUsers] = React.useState([])
     const context = useContext(authContext);
     const [message,setMessage] = React.useState("")
     const [query,setQuery] = React.useState("")
     // const [messages,setMessages] = React.useState([])
 
+    const {user} = userAuthStore()
+
+    const users = useChatStore().userChats
+    const setUsers = useChatStore().setUserChats
+
     const messages = useChatStore().userMessages
     const addMessage = useChatStore().addMessage
     const currentChatId = useChatStore().currentChatId
+
+    const {userSearch,setUserSearch} = useChatStore()
    
 
     const getAllUsers = async ()=>{
-        const response = await userApi.getAllUsers();
+        const response = await chatApi.getUserChats();
         if(response.success){
             setUsers(response.data);
             console.log("All users fetched:",response.data);
@@ -46,7 +56,7 @@ function Home() {
             return;
         }
         if(!socket)return
-        socket.emit("message",{
+        socket.emit(socketEvents.NEW_MESSAGE,{
             message:message,
             receiver:context.currentChatUser._id,
             chatId:currentChatId || null
@@ -118,7 +128,7 @@ function Home() {
         try {
             const response = await userApi.searchUsers(query); 
             if(response.success){
-                setUsers(response.data);
+                setUserSearch(response.data);
                 console.log("Search Users Response :",response.data);
             }
         } catch (error) {
@@ -135,8 +145,13 @@ function Home() {
 
         <div className="users w-full mt-4">
          {
-            users?.map((user)=>(
-                <ChatCard key={user._id} user={user} />
+            (!query || (query && query.trim() === "")) && users?.map((chat)=>(
+                <ChatCard key={chat._id} user={chat.participants[0]._id === user._id ? chat.participants[1] : chat.participants[0] } searchMode={false}/>
+            ))
+         }
+         {
+            query && userSearch?.map((chat)=>(
+                <ChatCard key={chat._id} user={chat} searchMode={true}/>
             ))
          }
            
