@@ -67,7 +67,8 @@ function Home() {
             addMessage(currentChatId,{
                 message:message,
                 sender:context.user._id,
-                receiver:context.currentChatUser._id
+                receiver:context.currentChatUser._id,
+                chatId:currentChatId
             })
         }
         else{
@@ -146,7 +147,7 @@ function Home() {
         <div className="users w-full mt-4">
          {
             (!query || (query && query.trim() === "")) && users?.map((chat)=>(
-                <ChatCard key={chat._id} user={chat.participants[0]._id === user._id ? chat.participants[1] : chat.participants[0] } searchMode={false}/>
+                <ChatCard key={chat._id} user={chat.participants[0]._id === user._id ? chat.participants[1] : chat.participants[0] } searchMode={false} chatId={chat._id}/>
             ))
          }
          {

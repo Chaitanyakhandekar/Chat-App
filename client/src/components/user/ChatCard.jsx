@@ -6,14 +6,15 @@ import { useChatStore } from '../../store/useChatStore.js';
 import { chatApi } from '../../api/chat.api.js';
 import { userAuthStore } from '../../store/userStore.js';
 
-const {addMessage,currentChatId} = useChatStore.getState();
+const {addMessage,currentChatId,setCurrentChatId} = useChatStore.getState();
 
 function ChatCard({
     user={
         name: "John Doe",
         avatar:"https://static.vecteezy.com/system/resources/previews/024/983/914/non_2x/simple-user-default-icon-free-png.png"
     },
-    searchMode=false
+    searchMode=false,
+    chatId=null
 
 }) {
 
@@ -22,25 +23,28 @@ function ChatCard({
     const user1 = userAuthStore().user;
 
     const createSingleChat = async ()=>{
-        console.log("Creating Single Chat with User :: ",user);
+        // console.log("Creating Single Chat with User :: ",user);
         const response = await chatApi.createSingleChat(user._id);
         if(response.success){
             // addMessage(response.data)
-            console.log("Single Chat Created :: ",response.data);
+            // console.log("Single Chat Created :: ",response.data);
             
             
         }
     }
 
     const getConversationMessages = async ()=>{
-        console.log("Getting Conversation Messages with User :: ",user);
+        console.log("Getting Conversation Messages with User :: ",user.username);
         context.setCurrentChatUser(user);
         console.log("Conversation Messages :: ",user) 
         const response = await messageApi.getConversation(user._id)
-        console.log(" Messages :: ",response.data) 
+        // console.log(" Messages :: ",response.data) 
         response?.data?.data?.map((msg)=>{
-            addMessage(response.chatId,msg)
+            console.log("Message in Conversation :: ",msg);
+            addMessage(chatId,msg)
         })
+
+
     }
 
     const isChatExists = ()=>{
@@ -56,13 +60,16 @@ function ChatCard({
               
         })
 
+
         return isExists;
     }
 
   return (
     <div
     onClick={()=>{
+
         if(isChatExists()){
+            setCurrentChatId(chatId);
             getConversationMessages();
         }else{
             createSingleChat();

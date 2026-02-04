@@ -35,6 +35,8 @@ class ChatApi{
             const response = await axios.get(`${this.baseUrl}/`,{
                 withCredentials:true
             });
+
+            console.log("Get User Chats Response :: ",response);
             return {
                 success:true,
                 message:response.data.message,
