@@ -6,11 +6,23 @@ export const useChatStore = create(
         (set)=>({
             userMessages:{},
 
+            setUserMessages:(chatId,messages)=>(
+                set((state)=>({
+                    userMessages:{
+                        ...state.userMessages,
+                        [chatId]:messages
+                    }
+                }))
+            ),
+
             addMessage:(chatId,message)=>(
                 set((state)=>({
                     userMessages:{
                         ...state.userMessages,
-                        [chatId]:[...(state.userMessages[chatId] || []),message]
+                        [chatId]:[
+                            ...state.userMessages[chatId] || [],
+                            message
+                        ]
                     }
                 }))
             ),
