@@ -92,31 +92,9 @@ function Home() {
 
     useEffect(()=>{
        
-
-        // socket.on("connect",()=>{
-        //     console.log("Connected to socket server with id:",socket.id);
-
-           
-        // });
-
-        //  socket.on("message",(data)=>{
-        //     console.log("Message received from server:",data);
-        //     setMessages((prevMessages)=>[...prevMessages,data]);
-        // })
-
-        // socket.on("message_failed",(error)=>{
-        //     console.log("Message Error :: ",error.message)
-        // })
-
-
-        // return ()=>{
-        //         // socket.disconnect();
-        //         socket.off("message",()=>{
-        //             console.log("Socket off message event listener removed");
-        //         })
-            
-        // }
-    },[])
+        console.log("User Messages Updated : ",messages);
+        
+    },[messages])
 
     useEffect(()=>{
         console.log("Current logged in user:",context.currentChatUser);

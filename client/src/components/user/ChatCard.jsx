@@ -6,7 +6,7 @@ import { useChatStore } from '../../store/useChatStore.js';
 import { chatApi } from '../../api/chat.api.js';
 import { userAuthStore } from '../../store/userStore.js';
 
-const {addMessage,currentChatId,setCurrentChatId} = useChatStore.getState();
+const {addMessage,currentChatId,setCurrentChatId,setUserMessages} = useChatStore.getState();
 
 function ChatCard({
     user={
@@ -38,11 +38,12 @@ function ChatCard({
         context.setCurrentChatUser(user);
         console.log("Conversation Messages :: ",user) 
         const response = await messageApi.getConversation(user._id)
-        // console.log(" Messages :: ",response.data) 
-        response?.data?.data?.map((msg)=>{
-            console.log("Message in Conversation :: ",msg);
-            addMessage(chatId,msg)
-        })
+        console.log(" Messages :: ",response.data.data)
+        setUserMessages(chatId,response.data.data) 
+        // response?.data?.data?.map((msg)=>{
+        //     console.log("Message in Conversation :: ",msg);
+        //     addMessage(chatId,msg)
+        // })
 
 
     }
