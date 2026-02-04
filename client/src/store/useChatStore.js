@@ -39,6 +39,7 @@ export const useChatStore = create(
                     userSearch:users
                 })
             }
-        })
+        }),
+        {name:"Chat Store"}
     )
 )
