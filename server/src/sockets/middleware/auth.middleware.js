@@ -17,7 +17,7 @@ export const auth = async (socket,next)=>{
         socket.disconnect();
     }
 
-    console.log("Decoded Token in Socket Middleware : ",decodedToken);
+    // console.log("Decoded Token in Socket Middleware : ",decodedToken);
 
     if(!decodedToken){
         socket.disconnect();
@@ -27,7 +27,7 @@ export const auth = async (socket,next)=>{
 
    const user = await User.findById(decodedToken?._id).select("-password")
 
-   console.log("Authenticated User in Socket Middleware : ",user);
+//    console.log("Authenticated User in Socket Middleware : ",user);
 
    if(!user){
         socket.disconnect();
