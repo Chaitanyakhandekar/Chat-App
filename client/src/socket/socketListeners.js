@@ -1,10 +1,7 @@
 import { socket } from "./socket";
 import { useChatStore } from "../store/useChatStore";
 import { socketEvents } from "../constants/socketEvents";
-
-const {
-   
-    addMessage} = useChatStore.getState();
+import { userAuthStore } from "../store/userStore";
 
 export const initializeSocketListeners = () =>{
     socket.on(socketEvents.CONNECT,()=>{
@@ -17,6 +14,9 @@ export const initializeSocketListeners = () =>{
 
     socket.on(socketEvents.NEW_MESSAGE,(data)=>{
         console.log("New Message Received from socket server:",data);
-        addMessage(data?.chatId,data)
+        const { addMessage } = useChatStore.getState();
+        if (data.sender !== userAuthStore.getState().user._id) {
+            addMessage(data?.chatId,data)
+        }
     })
 }

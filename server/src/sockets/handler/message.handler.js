@@ -7,6 +7,7 @@ export const messageHandler = (io,socket)=>{
     socket.on(socketEvents.NEW_MESSAGE,async(data)=>{
 
         console.log("Message : ",data)
+        console.log("Sockets Map : ",socketsMap)
 
         let newChat;
 
