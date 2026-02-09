@@ -50,7 +50,37 @@ export const useChatStore = create(
                 set({
                     userSearch:users
                 })
+            },
+
+            chatUsersInfo:{},
+
+            setChatUsersInfo:(chats)=>{
+                set({
+                    chatUsersInfo:chats.reduce((acc,chat)=>{
+                        acc[chat._id] = {
+                            typing:false,
+                            newMessages:0,
+                            online:false
+                        }
+                        
+                        return acc;
+                    },{})
+                })
+            },
+
+            setTypingStatus:(chatId,isTyping)=>{
+                set((state)=>({
+                    chatUsersInfo:{
+                        ...state.chatUsersInfo[chatId],
+                        [chatId]:isTyping,
+                    }
+                }))
+            },
+
+            setOnlineStatus:(userId)=>{
+                
             }
+
         }),
         {name:"Chat Store"}
     )

@@ -2,6 +2,7 @@ import { socketEvents } from "../../constants/socketEvents.js"
 import { Message } from "../../models/message.model.js"
 import { getUserSocket, socketsMap } from "../soketsMap.js"
 import { Chat } from "../../models/chat.model.js"
+import { get } from "http"
 
 export const messageHandler = (io,socket)=>{
     socket.on(socketEvents.NEW_MESSAGE,async(data)=>{
@@ -40,6 +41,26 @@ export const messageHandler = (io,socket)=>{
         else{
             socket.to(getUserSocket(data.receiver)).emit(socketEvents.NEW_MESSAGE , newMessage)
         }
+    })
+
+
+    socket.on(socketEvents.TYPING, async(data)=>{   // handling typing event
+        console.log("Typing Data : ",data)
+          console.log("Sockets Map : ",socketsMap)
+
+        const chat = await Chat.findById(data.chatId)   // chacking if chat exists
+        const otherUser = chat.participants.filter(user=>socket.user._id.toString() !== user.toString())    // get user to whome event is going to emit
+
+
+        const payload = {       // creating payload for emitting to other user
+            chatId:data.chatId,
+            isTyping:data.isTyping,
+            sender:socket.user._id
+        }
+
+        console.log("Emitting Typing Event to User : ",getUserSocket(otherUser.toString()))
+
+        socket.to(getUserSocket(otherUser.toString())).emit(socketEvents.TYPING, payload)
     })
 }
 

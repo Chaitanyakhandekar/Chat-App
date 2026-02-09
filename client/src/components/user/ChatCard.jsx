@@ -82,7 +82,10 @@ function ChatCard({
                     className='w-10 h-10 rounded-[50%]'
                     src={user.avtar} alt="" />
                 </div>
-                <h2 className="font-semibold">{user.username}</h2>
+                <div className="flex flex-col items-start justify-center">
+                    <h2 className="font-semibold">{user.username}</h2>
+                    <h2 className="text-sm text-green-500">Typing</h2>
+                </div>
             </div>
   )
 }
