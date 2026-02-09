@@ -9,6 +9,7 @@ export const initializeSocketListeners = () =>{
 
     
 
+<<<<<<< HEAD
 =======
 
 const {
@@ -20,6 +21,8 @@ import { userAuthStore } from "../store/userStore";
 
 export const initializeSocketListeners = () =>{
 >>>>>>> 9a51b3a (1 participant is null at the time of chat creation and chat is creating every time)
+=======
+>>>>>>> f59a17a (typing event started)
     socket.on(socketEvents.CONNECT,()=>{
         console.log("Connected to socket server");
     });
@@ -54,5 +57,15 @@ export const initializeSocketListeners = () =>{
 >>>>>>> 9a51b3a (1 participant is null at the time of chat creation and chat is creating every time)
 =======
 >>>>>>> 4e93c6e (just fixed the shittiest bug i faced yet... cant even call that a bug.)
+    })
+
+    socket.on(socketEvents.TYPING,(data)=>{
+        console.log("Typing event received from socket server:",data);
+        // const {chatUsersInfo,setTypingStatus} = useChatStore()
+        // setTypingStatus(data.chatId,data.isTyping)
+    })
+
+    socket.on(socketEvents.USER_ONLINE,(data)=>{
+
     })
 }

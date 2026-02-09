@@ -34,13 +34,14 @@ function Home() {
     const addMessage = useChatStore(state => state.addMessage)
     const currentChatId = useChatStore(state => state.currentChatId)
 
-    const { userSearch, setUserSearch } = useChatStore()
+    const { userSearch, setUserSearch , setChatUsersInfo,chatUsersInfo } = useChatStore()
 
 
     const getAllUsers = async () => {
         const response = await chatApi.getUserChats();
         if (response.success) {
             setUsers(response.data);
+            setChatUsersInfo(response.data)
             console.log("All users fetched:", response.data);
         }
     }
@@ -107,6 +108,16 @@ function Home() {
         }
     }
 
+    const handleTyping = (e) => {
+        setMessage(e.target.value);
+
+        if(!socket || !context.currentChatUser) return
+        socket.emit(socketEvents.TYPING,{
+            chatId:currentChatId,
+            isTyping:e.target.value.length > 0
+        })
+    }
+
 
     return (
         <div className="w-screen border-1 min-h-screen h-screen flex">
@@ -136,7 +147,11 @@ function Home() {
                             <div className="w-10 h-10 rounded-full ml-10">
                                 <img src={context.currentChatUser.avtar} alt="" className='w-full h-full rounded-[50%]' />
                             </div>
-                            <h2 className="font-bold text-xl ml-4">{context.currentChatUser.username}</h2>
+                            <div className="flex flex-col items-center justify-center">
+                                <h2 className="font-bold text-xl ml-4">{context.currentChatUser.username}</h2>
+                                {}
+                                <h2 className='text-sm text-green-500'>Typing...</h2>
+                            </div>
                         </nav>
 
                         <div className="h-[80%] border-1 border-blue-400 w-full relative overflow-y-scroll">
@@ -154,7 +169,7 @@ function Home() {
 
                         <footer className="w-full h-20 border-t absolute bottom-0 bg-white z-10 flex items-center">
                             <div className="w-5/6 h-20 border-t flex items-center px-4 absolute bottom-0 bg-white z-10">
-                                <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Type a message..." className='w-full h-14 border border-gray-300 rounded-md pl-4 outline-none ' />
+                                <input type="text" value={message} onChange={(e) => handleTyping(e)} placeholder="Type a message..." className='w-full h-14 border border-gray-300 rounded-md pl-4 outline-none ' />
                             </div>
                             <div
                                 onClick={handleSend}

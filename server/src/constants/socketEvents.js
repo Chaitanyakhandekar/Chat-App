@@ -4,5 +4,6 @@ export const socketEvents = {
     NEW_MESSAGE:"new_message",
     JOIN_CHAT:"join_chat",
     LEAVE_CHAT:"leave_chat",
-    ERROR:"error"
+    ERROR:"error",
+    TYPING:"typing"
 }
