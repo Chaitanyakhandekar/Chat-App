@@ -68,6 +68,14 @@ export const useChatStore = create(
                 })
             },
 
+            emitedTyping:false,
+
+            toogleEmitedTyping:(value)=>{
+                set((state)=>({
+                    emitedTyping:value
+                }))
+            },
+
             setTypingStatus:(chatId,isTyping)=>{
                 set((state)=>({
                     chatUsersInfo:{
