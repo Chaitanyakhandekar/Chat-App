@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useContext } from 'react'
 import { authContext } from '../../context/authContext.jsx'
 import { messageApi } from '../../api/message.api.js';
@@ -6,7 +6,7 @@ import { useChatStore } from '../../store/useChatStore.js';
 import { chatApi } from '../../api/chat.api.js';
 import { userAuthStore } from '../../store/userStore.js';
 
-const {addMessage,currentChatId,setCurrentChatId,setUserMessages} = useChatStore.getState();
+const {addMessage,currentChatId,setCurrentChatId,setUserMessages,chatUsersInfo} = useChatStore.getState();
 
 function ChatCard({
     user={
@@ -14,7 +14,8 @@ function ChatCard({
         avatar:"https://static.vecteezy.com/system/resources/previews/024/983/914/non_2x/simple-user-default-icon-free-png.png"
     },
     searchMode=false,
-    chatId=null
+    chatId=null,
+    typing=false
 
 }) {
 
@@ -47,6 +48,10 @@ function ChatCard({
 
 
     }
+
+    useEffect(()=>{
+        console.log("Typing : ",chatUsersInfo[chatId]);
+    },[chatUsersInfo[chatId]?.typing])
 
     const isChatExists = ()=>{
         // console.log("Checking if Chat Exists for User :: ",user);
@@ -84,7 +89,10 @@ function ChatCard({
                 </div>
                 <div className="flex flex-col items-start justify-center">
                     <h2 className="font-semibold">{user.username}</h2>
-                    <h2 className="text-sm text-green-500">Typing</h2>
+                    {
+                       typing && 
+                    <h2 className="text-sm text-green-500">Typing</h2> 
+                    }
                 </div>
             </div>
   )

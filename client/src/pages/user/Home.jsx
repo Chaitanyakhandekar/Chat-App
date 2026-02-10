@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import ChatCard from '../../components/user/ChatCard.jsx'
 import { useEffect } from 'react'
 import { userApi } from '../../api/user.api.js'
@@ -34,7 +34,11 @@ function Home() {
     const addMessage = useChatStore(state => state.addMessage)
     const currentChatId = useChatStore(state => state.currentChatId)
 
-    const { userSearch, setUserSearch , setChatUsersInfo,chatUsersInfo } = useChatStore()
+    const { userSearch, setUserSearch, setChatUsersInfo, chatUsersInfo, emitedTyping, toogleEmitedTyping } = useChatStore()
+
+
+    const typingTimeoutRef = useRef(null);
+    const isTypingRef = useRef(false);
 
 
     const getAllUsers = async () => {
@@ -69,7 +73,7 @@ function Home() {
             receiver: context.currentChatUser._id,
             message: message,
             chatId: currentChatId
-        })  
+        })
 
         setMessage("")
     }
@@ -109,14 +113,34 @@ function Home() {
     }
 
     const handleTyping = (e) => {
-        setMessage(e.target.value);
+        const value = e.target.value;
+        setMessage(value);
 
-        if(!socket || !context.currentChatUser) return
-        socket.emit(socketEvents.TYPING,{
-            chatId:currentChatId,
-            isTyping:e.target.value.length > 0
-        })
-    }
+        if (!socket || !context.currentChatUser || !currentChatId) return;
+
+        // 🔹 Emit "typing: true" ONLY ONCE per typing burst
+        if (!isTypingRef.current) {
+            socket.emit(socketEvents.TYPING, {
+                chatId: currentChatId,
+                isTyping: true,
+            });
+            isTypingRef.current = true;
+        }
+
+        // 🔹 Clear previous debounce timer
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+
+        // 🔹 Set new debounce timer
+        typingTimeoutRef.current = setTimeout(() => {
+            socket.emit(socketEvents.TYPING, {
+                chatId: currentChatId,
+                isTyping: false,
+            });
+            isTypingRef.current = false;
+        }, 2000);
+    };
 
 
     return (
@@ -128,7 +152,7 @@ function Home() {
                 <div className="users w-full mt-4">
                     {
                         (!query || (query && query.trim() === "")) && users?.map((chat) => (
-                            <ChatCard key={chat._id} user={chat.participants[0]._id === user._id ? chat.participants[1] : chat.participants[0]} searchMode={false} chatId={chat._id} />
+                            <ChatCard key={chat._id} user={chat.participants[0]._id === user._id ? chat.participants[1] : chat.participants[0]} searchMode={false} chatId={chat._id} typing={chatUsersInfo[chat._id]?.typing || false} />
                         ))
                     }
                     {
@@ -149,8 +173,10 @@ function Home() {
                             </div>
                             <div className="flex flex-col items-center justify-center">
                                 <h2 className="font-bold text-xl ml-4">{context.currentChatUser.username}</h2>
-                                {}
-                                <h2 className='text-sm text-green-500'>Typing...</h2>
+                                {chatUsersInfo[currentChatId]?.typing &&
+                                    <h2 className='text-sm text-green-500'>Typing...</h2>
+                                }
+
                             </div>
                         </nav>
 
