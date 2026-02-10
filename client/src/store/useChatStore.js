@@ -71,8 +71,11 @@ export const useChatStore = create(
             setTypingStatus:(chatId,isTyping)=>{
                 set((state)=>({
                     chatUsersInfo:{
-                        ...state.chatUsersInfo[chatId],
-                        [chatId]:isTyping,
+                        ...state.chatUsersInfo,
+                        [chatId]:{
+                            ...state.chatUsersInfo[chatId],
+                            typing:isTyping
+                        }
                     }
                 }))
             },

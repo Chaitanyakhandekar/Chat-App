@@ -25,8 +25,8 @@ export const initializeSocketListeners = () =>{
 
     socket.on(socketEvents.TYPING,(data)=>{
         console.log("Typing event received from socket server:",data);
-        // const {chatUsersInfo,setTypingStatus} = useChatStore()
-        // setTypingStatus(data.chatId,data.isTyping)
+        const { setTypingStatus } = useChatStore.getState();
+        setTypingStatus(data.chatId,data.isTyping)
     })
 
     socket.on(socketEvents.USER_ONLINE,(data)=>{
