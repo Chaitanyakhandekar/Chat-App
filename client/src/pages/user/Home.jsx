@@ -34,7 +34,7 @@ function Home() {
     const addMessage = useChatStore(state => state.addMessage)
     const currentChatId = useChatStore(state => state.currentChatId)
 
-    const { userSearch, setUserSearch, setChatUsersInfo, chatUsersInfo, emitedTyping, toogleEmitedTyping } = useChatStore()
+    const { userSearch, setUserSearch, setChatUsersInfo, chatUsersInfo, emitedTyping, toogleEmitedTyping , onlineStatus } = useChatStore()
 
 
     const typingTimeoutRef = useRef(null);
@@ -152,12 +152,23 @@ function Home() {
                 <div className="users w-full mt-4">
                     {
                         (!query || (query && query.trim() === "")) && users?.map((chat) => (
-                            <ChatCard key={chat._id} user={chat.participants[0]._id === user._id ? chat.participants[1] : chat.participants[0]} searchMode={false} chatId={chat._id} typing={chatUsersInfo[chat._id]?.typing || false} />
+                            <ChatCard
+                                key={chat._id}
+                                user={chat.participants[0]._id === user._id ? chat.participants[1] : chat.participants[0]}
+                                searchMode={false}
+                                chatId={chat._id}
+                                typing={chatUsersInfo[chat._id]?.typing || false}
+                                online={onlineStatus[chat.participants[0]._id === user._id ? chat.participants[1]._id : chat.participants[0]._id] || false}
+                                chat={chat}
+                            />
                         ))
                     }
                     {
                         query && userSearch?.map((chat) => (
-                            <ChatCard key={chat._id} user={chat} searchMode={true} />
+                            <ChatCard
+                                key={chat._id}
+                                user={chat} 
+                                searchMode={true} />
                         ))
                     }
 
@@ -168,8 +179,9 @@ function Home() {
                 {context.currentChatUser ? (
                     <div className="w-full h-full flex flex-col items-center justify-center border-1" >
                         <nav className="w-full h-16 border-b flex items-center justify-start px-4 absolute top-0 bg-white z-10 gap-10 ">
-                            <div className="w-10 h-10 rounded-full ml-10">
+                            <div className="w-10 h-10 rounded-full ml-10 relative">
                                 <img src={context.currentChatUser.avtar} alt="" className='w-full h-full rounded-[50%]' />
+                                <div className="text-green-400 bg-green-400 absolute h-3 w-3 rounded-[50%] top-1 left-[-10%]"></div>
                             </div>
                             <div className="flex flex-col items-center justify-center">
                                 <h2 className="font-bold text-xl ml-4">{context.currentChatUser.username}</h2>
@@ -185,7 +197,9 @@ function Home() {
                             {messages[currentChatId]?.map((msg) => {
                                 return (
                                     ((context.currentChatUser._id === msg.sender || context.currentChatUser._id === msg.receiver) && (msg.sender === context.user._id || msg.receiver === context.user._id)) && (
-                                        <Message key={msg._id} msg={msg} />
+                                        <Message
+                                            key={msg._id}
+                                            msg={msg} />
                                     )
 
                                 )

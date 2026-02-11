@@ -42,7 +42,15 @@ export const initializeSocketListeners = () =>{
         setTypingStatus(data.chatId,data.isTyping)
     })
 
-    socket.on(socketEvents.USER_ONLINE,(data)=>{       // Listener for receiving online status updates of users from the socket server
-        
+    socket.on(socketEvents.USER_ONLINE,(userId)=>{       // Listener for receiving online status updates of users from the socket server
+        console.log("User Online Event Received from socket server:",userId);
+        const { setOnlineStatus } = useChatStore.getState();
+        setOnlineStatus(userId,true)
+    })
+    
+    socket.on(socketEvents.USER_OFFLINE, (userId)=>{
+        console.log("User Offline Event Received from socket server:",userId);
+         const { setOnlineStatus } = useChatStore.getState();
+        setOnlineStatus(userId,false)
     })
 }

@@ -88,12 +88,13 @@ export const useChatStore = create(
                 }))
             },
 
-            setOnlineStatus:(chatId,onlineStatus)=>{
+            onlineStatus:{},
+
+            setOnlineStatus:(userId,status)=>{
                 set((state)=>({
-                    ...state.chatUsersInfo,
-                    [chatId]:{
-                        ...state.chatUsersInfo[chatId],
-                        online:onlineStatus
+                    onlineStatus:{
+                        ...state.onlineStatus,
+                    [userId]: status
                     }
                 }))
             }
