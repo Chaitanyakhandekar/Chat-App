@@ -1,6 +1,7 @@
 import { socketEvents } from "../../constants/socketEvents.js";
 import { addUserSocket,removeUserSocket,getUserSocket } from "../soketsMap.js";
 import { getUserChatPartners } from "../utils/getUserChatPartners.js";
+import { redis } from "../../redis/config.js";
 
 export const onlineStatusHandler = async(io,socket)=>{
 
@@ -8,8 +9,15 @@ export const onlineStatusHandler = async(io,socket)=>{
 
     addUserSocket(socket.user?._id.toString(),socket.id)  // maping socket.id with user id in memory
 
-    const userChatPartners = await getUserChatPartners(socket.user._id)   // getting all chat partners of user to notify them about online status
+    let userChatPartners = JSON.parse(await redis.get(`chat-participants-${socket.user._id}`))      // Checking In Redis cache if chat partners of user are already cached
 
+    if(!userChatPartners){      // if not cached then get from database and cache it
+        userChatPartners = await getUserChatPartners(socket.user._id)   // getting all chat partners of user to notify them about online status
+        await redis.set(`chat-participants-${socket.user._id}`,JSON.stringify(userChatPartners),{
+            EX:300    // cache will expire in 5 minutes
+        })
+    }
+        console.log("User Chat Partners : ",userChatPartners)
     if(userChatPartners){
         for (let partner of userChatPartners){
             if(getUserSocket(partner.toString())){
