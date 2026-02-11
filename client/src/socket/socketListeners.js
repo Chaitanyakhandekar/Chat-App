@@ -3,20 +3,20 @@ import { useChatStore } from "../store/useChatStore";
 import { socketEvents } from "../constants/socketEvents";
 import { userAuthStore } from "../store/userStore";
 
+
+
+
 export const initializeSocketListeners = () =>{
 
-
-export const initializeSocketListeners = () =>{
-
-    socket.on(socketEvents.CONNECT,()=>{
+    socket.on(socketEvents.CONNECT,()=>{    // Listener for successful connection to the socket server
         console.log("Connected to socket server");
     });
 
-    socket.on(socketEvents.DISCONNECT,()=>{
+    socket.on(socketEvents.DISCONNECT,()=>{     // Listener for disconnection from the socket server
         console.log("Disconnected from socket server");
     });
 
-    socket.on(socketEvents.NEW_MESSAGE,(data)=>{
+    socket.on(socketEvents.NEW_MESSAGE,(data)=>{       // Listener for receiving a new message from the socket server
         console.log("New Message Received from socket server:",data);
 
         const { addMessage } = useChatStore.getState();
@@ -25,7 +25,7 @@ export const initializeSocketListeners = () =>{
         }
     })
 
-    socket.on(socketEvents.TYPING,(data)=>{
+    socket.on(socketEvents.TYPING,(data)=>{       // Listener for receiving typing status updates from the socket server
         console.log("Typing event received from socket server:",data);
         // const {chatUsersInfo,setTypingStatus} = useChatStore()
         // setTypingStatus(data.chatId,data.isTyping)
@@ -42,7 +42,15 @@ export const initializeSocketListeners = () =>{
         setTypingStatus(data.chatId,data.isTyping)
     })
 
-    socket.on(socketEvents.USER_ONLINE,(data)=>{
-
+    socket.on(socketEvents.USER_ONLINE,(userId)=>{       // Listener for receiving online status updates of users from the socket server
+        console.log("User Online Event Received from socket server:",userId);
+        const { setOnlineStatus } = useChatStore.getState();
+        setOnlineStatus(userId,true)
+    })
+    
+    socket.on(socketEvents.USER_OFFLINE, (userId)=>{
+        console.log("User Offline Event Received from socket server:",userId);
+         const { setOnlineStatus } = useChatStore.getState();
+        setOnlineStatus(userId,false)
     })
 }
