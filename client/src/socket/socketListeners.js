@@ -25,18 +25,7 @@ export const initializeSocketListeners = () =>{
         }
     })
 
-    socket.on(socketEvents.TYPING,(data)=>{       // Listener for receiving typing status updates from the socket server
-        console.log("Typing event received from socket server:",data);
-        // const {chatUsersInfo,setTypingStatus} = useChatStore()
-        // setTypingStatus(data.chatId,data.isTyping)
-    })
-
-    socket.on(socketEvents.USER_ONLINE,(data)=>{
-
-
-    })
-
-    socket.on(socketEvents.TYPING,(data)=>{
+    socket.on(socketEvents.TYPING,(data)=>{     // Listener for receiving typing status updates from the socket server
         console.log("Typing event received from socket server:",data);
         const { setTypingStatus } = useChatStore.getState();
         setTypingStatus(data.chatId,data.isTyping)
@@ -48,13 +37,14 @@ export const initializeSocketListeners = () =>{
         setOnlineStatus(userId,true)
     })
     
-    socket.on(socketEvents.USER_OFFLINE, (userId)=>{
+    socket.on(socketEvents.USER_OFFLINE, (userId)=>{    // Listener for receiving offline status updates of users from the socket server 
         console.log("User Offline Event Received from socket server:",userId);
          const { setOnlineStatus } = useChatStore.getState();
         setOnlineStatus(userId,false)
     })
 
-    socket.on(socketEvents.ONLINE_USERS,(onlineUsers)=>{
+    socket.on(socketEvents.ONLINE_USERS,(onlineUsers)=>{       
+        // Listener for receiving the list of online users from the socket server when a user comes online
         const { setOnlineStatus } = useChatStore.getState();
         for (let user of onlineUsers){
             setOnlineStatus(user,true)
