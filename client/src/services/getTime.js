@@ -3,6 +3,6 @@ export const getTime = (timestamp)=>{
     let timeString = timeList[0].split(':')
     timeString.pop()
     timeString = `${timeString.join(":")} ${timeList[1]}`
-    console.log("Formatted Time:",timeString);
+    // console.log("Formatted Time:",timeString);
     return timeString;
 }

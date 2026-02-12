@@ -35,7 +35,7 @@ function Home() {
     const addMessage = useChatStore(state => state.addMessage)
     const currentChatId = useChatStore(state => state.currentChatId)
 
-    const { userSearch, setUserSearch, setChatUsersInfo, chatUsersInfo, emitedTyping, toogleEmitedTyping, onlineStatus } = useChatStore()
+    const { userSearch, setUserSearch, setChatUsersInfo, chatUsersInfo, emitedTyping, toogleEmitedTyping, onlineStatus,incrementNewMessagesCount,resetNewMessagesCount } = useChatStore()
     const {scrollToBottomInChat,setScrollToBottomInChat} = useAssetsStore()
 
     const typingTimeoutRef = useRef(null);
@@ -48,7 +48,7 @@ function Home() {
         if (response.success) {
             setUsers(response.data);
             setChatUsersInfo(response.data)
-            console.log("All users fetched:", response.data);
+            // console.log("All users fetched:", response.data);
         }
     }
 
@@ -91,7 +91,7 @@ function Home() {
     useEffect(() => {
 
         getAllUsers();
-        console.log("Current logged in user:", context.user);
+        // console.log("Current logged in user:", context.user);
 
 
 
@@ -105,11 +105,7 @@ function Home() {
         }
     },[scrollToBottomInChat])
 
-    useEffect(() => {
-        console.log("Current logged in user:", context.currentChatUser);
-        // getConversationMessages(context.currentChatUser._id)
-    }, [context.currentChatUser])
-
+   
 
     const searchUsers = async (query) => {
         setQuery(query);
@@ -173,6 +169,7 @@ return (
                             typing={chatUsersInfo[chat._id]?.typing || false}
                             online={onlineStatus[chat.participants[0]._id === user._id ? chat.participants[1]._id : chat.participants[0]._id] || false}
                             chat={chat}
+                            newMessages={chatUsersInfo[chat._id].newMessages || 0}
                            
                         />
                     ))
