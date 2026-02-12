@@ -69,7 +69,7 @@ class UserApi{
                 withCredentials:true
             })
 
-            console.log("Auth Me Response :",response);
+            // console.log("Auth Me Response :",response);
 
             return {
                 success:true,

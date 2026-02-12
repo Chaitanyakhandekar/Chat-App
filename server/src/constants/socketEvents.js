@@ -8,4 +8,5 @@ export const socketEvents = {
     TYPING:"typing",
     USER_ONLINE:"user_online",
     USER_OFFLINE:"user_offline",
+    ONLINE_USERS:"online_users"
 }

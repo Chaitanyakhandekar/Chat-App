@@ -68,6 +68,30 @@ export const useChatStore = create(
                 })
             },
 
+            incrementNewMessagesCount:(chatId)=>{
+                set((state)=>({
+                    chatUsersInfo:{
+                        ...state.chatUsersInfo,
+                        [chatId]:{
+                            ...state.chatUsersInfo[chatId],
+                            newMessages:state.chatUsersInfo[chatId].newMessages + 1
+                        }
+                    }
+                }))
+            },
+
+            resetNewMessagesCount:(chatId)=>{
+                set((state)=>({
+                    chatUsersInfo:{
+                        ...state.chatUsersInfo,
+                        [chatId]:{
+                            ...state.chatUsersInfo[chatId],
+                            newMessages:0
+                        }
+                    }
+                }))
+            },
+
             emitedTyping:false,
 
             toogleEmitedTyping:(value)=>{
@@ -98,6 +122,7 @@ export const useChatStore = create(
                     }
                 }))
             }
+
 
         }),
         {name:"Chat Store"}

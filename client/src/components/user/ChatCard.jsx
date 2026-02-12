@@ -5,8 +5,10 @@ import { messageApi } from '../../api/message.api.js';
 import { useChatStore } from '../../store/useChatStore.js';
 import { chatApi } from '../../api/chat.api.js';
 import { userAuthStore } from '../../store/userStore.js';
+import { useAssetsStore } from '../../store/useAssetsStore.js';
 
-const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo , onlineStatus } = useChatStore.getState();
+
+const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo , onlineStatus , resetNewMessagesCount } = useChatStore.getState();
 
 function ChatCard({
     user = {
@@ -17,13 +19,15 @@ function ChatCard({
     chatId = null,
     typing = false,
     online = false,
-    chat = null
+    chat = null,
+    newMessages=0
 
 }) {
 
     const context = useContext(authContext);
     const { userChats } = useChatStore();
     const user1 = userAuthStore().user;
+    const {scrollToBottomInChat,setScrollToBottomInChat} = useAssetsStore()
 
     const createSingleChat = async () => {
         // console.log("Creating Single Chat with User :: ",user);
@@ -47,12 +51,12 @@ function ChatCard({
 
     }
 
-    useEffect(() => {
-        // console.log("Online : ", online);
-        // console.log("current User : ", user1._id);
+    // useEffect(() => {
+    //     // console.log("Online : ", online);
+    //     // console.log("current User : ", user1._id);
 
-        console.log("Chat Participants : ", onlineStatus[chat.participants[0]._id]);
-    }, [])
+    //     // console.log("Chat Participants : ", onlineStatus[chat.participants[0]._id]);
+    // }, [])
 
     const isChatExists = () => {
         // console.log("Checking if Chat Exists for User :: ",user);
@@ -75,9 +79,13 @@ function ChatCard({
         <div
             onClick={() => {
 
+                
+
                 if (isChatExists()) {
                     setCurrentChatId(chatId);
                     getConversationMessages();
+                    resetNewMessagesCount(chatId)
+                    setScrollToBottomInChat(true)
                 } else {
                     createSingleChat();
                 }
@@ -99,6 +107,11 @@ function ChatCard({
                     <h2 className="text-sm text-green-500">Typing</h2>
                 }
             </div>
+           {
+            newMessages > 0 &&(
+                 <div className="w-5 h-5 rounded-[50%] bg-green-500 flex justify-center items-center p-2 text-white text-sm">{newMessages}</div>
+            )
+           }
         </div>
     )
 }
