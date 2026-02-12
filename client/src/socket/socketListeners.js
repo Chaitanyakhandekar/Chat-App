@@ -53,4 +53,11 @@ export const initializeSocketListeners = () =>{
          const { setOnlineStatus } = useChatStore.getState();
         setOnlineStatus(userId,false)
     })
+
+    socket.on(socketEvents.ONLINE_USERS,(onlineUsers)=>{
+        const { setOnlineStatus } = useChatStore.getState();
+        for (let user of onlineUsers){
+            setOnlineStatus(user,true)
+        }
+    })
 }
