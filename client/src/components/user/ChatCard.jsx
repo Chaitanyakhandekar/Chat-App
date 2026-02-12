@@ -5,6 +5,8 @@ import { messageApi } from '../../api/message.api.js';
 import { useChatStore } from '../../store/useChatStore.js';
 import { chatApi } from '../../api/chat.api.js';
 import { userAuthStore } from '../../store/userStore.js';
+import { useAssetsStore } from '../../store/useAssetsStore.js';
+
 
 const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo , onlineStatus } = useChatStore.getState();
 
@@ -24,6 +26,7 @@ function ChatCard({
     const context = useContext(authContext);
     const { userChats } = useChatStore();
     const user1 = userAuthStore().user;
+    const {scrollToBottomInChat,setScrollToBottomInChat} = useAssetsStore()
 
     const createSingleChat = async () => {
         // console.log("Creating Single Chat with User :: ",user);
@@ -75,9 +78,12 @@ function ChatCard({
         <div
             onClick={() => {
 
+                
+
                 if (isChatExists()) {
                     setCurrentChatId(chatId);
                     getConversationMessages();
+                    setScrollToBottomInChat(true)
                 } else {
                     createSingleChat();
                 }
