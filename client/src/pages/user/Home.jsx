@@ -181,7 +181,10 @@ function Home() {
                         <nav className="w-full h-16 border-b flex items-center justify-start px-4 absolute top-0 bg-white z-10 gap-10 ">
                             <div className="w-10 h-10 rounded-full ml-10 relative">
                                 <img src={context.currentChatUser.avtar} alt="" className='w-full h-full rounded-[50%]' />
-                                <div className="text-green-400 bg-green-400 absolute h-3 w-3 rounded-[50%] top-1 left-[-10%]"></div>
+                                {
+                                    onlineStatus[context.currentChatUser._id] &&
+                                    <div className="text-green-400 bg-green-400 absolute h-3 w-3 rounded-[50%] top-1 left-[-10%]"></div>
+                                }
                             </div>
                             <div className="flex flex-col items-center justify-center">
                                 <h2 className="font-bold text-xl ml-4">{context.currentChatUser.username}</h2>
