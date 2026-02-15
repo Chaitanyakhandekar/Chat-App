@@ -2,7 +2,8 @@ import { socketEvents } from "../../constants/socketEvents.js"
 import { Message } from "../../models/message.model.js"
 import { getUserSocket, socketsMap } from "../soketsMap.js"
 import { Chat } from "../../models/chat.model.js"
-import { get } from "http"
+// import { get } from "http"
+import { getOtherChatUser } from "../utils/getOtherChatUser.js"
 
 export const messageHandler = (io,socket)=>{
     socket.on(socketEvents.NEW_MESSAGE,async(data)=>{
@@ -66,24 +67,27 @@ export const messageHandler = (io,socket)=>{
     socket.on(socketEvents.MESSAGE_SEEN_SINGLE_CHAT , async (data)=>{     // Handling message Seen for Single chat event
         const {messageId,chatId} = data
 
-        const updatedMessage = await Message.findByIdAndUpdate(
-            messageId,
-            {
-                $set:{
-                    status:"seen",
-                    seenAt:Date.now()
-                }
-            },
-            {new:true}
-        )
+        console.log("Message Seen Event Data : ",data)
 
-        if(!updatedMessage){
-            socket.emit(socketEvents.MESSAGE_SEEN_ERROR,{
-                message:"error in updating message status as seen"
-            })
-        }
+        // const updatedMessage = await Message.findByIdAndUpdate(
+        //     messageId,
+        //     {
+        //         $set:{
+        //             status:"seen",
+        //             seenAt:Date.now()
+        //         }
+        //     },
+        //     {new:true}
+        // )
 
-        
+        // if(!updatedMessage){
+        //     socket.emit(socketEvents.MESSAGE_SEEN_ERROR,{
+        //         message:"error in updating message status as seen"
+        //     })
+        // }
+
+        const otherUser = await getOtherChatUser(chatId,socket.user._id)
+
     })
 }
 

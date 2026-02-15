@@ -5,6 +5,7 @@ import { userAuthStore } from "../store/userStore";
 import { useAssetsStore } from "../store/useAssetsStore";
 import { messageHandler } from "./handlers/message.handler";
 import { onlineStatusHandler } from "./handlers/onlineStatus.handler";
+import { errorHandler } from "./handlers/error.handler";
 
 
 
@@ -23,5 +24,7 @@ export const initializeSocketListeners = () =>{
     messageHandler(socket)      //  Handler for Message Events
     
     onlineStatusHandler(socket)   // Handler for Online Status Events
+
+    errorHandler(socket)    // Handler for socket Errors
     
 }

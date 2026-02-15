@@ -17,7 +17,7 @@ export const onlineStatusHandler = async(io,socket)=>{
             EX:300    // cache will expire in 5 minutes
         })
     }
-        console.log("User Chat Partners : ",userChatPartners)
+        // console.log("User Chat Partners : ",userChatPartners)
     
     let onlineUsers=[];        // getting all online users to notify the newly online user about their online status
 
@@ -25,7 +25,7 @@ export const onlineStatusHandler = async(io,socket)=>{
         for (let partner of userChatPartners){
             if(getUserSocket(partner.toString())){
                 io.to(partner.toString()).emit(socketEvents.USER_ONLINE,socket.user?._id)
-                console.log("Emitted Online Status to : ",partner.toString())
+                // console.log("Emitted Online Status to : ",partner.toString())
                 onlineUsers.push(partner.toString())
             }
         }
