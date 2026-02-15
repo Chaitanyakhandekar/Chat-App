@@ -26,9 +26,23 @@ const messageSchema = new mongoose.Schema({
         required:true,
         trim:true,
     },
-    isRead:{
+    attachments:[
+        {
+          url:{
+            type:String,
+            required:true
+          },
+          filename:{
+            type:String,
+          }  
+        }
+    ],
+    seen:{
         type:Boolean,
         default:false
+    },
+    seenAt:{
+        type:Date,
     },
     sentAt:{
         type:Date,

@@ -1,4 +1,4 @@
-import React from 'react'
+import React,{useEffect} from 'react'
 import { useContext } from 'react'
 import { authContext } from '../../context/authContext'
 import { getTime } from '../../services/getTime'
@@ -15,6 +15,15 @@ function Message({ msg, key }) {
 
   const context = useContext(authContext)
   const {user} = userAuthStore()
+
+  const messageRef = React.useRef(null)
+
+  useEffect(()=>{
+
+    
+
+  },[msg._id])
+
   return (
     <div key={key} className={`ml-10 mt-10 w-fit  max-w-[70%] min-w-20 h-auto   mt-20 ${msg.sender === context.user._id ? "bg-blue-400" : "bg-green-400"} text-black p-3  flex flex-col  rounded-md relative`}>
       <div className="mb-2">{msg.message}</div>
