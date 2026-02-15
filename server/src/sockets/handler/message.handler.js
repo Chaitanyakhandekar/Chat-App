@@ -62,6 +62,29 @@ export const messageHandler = (io,socket)=>{
 
         socket.to(getUserSocket(otherUser.toString())).emit(socketEvents.TYPING, payload)
     })
+
+    socket.on(socketEvents.MESSAGE_SEEN_SINGLE_CHAT , async (data)=>{     // Handling message Seen for Single chat event
+        const {messageId,chatId} = data
+
+        const updatedMessage = await Message.findByIdAndUpdate(
+            messageId,
+            {
+                $set:{
+                    status:"seen",
+                    seenAt:Date.now()
+                }
+            },
+            {new:true}
+        )
+
+        if(!updatedMessage){
+            socket.emit(socketEvents.MESSAGE_SEEN_ERROR,{
+                message:"error in updating message status as seen"
+            })
+        }
+
+        
+    })
 }
 
  
