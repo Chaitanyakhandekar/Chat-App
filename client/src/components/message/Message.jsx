@@ -20,7 +20,8 @@ function Message({ msg, key }) {
 
   useEffect(()=>{
 
-    
+    if(msg.sender === user._id)return
+    if(msg.seen) return
 
   },[msg._id])
 
