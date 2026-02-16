@@ -27,6 +27,20 @@ export const useChatStore = create(
                 }))
             ),
 
+            updateSeenStatus:(chatId,messageId,seenStatus)=>{
+                set((state)=>({
+                    userMessages:{
+                        ...state.userMessages,
+                        [chatId]: state.userMessages[chatId].map((message)=>{
+                            if(message._id === messageId){
+                                message.status = seenStatus
+                            }
+                            return message
+                        })
+                    }
+                }))
+            },
+
             currentChatId:null,
 
             setCurrentChatId: (chatId)=>(

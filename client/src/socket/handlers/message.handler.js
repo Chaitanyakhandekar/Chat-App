@@ -41,6 +41,8 @@ export const messageHandler = (socket) =>{
 
         socket.on(socketEvents.MESSAGE_SEEN_SINGLE_CHAT,(payload)=>{
             console.log("message seen status : ",payload.status)
+             const {addMessage,userMessages,updateSeenStatus} = useChatStore.getState()
+               
+             updateSeenStatus(payload.chatId, payload.messageId, payload.status)
         })
-    
 }
