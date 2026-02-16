@@ -34,6 +34,7 @@ function Home() {
     const messages = useChatStore(state => state.userMessages)
     const addMessage = useChatStore(state => state.addMessage)
     const currentChatId = useChatStore(state => state.currentChatId)
+    const userMessages =  useChatStore().userMessages
 
     const { userSearch, setUserSearch, setChatUsersInfo, chatUsersInfo, emitedTyping, toogleEmitedTyping, onlineStatus,incrementNewMessagesCount,resetNewMessagesCount } = useChatStore()
     const {scrollToBottomInChat,setScrollToBottomInChat} = useAssetsStore()
@@ -70,12 +71,7 @@ function Home() {
         }, (ack) => {
             console.log("Ack from server:", ack);
         })
-        addMessage(currentChatId, {
-            sender: user._id,
-            receiver: context.currentChatUser._id,
-            message: message,
-            chatId: currentChatId
-        })
+       
 
         setMessage("")
     }
@@ -91,11 +87,20 @@ function Home() {
     useEffect(() => {
 
         getAllUsers();
-        // console.log("Current logged in user:", context.user);
+        // console.log("Current logged in user:", );
 
 
 
     }, [])
+
+    useEffect(() => {
+
+        // getAllUsers();
+        console.log("userMessages", userMessages );
+
+
+
+    }, [userMessages])
 
     useEffect(() => {
         console.log("Scroll to bottom in chat:", scrollToBottomInChat);
@@ -170,6 +175,7 @@ return (
                             online={onlineStatus[chat.participants[0]._id === user._id ? chat.participants[1]._id : chat.participants[0]._id] || false}
                             chat={chat}
                             newMessages={chatUsersInfo[chat._id].newMessages || 0}
+                            time={chatUsersInfo[chat._id].time}
                            
                         />
                     ))

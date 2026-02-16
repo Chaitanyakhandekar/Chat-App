@@ -1,5 +1,6 @@
 import {create} from "zustand"
 import {devtools} from "zustand/middleware"
+import { getTime } from "../services/getTime"
 
 export const useChatStore = create(
     devtools(
@@ -26,6 +27,20 @@ export const useChatStore = create(
                     }
                 }))
             ),
+
+            updateSeenStatus:(chatId,messageId,seenStatus)=>{
+                set((state)=>({
+                    userMessages:{
+                        ...state.userMessages,
+                        [chatId]: state.userMessages[chatId].map((message)=>{
+                            if(message._id === messageId){
+                                message.status = seenStatus
+                            }
+                            return message
+                        })
+                    }
+                }))
+            },
 
             currentChatId:null,
 
@@ -60,7 +75,8 @@ export const useChatStore = create(
                         acc[chat._id] = {
                             typing:false,
                             newMessages:0,
-                            online:false
+                            online:false,
+                            time:""
                         }
                         
                         return acc;
@@ -68,13 +84,14 @@ export const useChatStore = create(
                 })
             },
 
-            incrementNewMessagesCount:(chatId)=>{
+            incrementNewMessagesCount:(chatId,time=null)=>{
                 set((state)=>({
                     chatUsersInfo:{
                         ...state.chatUsersInfo,
                         [chatId]:{
                             ...state.chatUsersInfo[chatId],
-                            newMessages:state.chatUsersInfo[chatId].newMessages + 1
+                            newMessages:state.chatUsersInfo[chatId].newMessages + 1,
+                            time: time && getTime(time) || null
                         }
                     }
                 }))

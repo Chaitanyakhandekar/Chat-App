@@ -9,10 +9,9 @@ export const getOtherChatUser = async (chatId,currentUserId) =>{      // This fu
             return null
         }
 
-        user = chat.participants.filter(user=>user.toString() !== currentUserId.toString())
+       const user = chat.participants.filter(user=>user.toString() !== currentUserId.toString())
 
-        console.log("Current User : ",currentUserId)
-        console.log("Other User : ",user)
+        return user[0].toString()
     } catch (error) {
         return null
     }
