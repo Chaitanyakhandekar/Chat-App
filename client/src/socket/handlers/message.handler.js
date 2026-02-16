@@ -27,5 +27,9 @@ export const messageHandler = (socket) =>{
             const { setTypingStatus } = useChatStore.getState();
             setTypingStatus(data.chatId,data.isTyping)
         })
+
+        socket.on(socketEvents.MESSAGE_SEEN_SINGLE_CHAT,(payload)=>{
+            console.log("message seen status : ",payload.status)
+        })
     
 }

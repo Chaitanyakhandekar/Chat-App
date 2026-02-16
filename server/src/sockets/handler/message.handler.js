@@ -86,7 +86,17 @@ export const messageHandler = (io,socket)=>{
         //     })
         // }
 
-        const otherUser = await getOtherChatUser(chatId,socket.user._id)
+        const otherUserId = await getOtherChatUser(chatId,socket.user._id)
+
+        console.log("Other User Id : ",otherUserId)
+
+        const payload = {
+            chatId,
+            status:"seen",
+            messageId
+        }
+
+        socket.to(otherUserId).emit(socketEvents.MESSAGE_SEEN_SINGLE_CHAT,payload)
 
     })
 }
