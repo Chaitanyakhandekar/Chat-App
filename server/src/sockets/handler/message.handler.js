@@ -40,7 +40,14 @@ export const messageHandler = (io,socket)=>{
                 })
         }
         else{
-            socket.to(getUserSocket(data.receiver)).emit(socketEvents.NEW_MESSAGE , newMessage)
+            socket.to(getUserSocket(data.receiver)).emit(socketEvents.NEW_MESSAGE , newMessage)     // Sending Message to Other user in Chat
+
+            console.log("Emitting Message to User : ",socket.user._id.toString())
+            io.to(socket.user._id.toString()).emit(socketEvents.MESSAGE_SENT_SINGLE_CHAT , {       // Notifying Sender About Message Status as Sent
+                message:newMessage,
+                chatId:newMessage.chatId,
+                sentAt:newMessage.createdAt
+            } )
         }
     })
 
@@ -49,7 +56,7 @@ export const messageHandler = (io,socket)=>{
         console.log("Typing Data : ",data)
           console.log("Sockets Map : ",socketsMap)
 
-        const chat = await Chat.findById(data.chatId)   // chacking if chat exists
+        const chat = await Chat.findById(data.chatId)   // checking if chat exists
         const otherUser = chat.participants.filter(user=>socket.user._id.toString() !== user.toString())    // get user to whome event is going to emit
 
 
@@ -69,22 +76,23 @@ export const messageHandler = (io,socket)=>{
 
         console.log("Message Seen Event Data : ",data)
 
-        // const updatedMessage = await Message.findByIdAndUpdate(
-        //     messageId,
-        //     {
-        //         $set:{
-        //             status:"seen",
-        //             seenAt:Date.now()
-        //         }
-        //     },
-        //     {new:true}
-        // )
+        const updatedMessage = await Message.findByIdAndUpdate(
+            messageId,
+            {
+                $set:{
+                    status:"seen",
+                    seenAt:Date.now()
+                }
+            },
+            {new:true}
+        )
 
-        // if(!updatedMessage){
-        //     socket.emit(socketEvents.MESSAGE_SEEN_ERROR,{
-        //         message:"error in updating message status as seen"
-        //     })
-        // }
+        if(!updatedMessage){
+            socket.emit(socketEvents.MESSAGE_SEEN_ERROR,{
+
+                message:"error in updating message status as seen"
+            })
+        }
 
         const otherUserId = await getOtherChatUser(chatId,socket.user._id)
 

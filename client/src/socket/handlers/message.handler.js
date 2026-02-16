@@ -1,8 +1,11 @@
 import { useChatStore } from "../../store/useChatStore";
 import { socketEvents } from "../../constants/socketEvents";
+import { useContext } from "react";
+import { authContext } from "../../context/authContext";
+import { userAuthStore } from "../../store/userStore";
 
 export const messageHandler = (socket) =>{
-    socket.on(socketEvents.NEW_MESSAGE,(data)=>{       // Listener for receiving a new message from the socket server
+        socket.on(socketEvents.NEW_MESSAGE,(data)=>{       // Listener for receiving a new message from the socket server
             // console.log("New Message Received from socket server:",data);
     
             const { addMessage,incrementNewMessagesCount } = useChatStore.getState();
@@ -20,6 +23,14 @@ export const messageHandler = (socket) =>{
                 setScrollToBottomInChat(true)
                }
             }
+        })
+
+        socket.on(socketEvents.MESSAGE_SENT_SINGLE_CHAT, (payload)=>{
+
+            console.log("Message Sent Status Received from socket server:",payload);
+            const {addMessage} = useChatStore.getState()
+
+            addMessage(payload.chatId, payload.message)
         })
     
         socket.on(socketEvents.TYPING,(data)=>{     // Listener for receiving typing status updates from the socket server

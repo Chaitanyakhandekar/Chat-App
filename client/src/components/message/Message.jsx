@@ -68,7 +68,13 @@ function Message({ msg, key }) {
         {
           msg.sender === user._id && (
             <div className="">
-          <CheckCheck className={`w-4 h-4  text-blue-500`} />
+          {
+            msg.status === "sent" && <CheckIcon className={`w-4 h-4  text-gray-500`} />
+          }
+          {
+            msg.status === "seen" &&
+            <CheckCheck className={`w-4 h-4  text-blue-500`} />
+            }
         </div>
           )
         }
