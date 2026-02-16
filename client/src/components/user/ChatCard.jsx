@@ -20,7 +20,8 @@ function ChatCard({
     typing = false,
     online = false,
     chat = null,
-    newMessages=0
+    newMessages=0,
+    time=null
 
 }) {
 
@@ -109,7 +110,10 @@ function ChatCard({
             </div>
            {
             newMessages > 0 &&(
-                 <div className="w-5 h-5 rounded-[50%] bg-green-500 flex justify-center items-center p-2 text-white text-sm">{newMessages}</div>
+                <div className="flex flex-col">
+                     <span>{time}</span>
+                     <div className="w-5 h-5 rounded-[50%] bg-green-500 flex justify-center items-center p-2 text-white text-sm">{newMessages}</div>
+                </div>
             )
            }
         </div>

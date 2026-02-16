@@ -9,23 +9,23 @@ export const messageHandler = (socket) =>{
             // console.log("New Message Received from socket server:",data);
     
             const { addMessage,incrementNewMessagesCount } = useChatStore.getState();
-            const { setScrollToBottomInChat, scrollToBottomInChat } = useAssetsStore().getState();
+            // const { setScrollToBottomInChat, scrollToBottomInChat } = useAssetsStore().getState();
     
             if (data.sender !== userAuthStore.getState().user._id) {
                 addMessage(data?.chatId,data)
     
-                console.log("Scroll to bottom in chat :: ", scrollToBottomInChat);
+                // console.log("Scroll to bottom in chat :: ", scrollToBottomInChat);
     
-               if(!scrollToBottomInChat){
-                incrementNewMessagesCount(data?.chatId)
-               }
-               else{
-                setScrollToBottomInChat(true)
-               }
+              
+                incrementNewMessagesCount(data?.chatId , data.message.createdAt)
+               
+               
+                // setScrollToBottomInChat(true)
+               
             }
         })
 
-        socket.on(socketEvents.MESSAGE_SENT_SINGLE_CHAT, (payload)=>{
+        socket.on(socketEvents.MESSAGE_SENT_SINGLE_CHAT, (payload)=>{      // Listener for Confirming Chat Sent or not
 
             console.log("Message Sent Status Received from socket server:",payload);
             const {addMessage} = useChatStore.getState()
@@ -39,7 +39,7 @@ export const messageHandler = (socket) =>{
             setTypingStatus(data.chatId,data.isTyping)
         })
 
-        socket.on(socketEvents.MESSAGE_SEEN_SINGLE_CHAT,(payload)=>{
+        socket.on(socketEvents.MESSAGE_SEEN_SINGLE_CHAT,(payload)=>{       // Listener for Updating Seen Status of Message
             console.log("message seen status : ",payload.status)
              const {addMessage,userMessages,updateSeenStatus} = useChatStore.getState()
                

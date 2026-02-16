@@ -175,6 +175,7 @@ return (
                             online={onlineStatus[chat.participants[0]._id === user._id ? chat.participants[1]._id : chat.participants[0]._id] || false}
                             chat={chat}
                             newMessages={chatUsersInfo[chat._id].newMessages || 0}
+                            time={chatUsersInfo[chat._id].time}
                            
                         />
                     ))
