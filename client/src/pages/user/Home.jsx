@@ -238,12 +238,12 @@ return (
 
 
                         {
-                            chatUsersInfo[context?.currentChatId]?.newMessages > 0 && (
+                            chatUsersInfo[currentChatId]?.newMessages > 0 && (
                                  <div className="absolute text-red-500 bottom-20 z-20 flex items-center">
                             <MoveDown size={16}/>
                            <h1>
                             {
-                                chatUsersInfo[chat._id].newMessages  + " unread messages"
+                                chatUsersInfo[currentChatId].newMessages  + " unread messages"
                             }
                            </h1>
                      </div>

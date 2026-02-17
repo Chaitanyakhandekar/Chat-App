@@ -12,11 +12,13 @@ import {
 import { userAuthStore } from '../../store/userStore'
 import { socket } from '../../socket/socket'
 import { socketEvents } from '../../constants/socketEvents'
+import { useChatStore } from '../../store/useChatStore'
 
 function Message({ msg, key }) {
 
   const context = useContext(authContext)
   const {user} = userAuthStore()
+  const {resetNewMessagesCount} = useChatStore()
 
   const messageRef = React.useRef(null)
 
@@ -37,6 +39,8 @@ function Message({ msg, key }) {
               messageId:msg._id,
               chatId:msg.chatId
             })
+
+            resetNewMessagesCount(msg.chatId)
 
             observer.disconnect()
           }
