@@ -80,33 +80,47 @@ const getUserChats = asyncHandler(async (req, res) => {
         {
             $lookup: {
                 from: "messages",
-                localField: "_id",
-                foreignField: "chatId",
-                as: "messages"
+
+                let:{
+                    chatId:"$_id",
+                    userId: new mongoose.Types.ObjectId(req.user._id)
+                },
+
+                pipeline:[
+                    {
+                       $match:{
+                            $expr:{
+                                $and:[
+                                    {$eq:["$chatId" , "$$chatId"]},
+                                    {$eq:["$receiver" , "$$userId"]},
+                                    {$eq:["$status" , "sent"]}
+                                ]
+                            }
+                       },
+                      
+                    },
+                     {
+                        $count:"unreadCount"
+                    }
+                ],
+                as: "unreadData"
             }
         },
         {
-            $addFields: {
-                unreadMessagesCount: {
-                    $size: {
-                        $filter: {
-                            input: "$messages",
-                            as: "m",
-                            cond: {
-
-                                $and: [
-                                    { $eq: ["$$m.receiver", new mongoose.Types.ObjectId(req.user._id)] },
-                                    { $eq: ["$$m.status", "sent"] },
-                                ]
-                            }
-                        }
-                    }
+            $addFields:{
+                unreadMessagesCount:{
+                    $ifNull:[
+                        {$arrayElemAt:["$unreadData.unreadCount" , 0]},
+                        0
+                    ]
                 }
             }
         },
+       
         {
             $project: {
-                messages: 0
+                messages: 0,
+                unreadData:0
             }
         }
     ])
@@ -121,6 +135,7 @@ const getUserChats = asyncHandler(async (req, res) => {
         new ApiResponse(200, userChats, "User Chats Fetched Successfully.")
     )
 })
+
 
 
 
