@@ -12,81 +12,113 @@ import { sendEmail } from "../services/brevoMail.service.js";
 import { Chat } from "../models/chat.model.js";
 
 
-const createSingleChat = asyncHandler(async (req,res)=>{
-    const {userId} = req.params
+const createSingleChat = asyncHandler(async (req, res) => {
+    const { userId } = req.params
 
 
-    if(!userId || userId && userId.trim() === "" || !mongoose.Types.ObjectId.isValid(userId)){
-        throw new ApiError(400,"Invalid UserId for New Chat.")
+    if (!userId || userId && userId.trim() === "" || !mongoose.Types.ObjectId.isValid(userId)) {
+        throw new ApiError(400, "Invalid UserId for New Chat.")
     }
 
     const isChatAlreadyExists = await Chat.findOne({
-        participants:{ $all: [userId, req.user._id] }
+        participants: { $all: [userId, req.user._id] }
     })
 
-    if(isChatAlreadyExists){
-        throw new ApiError(400,"Chat Between These Users Already Exists.")
+    if (isChatAlreadyExists) {
+        throw new ApiError(400, "Chat Between These Users Already Exists.")
     }
 
     const newSingleChat = await Chat.create({
-        participants:[
+        participants: [
             userId,
             req.user._id
         ]
     })
 
-    if(!newSingleChat){
-        throw new ApiError(500,"Server Error While Creating New Single Chat.")
+    if (!newSingleChat) {
+        throw new ApiError(500, "Server Error While Creating New Single Chat.")
     }
 
-    let newChat = await newSingleChat.populate("participants","-password")
+    let newChat = await newSingleChat.populate("participants", "-password")
 
-    console.log("New Single Chat Created : ",newChat);
+    console.log("New Single Chat Created : ", newChat);
 
     return res.status(201).json(
-        new ApiResponse(201,newChat,"New Single Chat Created Successfully.")
+        new ApiResponse(201, newChat, "New Single Chat Created Successfully.")
     )
 
 })
 
-const createGroupChat = asyncHandler(async (req,res)=>{
-   
+const createGroupChat = asyncHandler(async (req, res) => {
+
 })
 
-const getUserChats = asyncHandler(async (req,res)=>{
+const getUserChats = asyncHandler(async (req, res) => {
     const userChats = await Chat.aggregate([
         {
-            $match:{
+            $match: {
                 participants: { $in: [req.user._id] }
             }
         },
         {
-            $lookup:{
-                from:"users",
-                localField:"participants",
-                foreignField:"_id",
-                as:"participants",
-                pipeline:[
+            $lookup: {
+                from: "users",
+                localField: "participants",
+                foreignField: "_id",
+                as: "participants",
+                pipeline: [
                     {
-                        $project:{
-                            username:1,
-                            name:1,
-                            avtar:1
+                        $project: {
+                            username: 1,
+                            name: 1,
+                            avtar: 1
                         }
                     }
                 ]
+            }
+        },
+        {
+            $lookup: {
+                from: "messages",
+                localField: "_id",
+                foreignField: "chatId",
+                as: "messages"
+            }
+        },
+        {
+            $addFields: {
+                unreadMessagesCount: {
+                    $size: {
+                        $filter: {
+                            input: "$messages",
+                            as: "m",
+                            cond: {
+
+                                $and: [
+                                    { $eq: ["$$m.receiver", new mongoose.Types.ObjectId(req.user._id)] },
+                                    { $eq: ["$$m.status", "sent"] },
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            $project: {
+                messages: 0
             }
         }
     ])
 
     // console.log("User Chats : ",userChats);
 
-    if(!userChats.length){
-        throw new ApiError(500,"Server Error While Fetching User Chats.")
+    if (!userChats.length) {
+        throw new ApiError(500, "Server Error While Fetching User Chats.")
     }
 
     return res.status(200).json(
-        new ApiResponse(200,userChats,"User Chats Fetched Successfully.")
+        new ApiResponse(200, userChats, "User Chats Fetched Successfully.")
     )
 })
 
