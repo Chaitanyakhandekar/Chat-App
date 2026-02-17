@@ -40,7 +40,8 @@ class ChatApi{
             return {
                 success:true,
                 message:response.data.message,
-                data: response.data.data
+                data: response.data.data,
+                unreadMessagesCount:response.data.data.unreadMessagesCount || 0
             }
         } catch (error) {
             return {

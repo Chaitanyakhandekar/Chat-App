@@ -90,8 +90,19 @@ export const useChatStore = create(
                         ...state.chatUsersInfo,
                         [chatId]:{
                             ...state.chatUsersInfo[chatId],
-                            newMessages:state.chatUsersInfo[chatId].newMessages + 1,
+                            newMessages: state.chatUsersInfo[chatId].newMessages + 1,
                             time: time && getTime(time) || null
+                        }
+                    }
+                }))
+            },
+            incrementNewMessagesCountByN:(chatId,count=0)=>{
+                set((state)=>({
+                    chatUsersInfo:{
+                        ...state.chatUsersInfo,
+                        [chatId]:{
+                            ...state.chatUsersInfo[chatId],
+                            newMessages: count,
                         }
                     }
                 }))

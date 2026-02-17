@@ -36,7 +36,7 @@ function Home() {
     const currentChatId = useChatStore(state => state.currentChatId)
     const userMessages =  useChatStore().userMessages
 
-    const { userSearch, setUserSearch, setChatUsersInfo, chatUsersInfo, emitedTyping, toogleEmitedTyping, onlineStatus,incrementNewMessagesCount,resetNewMessagesCount } = useChatStore()
+    const { userSearch, setUserSearch, setChatUsersInfo, chatUsersInfo, emitedTyping, toogleEmitedTyping, onlineStatus,incrementNewMessagesCount, incrementNewMessagesCountByN,resetNewMessagesCount } = useChatStore()
     const {scrollToBottomInChat,setScrollToBottomInChat} = useAssetsStore()
 
     const typingTimeoutRef = useRef(null);
@@ -44,11 +44,19 @@ function Home() {
     const messageEndRef = useRef(null);
 
 
+    const loadUnreadMessages = (chats)=>{
+        chats.forEach((chat)=>{
+            incrementNewMessagesCountByN(chat._id,chat.unreadMessagesCount)
+        })
+    }
+
     const getAllUsers = async () => {
         const response = await chatApi.getUserChats();
         if (response.success) {
             setUsers(response.data);
             setChatUsersInfo(response.data)
+            
+            loadUnreadMessages(response.data)
             // console.log("All users fetched:", response.data);
         }
     }
