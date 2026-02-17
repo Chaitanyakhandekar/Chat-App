@@ -7,7 +7,8 @@ import { authContext } from '../../context/authContext.jsx'
 import { socket } from '../../socket/socket.js'
 import {
     MessageCircle,
-    Send
+    Send,
+    MoveDown
 
 } from 'lucide-react'
 import Message from '../../components/message/Message.jsx'
@@ -36,7 +37,7 @@ function Home() {
     const currentChatId = useChatStore(state => state.currentChatId)
     const userMessages =  useChatStore().userMessages
 
-    const { userSearch, setUserSearch, setChatUsersInfo, chatUsersInfo, emitedTyping, toogleEmitedTyping, onlineStatus,incrementNewMessagesCount,resetNewMessagesCount } = useChatStore()
+    const { userSearch, setUserSearch, setChatUsersInfo, chatUsersInfo, emitedTyping, toogleEmitedTyping, onlineStatus,incrementNewMessagesCount, incrementNewMessagesCountByN,resetNewMessagesCount } = useChatStore()
     const {scrollToBottomInChat,setScrollToBottomInChat} = useAssetsStore()
 
     const typingTimeoutRef = useRef(null);
@@ -44,11 +45,19 @@ function Home() {
     const messageEndRef = useRef(null);
 
 
+    const loadUnreadMessages = (chats)=>{
+        chats.forEach((chat)=>{
+            incrementNewMessagesCountByN(chat._id,chat.unreadMessagesCount)
+        })
+    }
+
     const getAllUsers = async () => {
         const response = await chatApi.getUserChats();
         if (response.success) {
             setUsers(response.data);
             setChatUsersInfo(response.data)
+            
+            loadUnreadMessages(response.data)
             // console.log("All users fetched:", response.data);
         }
     }
@@ -194,7 +203,7 @@ return (
 
         <div className="chat-window w-3/4 h-full border-1 border-blue-500 bg-white relative">
             {context.currentChatUser ? (
-                <div className="w-full h-full flex flex-col items-center justify-center border-1" >
+                <div className="w-full h-full flex flex-col items-center justify-center border-1 relative" >
                     <nav className="w-full h-16 border-b flex items-center justify-start px-4 absolute top-0 bg-white z-10 gap-10 ">
                         <div className="w-10 h-10 rounded-full ml-10 relative">
                             <img src={context.currentChatUser.avtar} alt="" className='w-full h-full rounded-[50%]' />
@@ -227,6 +236,20 @@ return (
                             <div ref={messageEndRef} />
                     </div>
 
+
+                        {
+                            chatUsersInfo[currentChatId]?.newMessages > 0 && (
+                                 <div className="absolute text-red-500 bottom-20 z-20 flex items-center">
+                            <MoveDown size={16}/>
+                           <h1>
+                            {
+                                chatUsersInfo[currentChatId].newMessages  + " unread messages"
+                            }
+                           </h1>
+                     </div>
+                            )
+                        }
+                    
                     <footer className="w-full h-20 border-t absolute bottom-0 bg-white z-10 flex items-center">
                         <div className="w-5/6 h-20 border-t flex items-center px-4 absolute bottom-0 bg-white z-10">
                             <input type="text" value={message} onChange={(e) => handleTyping(e)} placeholder="Type a message..." className='w-full h-14 border border-gray-300 rounded-md pl-4 outline-none ' />
