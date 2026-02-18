@@ -58,10 +58,10 @@ function Home() {
         const response = await chatApi.getUserChats();
         if (response.success) {
             setUsers(response.data);
+            loadUnreadMessages(response.data)
             setChatUsersInfo(response.data)
 
-            loadUnreadMessages(response.data)
-            // console.log("All users fetched:", response.data);
+            console.log("All users fetched:", response.data);
         }
     }
 
