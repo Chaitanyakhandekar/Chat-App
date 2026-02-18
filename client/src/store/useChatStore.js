@@ -74,7 +74,7 @@ export const useChatStore = create(
                     chatUsersInfo:chats.reduce((acc,chat)=>{
                         acc[chat._id] = {
                             typing:false,
-                            newMessages:0,
+                            newMessages: chat.unreadMessagesCount || 0,
                             online:false,
                             time:""
                         }
