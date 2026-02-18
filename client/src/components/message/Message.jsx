@@ -66,7 +66,7 @@ function Message({ msg, key }) {
     <div
      ref={messageRef}
      key={key} className={`ml-10 mt-10 w-fit  max-w-[70%] min-w-20 h-auto   mt-20 ${msg.sender === context.user._id ? "bg-blue-400" : "bg-green-400"} text-black p-3  flex flex-col flex-wrap  rounded-md relative`}>
-      <div className="mb-2 w-full flex-wrap border-1">{msg.message}</div>
+      <div className="mb-2 w-full break-words whitespace-pre-wrap">{msg.message}</div>
       <div className="flex absolute bottom-1 right-1 items-center justify-end gap-1 mr-1">
         {msg.createdAt && <span className='text-xs text-gray-700 ml-2 '>{getTime(msg.createdAt)}</span>}
         {
