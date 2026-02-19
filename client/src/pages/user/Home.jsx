@@ -9,7 +9,8 @@ import {
     MessageCircle,
     Send,
     MoveDown,
-    ArrowDownCircleIcon
+    ArrowDownCircleIcon,
+    Paperclip
 
 } from 'lucide-react'
 import Message from '../../components/message/Message.jsx'
@@ -19,6 +20,7 @@ import { chatApi } from '../../api/chat.api.js'
 import { userAuthStore } from '../../store/userStore.js'
 import { socketEvents } from '../../constants/socketEvents.js'
 import { useAssetsStore } from '../../store/useAssetsStore.js'
+import FileUpload from '../../components/message/FileUpload.jsx'
 
 function Home() {
 
@@ -282,7 +284,11 @@ function Home() {
                         }
 
                         <footer className="w-full h-20 border-t absolute bottom-0 bg-white z-10 flex items-center">
+
                             <div className="w-5/6 h-20 border-t flex items-center px-4 absolute bottom-0 bg-white z-10">
+                            
+                                <FileUpload />
+
                                 <input type="text" value={message} onChange={(e) => handleTyping(e)} placeholder="Type a message..." className='w-full h-14 border border-gray-300 rounded-md pl-4 outline-none ' />
                             </div>
                             <div

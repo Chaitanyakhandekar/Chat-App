@@ -96,6 +96,7 @@ export const useChatStore = create(
                     }
                 }))
             },
+
             incrementNewMessagesCountByN:(chatId,count=0)=>{
                 set((state)=>({
                     chatUsersInfo:{
@@ -149,7 +150,21 @@ export const useChatStore = create(
                     [userId]: status
                     }
                 }))
+            },
+
+
+            mediaFiles:[],
+
+            addMediaFile:(file)=>{
+                set((state)=>({
+                    mediaFiles: [
+                        ...state?.mediaFiles,
+                        file
+                    ]
+                }))
             }
+
+            
 
 
         }),
