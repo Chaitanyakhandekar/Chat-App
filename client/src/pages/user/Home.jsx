@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import ChatCard from '../../components/user/ChatCard.jsx'
 import { useEffect } from 'react'
 import { userApi } from '../../api/user.api.js'
@@ -40,14 +40,32 @@ function Home() {
     const currentChatId = useChatStore(state => state.currentChatId)
     const userMessages = useChatStore().userMessages
 
-    const { userSearch, setUserSearch, setChatUsersInfo, chatUsersInfo, emitedTyping, toogleEmitedTyping, onlineStatus, incrementNewMessagesCount, incrementNewMessagesCountByN, resetNewMessagesCount } = useChatStore()
-    const { scrollToBottomInChat, setScrollToBottomInChat } = useAssetsStore()
+    const {
+         userSearch,
+         setUserSearch,
+         setChatUsersInfo,
+         chatUsersInfo,
+         emitedTyping,
+         toogleEmitedTyping,
+         onlineStatus,
+         incrementNewMessagesCount,
+         incrementNewMessagesCountByN,
+         resetNewMessagesCount,
+         mediaFiles
+    } = useChatStore()
+
+
+    const {
+         scrollToBottomInChat,
+          setScrollToBottomInChat
+         } = useAssetsStore()
 
     const typingTimeoutRef = useRef(null);
     const isTypingRef = useRef(false);
     const messageEndRef = useRef(null);
     const chatContainerRef = useRef(null)
     const [isAtBottom, setIsAtBottom] = React.useState(true);
+    const isMedia = mediaFiles[currentChatId]?.length > 0
 
 
     const loadUnreadMessages = (chats) => {
@@ -101,7 +119,7 @@ function Home() {
     useEffect(() => {
 
         getAllUsers();
-        // console.log("Current logged in user:", );
+        console.log("Media Files: ",mediaFiles[currentChatId] );
 
         const container = chatContainerRef.current;
         if (!container) return;
@@ -124,7 +142,7 @@ function Home() {
 
     useEffect(() => {
 
-        if(!isAtBottom){
+        if (!isAtBottom) {
             scrollToBottom()
         }
 
@@ -137,6 +155,8 @@ function Home() {
             setScrollToBottomInChat(false);
         }
     }, [scrollToBottomInChat])
+
+   
 
 
 
@@ -240,64 +260,79 @@ function Home() {
                             </div>
                         </nav>
 
-                        <div
-                            ref={chatContainerRef}
-                            className="h-[80%] border-1 border-blue-400 w-full relative overflow-y-scroll">
 
-                            {messages[currentChatId]?.map((msg) => {
-                                return (
-                                    ((context.currentChatUser._id === msg.sender || context.currentChatUser._id === msg.receiver) && (msg.sender === context.user._id || msg.receiver === context.user._id)) && (
-                                        <Message
-                                            key={msg._id}
-                                            msg={msg} />
+                      {
+                        isMedia ?
+                        (<h1>Media Preview</h1>)   :
+
+                        (
+                             <>
+
+                            <div                        // Main Message Section
+                                ref={chatContainerRef}
+                                className="h-[80%] border-1 border-blue-400 w-full relative overflow-y-scroll">
+
+                                {messages[currentChatId]?.map((msg) => {
+                                    return (
+                                        ((context.currentChatUser._id === msg.sender || context.currentChatUser._id === msg.receiver) && (msg.sender === context.user._id || msg.receiver === context.user._id)) && (
+                                            <Message
+                                                key={msg._id}
+                                                msg={msg} />
+                                        )
+
                                     )
+                                })}
 
+                                {
+                                    !isAtBottom &&
+                                    (<div
+                                        className="fixed z-20 bottom-[12%] right-[7%] cursor-pointer"
+                                        onClick={scrollToBottom}
+                                    >
+                                        <ArrowDownCircleIcon className='text-red-500' size={20} />
+                                    </div>)
+
+                                }
+
+                                <div ref={messageEndRef} />
+                            </div>
+
+                            {
+                                chatUsersInfo[currentChatId]?.newMessages > 0 && (
+                                    <div className="absolute text-red-500 bottom-20 z-20 flex items-center">
+                                        <MoveDown size={16} />
+                                        <h1>
+                                            {
+                                                chatUsersInfo[currentChatId].newMessages + " unread messages"
+                                            }
+                                        </h1>
+                                    </div>
                                 )
-                            })}
-                           
-                           {
-                             !isAtBottom  && 
-                            (  <div
-                            className="fixed z-20 bottom-[12%] right-[7%] cursor-pointer"
-                            onClick={scrollToBottom}
-                            >
-                                <ArrowDownCircleIcon className='text-red-500' size={20} />
-                            </div>)
+                            }
 
-                           }
+                            <footer className="w-full h-20 border-t absolute bottom-0 bg-white z-10 flex items-center">
 
-                            <div ref={messageEndRef} />
-                        </div>
+                                <div className="w-5/6 h-20 border-t flex items-center px-4 absolute bottom-0 bg-white z-10">
 
+                                    <FileUpload />
 
-                        {
-                            chatUsersInfo[currentChatId]?.newMessages > 0 && (
-                                <div className="absolute text-red-500 bottom-20 z-20 flex items-center">
-                                    <MoveDown size={16} />
-                                    <h1>
-                                        {
-                                            chatUsersInfo[currentChatId].newMessages + " unread messages"
-                                        }
-                                    </h1>
+                                    <input type="text" value={message} onChange={(e) => handleTyping(e)} placeholder="Type a message..." className='w-full h-14 border border-gray-300 rounded-md pl-4 outline-none ' />
                                 </div>
-                            )
-                        }
+                                <div
+                                    onClick={handleSend}
+                                    className="absolute right-20 bg-blue-500 cursor-pointer flex items-center justify-center w-12 h-12 border-1 rounded-md">
+                                    <Send className='w-9 h-9 text-white' />
+                                </div>
 
-                        <footer className="w-full h-20 border-t absolute bottom-0 bg-white z-10 flex items-center">
+                            </footer>
 
-                            <div className="w-5/6 h-20 border-t flex items-center px-4 absolute bottom-0 bg-white z-10">
-                            
-                                <FileUpload />
+                        </>
+                        )
+                          
+                      }
 
-                                <input type="text" value={message} onChange={(e) => handleTyping(e)} placeholder="Type a message..." className='w-full h-14 border border-gray-300 rounded-md pl-4 outline-none ' />
-                            </div>
-                            <div
-                                onClick={handleSend}
-                                className="absolute right-20 bg-blue-500 cursor-pointer flex items-center justify-center w-12 h-12 border-1 rounded-md">
-                                <Send className='w-9 h-9 text-white' />
-                            </div>
+                        
 
-                        </footer>
                     </div>
                 ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center">

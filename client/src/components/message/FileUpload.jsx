@@ -5,14 +5,22 @@ import { useChatStore } from '../../store/useChatStore'
 function FileUpload() {
 
     const fileInputRef = useRef(null)
-    const {addMediaFile, mediaFiles} = useChatStore()
+    const {addMediaFile, mediaFiles , currentChatId} = useChatStore()
 
     const handleClick = () =>{
         fileInputRef.current.click()
     }
 
     const handleChange = (e) =>{
-        addMediaFile(e.target.files[0])
+
+        const file = e.target.files[0]
+
+        addMediaFile(currentChatId,{
+            file,
+            preview:URL.createObjectURL(file),
+            progress:0,
+            uploading: true
+        })
         console.log('File Selected :: ',e.target.files[0])
     }
 
