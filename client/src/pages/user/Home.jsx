@@ -21,6 +21,7 @@ import { userAuthStore } from '../../store/userStore.js'
 import { socketEvents } from '../../constants/socketEvents.js'
 import { useAssetsStore } from '../../store/useAssetsStore.js'
 import FileUpload from '../../components/message/FileUpload.jsx'
+import MediaPreview from '../../components/message/MediaPreview.jsx'
 
 function Home() {
 
@@ -263,7 +264,7 @@ function Home() {
 
                       {
                         isMedia ?
-                        (<h1>Media Preview</h1>)   :
+                        (<MediaPreview/>)   :
 
                         (
                              <>
