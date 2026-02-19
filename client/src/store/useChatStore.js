@@ -165,6 +165,15 @@ export const useChatStore = create(
                         ]
                     }
                 }))
+            },
+
+            resetMediaFiles:(chatId)=>{
+                set(state=>({
+                    mediaFiles:{
+                        ...state.mediaFiles,
+                        [chatId]:[]
+                    }
+                }))
             }
 
             

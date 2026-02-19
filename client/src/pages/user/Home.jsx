@@ -264,7 +264,7 @@ function Home() {
 
                       {
                         isMedia ?
-                        (<MediaPreview/>)   :
+                        (<MediaPreview isMedia={isMedia} />)   :
 
                         (
                              <>
