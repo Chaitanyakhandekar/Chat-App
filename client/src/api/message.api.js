@@ -30,6 +30,37 @@ class MessageApi{
         }
     }
 
+    uploadImages = async (FormData)=>{
+        try {
+            
+            const response = await axios.post(`
+                ${this.baseUrl}/upload-images`,
+                FormData,
+                {
+                    withCredentials:true,
+                    headers:{
+                        "Content-Type": "multipart/form-data"
+                    }
+                }
+            )
+
+            console.log("Upload Response :: ",response.data)
+
+            return{
+                success:true,
+                data:response.data,
+                message:"Images Upload Done"
+            }
+
+        } catch (error) {
+            return {
+                success:false,
+                message:"Upload Failed",
+                error:error.message
+            }
+        }
+    }
+
 }
 
 export const messageApi = new MessageApi()

@@ -41,6 +41,15 @@ export const useChatStore = create(
                 }))
             },
 
+            removeMessage:(chatId,messageId)=>{
+                set((state)=>({
+                    userMessages:{
+                        ...state.userMessages,
+                        [chatId]: state.userMessages[chatId].filter(message=> message._id !== messageId)
+                    }
+                }))
+            },
+
             updateSeenStatus:(chatId,messageId,seenStatus)=>{
                 set((state)=>({
                     userMessages:{
