@@ -13,6 +13,7 @@ import {
     Paperclip
 
 } from 'lucide-react'
+import Swal from 'sweetalert2';
 import Message from '../../components/message/Message.jsx'
 import { messageApi } from '../../api/message.api.js'
 import { useChatStore } from '../../store/useChatStore.js'
@@ -52,7 +53,8 @@ function Home() {
          incrementNewMessagesCount,
          incrementNewMessagesCountByN,
          resetNewMessagesCount,
-         mediaFiles
+         mediaFiles,
+         removeMessage
     } = useChatStore()
 
 
@@ -91,14 +93,53 @@ function Home() {
     }
 
 
-    const handleSend = () => {
+    const handleSend = async(e) => {
+        
+        e.preventDefault()
+
         console.log("Send button clicked");
-        if (message.trim() === "") {
+
+        if (message.trim() === "" && !mediaFiles[currentChatId].length) {
             return;
         }
+
+       
+
+        const tempId = `temp-${Date.now()}`         // Temp Id
+        
+            addMessage(currentChatId , {    // Temp Message For Optimistic UI
+                _id:tempId,
+                chatId:currentChatId,
+                message:message.trim() !== "" ? message : "",
+                sender:user._id,
+                attachments:mediaFiles[currentChatId] || [],
+                status:"uploading",
+                createdAt:Date.now()
+            })
+
+            const formData = new FormData()
+
+            mediaFiles[currentChatId].forEach(image=>{
+                formData.append("images",image.file)
+            })
+
+            const uploadInfo = await messageApi.uploadImages(formData)
+
+            console.log("Upload Info :: ",uploadInfo)
+
+            if(!uploadInfo.success){        // if Upload Failed Then Cancel Whole Transaction/Process
+
+                removeMessage(currentChatId,tempId)
+
+                alert("Message Failed Please Try Again.")
+            }
+
+
         if (!socket) return
+
         socket.emit(socketEvents.NEW_MESSAGE, {
-            message: message,
+            message: message || "",
+            attachments:uploadInfo.data,
             receiver: context.currentChatUser._id,
             chatId: currentChatId || null
         }, (ack) => {
@@ -264,7 +305,7 @@ function Home() {
 
                       {
                         isMedia ?
-                        (<MediaPreview isMedia={isMedia} />)   :
+                        (<MediaPreview isMedia={isMedia} handleSend={handleSend} />)   :
 
                         (
                              <>

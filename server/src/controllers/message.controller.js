@@ -51,6 +51,46 @@ const getConversation = asyncHandler(async (req,res)=>{
     
 })
 
+const uploadImage = asyncHandler(async (req,res)=>{
+
+    const images = req.files
+
+    console.log("File For Upload :: ",images)
+
+    if(!images.length){
+        throw new ApiError(400,"Atleast 1 Image is Required")
+    }
+
+    let imgs = new Array()
+
+    imgs = images ? await Promise.all(
+        images.map(async (image)=>{
+            const res = await uploadFileOnCloudinary(image.path)
+
+            console.log("Response Upload :: ",res)
+
+            return{
+                secure_url:res.secure_url,
+                public_id:res.public_id
+            }
+        })
+    ) : []
+
+    console.log("Uploaded Url :: ",imgs)
+
+    if(!imgs.length){
+        throw new ApiError(500,"Error While Uploading Error.")
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200,imgs,"Uploaded Successfully")
+        )
+
+})
+
 export {
-    getConversation
+    getConversation,
+    uploadImage
 }

@@ -8,7 +8,8 @@ import React from 'react'
 import { useChatStore } from '../../store/useChatStore'
 
 function MediaPreview({
-    isMedia
+    isMedia,
+    handleSend=()=>{}
 }) {
 
     const {resetMediaFiles,currentChatId} = useChatStore()
@@ -56,7 +57,9 @@ function MediaPreview({
             </div>
                 <PreviewBox/>
 
-            <button className='w-10 h-10 md:w-10 md:h-10 border-1 rounded-md flex justify-center items-center bg-green-400'>
+            <button
+            onClick={handleSend}
+            className='w-10 h-10 md:w-10 md:h-10 border-1 rounded-md flex justify-center items-center bg-green-400'>
                 <Send size={20} className='text-white h-[50%] w-[50%]'/>
             </button>
 

@@ -11,6 +11,9 @@ const messageSchema = new mongoose.Schema({
         ref:"Chat",
         required:true
     },
+    tempId:{
+        type:String
+    },
     sender:{
         type:mongoose.Types.ObjectId,
         ref:"User",
@@ -23,18 +26,16 @@ const messageSchema = new mongoose.Schema({
     },
     message:{
         type:String,
-        required:true,
         trim:true,
     },
     attachments:[
         {
-          url:{
-            type:String,
-            required:true
+          secure_url:{
+            type:String
           },
-          filename:{
-            type:String,
-          }  
+          public_id:{
+            type:String
+          }
         }
     ],
     status:{
