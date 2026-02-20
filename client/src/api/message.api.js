@@ -39,7 +39,7 @@ class MessageApi{
                 {
                     withCredentials:true,
                     headers:{
-                        "Content-Type": "multipart/form-data"
+                        "Content-Type":"multipart/form-data"
                     }
                 }
             )
@@ -48,7 +48,7 @@ class MessageApi{
 
             return{
                 success:true,
-                data:response.data,
+                data:response.data.data,
                 message:"Images Upload Done"
             }
 
