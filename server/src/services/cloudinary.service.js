@@ -23,7 +23,8 @@ const uploadFileOnCloudinary = async function(localFilePath , resourceType="auto
         console.log("upload file on cloudinary :: error :: ",error)
         return {
             success:false,
-            message:"Upload falied"
+            message:"Upload falied",
+            error:error.message
         };
     }
 }

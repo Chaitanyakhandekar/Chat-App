@@ -31,13 +31,12 @@ const messageSchema = new mongoose.Schema({
     },
     attachments:[
         {
-          url:{
-            type:String,
-            required:true
+          secure_url:{
+            type:String
           },
-          filename:{
-            type:String,
-          }  
+          public_id:{
+            type:String
+          }
         }
     ],
     status:{
