@@ -28,6 +28,19 @@ export const useChatStore = create(
                 }))
             ),
 
+            replaceMessage:(chatId,tempId,message)=>{
+                set((state)=>({
+                    userMessages:{
+                        ...state.userMessages,
+                        [chatId]:[
+                            state.userMessages[chatId].map((chat)=>(
+                                chat._id  === tempId ? message : chat
+                            ))
+                        ]
+                    }
+                }))
+            },
+
             updateSeenStatus:(chatId,messageId,seenStatus)=>{
                 set((state)=>({
                     userMessages:{
@@ -175,6 +188,8 @@ export const useChatStore = create(
                     }
                 }))
             }
+
+            
 
             
 

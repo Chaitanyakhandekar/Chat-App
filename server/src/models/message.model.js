@@ -11,6 +11,9 @@ const messageSchema = new mongoose.Schema({
         ref:"Chat",
         required:true
     },
+    tempId:{
+        type:String
+    },
     sender:{
         type:mongoose.Types.ObjectId,
         ref:"User",
