@@ -177,6 +177,8 @@ export const useChatStore = create(
 
             mediaFiles:{},
 
+            currentFile:{},
+
             addMediaFile:(chatId,file)=>{
                 set((state)=>({
                     mediaFiles: {
@@ -196,9 +198,13 @@ export const useChatStore = create(
                         [chatId]:[]
                     }
                 }))
-            }
+            },
 
-            
+            setCurrentFile:(file)=>{
+                set({
+                    currentFile:file
+                })
+            }
 
             
 

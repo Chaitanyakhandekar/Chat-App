@@ -100,6 +100,7 @@ function Home() {
         console.log("Send button clicked");
 
         if (message.trim() === "" && !mediaFiles[currentChatId].length) {
+            console.log("Returning Function HandleSend")
             return;
         }
 
@@ -113,38 +114,41 @@ function Home() {
                 message:message.trim() !== "" ? message : "",
                 sender:user._id,
                 attachments:mediaFiles[currentChatId] || [],
-                status:"uploading",
-                createdAt:Date.now()
+                status:"sent",
+                createdAt:"2026-02-21T08:49:25.317Z"
             })
 
-            const formData = new FormData()
+        //     const formData = new FormData()
+        //     let uploadInfo;
 
-            mediaFiles[currentChatId].forEach(image=>{
-                formData.append("images",image.file)
-            })
+        //     if(mediaFiles[currentChatId]?.length > 0){
+        //           mediaFiles[currentChatId].length > 0 && mediaFiles[currentChatId].forEach(image=>{
+        //         formData.append("images",image.file)
+        //     })
 
-            const uploadInfo = await messageApi.uploadImages(formData)
+        //      uploadInfo = await messageApi.uploadImages(formData)
 
-            console.log("Upload Info :: ",uploadInfo)
+        //     console.log("Upload Info :: ",uploadInfo)
 
-            if(!uploadInfo.success){        // if Upload Failed Then Cancel Whole Transaction/Process
+        //     if(!uploadInfo.success){        // if Upload Failed Then Cancel Whole Transaction/Process
 
-                removeMessage(currentChatId,tempId)
+        //         removeMessage(currentChatId,tempId)
 
-                alert("Message Failed Please Try Again.")
-            }
+        //         alert("Message Failed Please Try Again.")
+        //     }
+        //     }
 
 
-        if (!socket) return
+        // if (!socket) return
 
-        socket.emit(socketEvents.NEW_MESSAGE, {
-            message: message || "",
-            attachments:uploadInfo.data,
-            receiver: context.currentChatUser._id,
-            chatId: currentChatId || null
-        }, (ack) => {
-            console.log("Ack from server:", ack);
-        })
+        // socket.emit(socketEvents.NEW_MESSAGE, {
+        //     message: message || "",
+        //     attachments:uploadInfo?.data || [],
+        //     receiver: context.currentChatUser._id,
+        //     chatId: currentChatId || null
+        // }, (ack) => {
+        //     console.log("Ack from server:", ack);
+        // })
 
 
         setMessage("")
@@ -316,11 +320,11 @@ function Home() {
 
                                 {messages[currentChatId]?.map((msg) => {
                                     return (
-                                        ((context.currentChatUser._id === msg.sender || context.currentChatUser._id === msg.receiver) && (msg.sender === context.user._id || msg.receiver === context.user._id)) && (
+                                       
                                             <Message
                                                 key={msg._id}
                                                 msg={msg} />
-                                        )
+                                        
 
                                     )
                                 })}

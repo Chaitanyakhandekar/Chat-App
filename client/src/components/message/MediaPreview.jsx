@@ -4,15 +4,18 @@ import {
      X
 
 } from 'lucide-react'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useChatStore } from '../../store/useChatStore'
+import { useAssetsStore } from '../../store/useAssetsStore'
+import FileUpload from './FileUpload'
 
 function MediaPreview({
     isMedia,
     handleSend=()=>{}
 }) {
 
-    const {resetMediaFiles,currentChatId} = useChatStore()
+    const {resetMediaFiles,currentChatId,mediaFiles,setCurrentFile,currentFile} = useChatStore()
+    const {selectFile, toggleSelectFile} = useAssetsStore()
 
   return (
     <div className="w-full h-full bg-gray-700">
@@ -22,6 +25,7 @@ function MediaPreview({
              className="absolute top-20 left-8 cursor-pointer"
              onClick={()=>{
                 resetMediaFiles(currentChatId)
+                setCurrentFile(null)
              }}
              >
                 <X size={24} className='text-gray-200' />
@@ -29,7 +33,7 @@ function MediaPreview({
 
             <div className="w-[80%] md:w-[30%] h-[60%]">
                 <img 
-                src="https://media.istockphoto.com/id/1550071750/photo/green-tea-tree-leaves-camellia-sinensis-in-organic-farm-sunlight-fresh-young-tender-bud.jpg?s=612x612&w=0&k=20&c=RC_xD5DY5qPH_hpqeOY1g1pM6bJgGJSssWYjVIvvoLw="
+                src={currentFile?.preview}
                  alt=""
                  className='w-full h-full object-fit'
                   />
@@ -43,19 +47,18 @@ function MediaPreview({
             <div className="flex gap-2 items-center justify-  w-[50%] md:w-[60%] border-1 ">
                
                <div className="inner-scrollable flex gap-2 w-full justify-center  overflow-x-auto">
-                 <PreviewBox url="https://media.istockphoto.com/id/1550071750/photo/green-tea-tree-leaves-camellia-sinensis-in-organic-farm-sunlight-fresh-young-tender-bud.jpg?s=612x612&w=0&k=20&c=RC_xD5DY5qPH_hpqeOY1g1pM6bJgGJSssWYjVIvvoLw="/>
-                 <PreviewBox url="https://media.istockphoto.com/id/1550071750/photo/green-tea-tree-leaves-camellia-sinensis-in-organic-farm-sunlight-fresh-young-tender-bud.jpg?s=612x612&w=0&k=20&c=RC_xD5DY5qPH_hpqeOY1g1pM6bJgGJSssWYjVIvvoLw="/>
-                 <PreviewBox url="https://media.istockphoto.com/id/1550071750/photo/green-tea-tree-leaves-camellia-sinensis-in-organic-farm-sunlight-fresh-young-tender-bud.jpg?s=612x612&w=0&k=20&c=RC_xD5DY5qPH_hpqeOY1g1pM6bJgGJSssWYjVIvvoLw="/>
-                 <PreviewBox url="https://media.istockphoto.com/id/1550071750/photo/green-tea-tree-leaves-camellia-sinensis-in-organic-farm-sunlight-fresh-young-tender-bud.jpg?s=612x612&w=0&k=20&c=RC_xD5DY5qPH_hpqeOY1g1pM6bJgGJSssWYjVIvvoLw="/>
-                 <PreviewBox url="https://media.istockphoto.com/id/1550071750/photo/green-tea-tree-leaves-camellia-sinensis-in-organic-farm-sunlight-fresh-young-tender-bud.jpg?s=612x612&w=0&k=20&c=RC_xD5DY5qPH_hpqeOY1g1pM6bJgGJSssWYjVIvvoLw="/>
-                 <PreviewBox url="https://media.istockphoto.com/id/1550071750/photo/green-tea-tree-leaves-camellia-sinensis-in-organic-farm-sunlight-fresh-young-tender-bud.jpg?s=612x612&w=0&k=20&c=RC_xD5DY5qPH_hpqeOY1g1pM6bJgGJSssWYjVIvvoLw="/>
-                 <PreviewBox url="https://media.istockphoto.com/id/1550071750/photo/green-tea-tree-leaves-camellia-sinensis-in-organic-farm-sunlight-fresh-young-tender-bud.jpg?s=612x612&w=0&k=20&c=RC_xD5DY5qPH_hpqeOY1g1pM6bJgGJSssWYjVIvvoLw="/>
+
+                {
+                    mediaFiles[currentChatId] && mediaFiles[currentChatId].map((file,index)=>(
+                          <PreviewBox file={file} key={file.preview} autoSelect={index}/>
+                    ))
+                }            
                
                  
                </div>
 
             </div>
-                <PreviewBox/>
+                <PreviewBox key={"xhdsdskffdfdofdo"} classname={"border-2 "}/>
 
             <button
             onClick={handleSend}
@@ -71,23 +74,48 @@ function MediaPreview({
 
 
 const PreviewBox = function({
-    url=null,
+    file=null,
+    key=null,
+    classname,
+    autoSelect=""
   }){
+
+      const {resetMediaFiles,currentChatId,mediaFiles,setCurrentFile,currentFile} = useChatStore()
+       const {selectFile, toggleSlectFile} = useAssetsStore()
+
+
+    const handlePreviewChange = (file)=>{
+        setCurrentFile(file)
+    }
+
+    useEffect(()=>{
+        console.log("INDEX :: ",autoSelect)
+        if(autoSelect === 0){
+            setCurrentFile(file)
+        }
+    },[])
+
     return(
-  <div className={`w-10 h-10 border-2 ${url ? "border-green-400" : ""} flex-shrink-0 flex justify-center items-center rounded-md `}>
+  <div
+  key={key}
+  className={`w-10 h-10  ${classname, currentFile?.preview === file?.preview ? "border-2 border-green-400" : ""  , classname} flex-shrink-0 flex justify-center items-center rounded-md `}>
 
         {
-            url && 
+            file && 
             <img
-                src={url} 
+                onClick={()=>{handlePreviewChange(file)}}
+                src={file?.preview} 
                 alt=""
-                className='object-fit w-full h-full'
+                className='object-cover w-full h-full rounded-md'
                 />
         }
 
         {
-            !url &&
-            <Plus size={21} className='text-white'/>
+            !file &&
+            <FileUpload 
+                UploadIcon={"plus"}
+            />
+           
         }
 
         </div>

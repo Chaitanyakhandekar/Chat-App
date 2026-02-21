@@ -28,9 +28,9 @@ export const messageHandler = (socket) =>{
         socket.on(socketEvents.MESSAGE_SENT_SINGLE_CHAT, (payload)=>{      // Listener for Confirming Chat Sent or not
 
             console.log("Message Sent Status Received from socket server:",payload);
-            const {addMessage} = useChatStore.getState()
+            const {addMessage,replaceMessage} = useChatStore.getState()
 
-            addMessage(payload.chatId, payload.message)
+            replaceMessage(payload.chatId, payload.tempId, payload.message)
         })
     
         socket.on(socketEvents.TYPING,(data)=>{     // Listener for receiving typing status updates from the socket server
