@@ -4,8 +4,10 @@ import {
      X
 
 } from 'lucide-react'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useChatStore } from '../../store/useChatStore'
+import { useAssetsStore } from '../../store/useAssetsStore'
+import FileUpload from './FileUpload'
 
 function MediaPreview({
     isMedia,
@@ -13,6 +15,7 @@ function MediaPreview({
 }) {
 
     const {resetMediaFiles,currentChatId,mediaFiles,setCurrentFile,currentFile} = useChatStore()
+    const {selectFile, toggleSelectFile} = useAssetsStore()
 
   return (
     <div className="w-full h-full bg-gray-700">
@@ -47,7 +50,7 @@ function MediaPreview({
 
                 {
                     mediaFiles[currentChatId] && mediaFiles[currentChatId].map((file,index)=>(
-                          <PreviewBox file={file} key={file.preview} autoSelect={index===1}/>
+                          <PreviewBox file={file} key={file.preview} autoSelect={index}/>
                     ))
                 }            
                
@@ -74,19 +77,28 @@ const PreviewBox = function({
     file=null,
     key=null,
     classname,
-    autoSelect=true
+    autoSelect=""
   }){
 
       const {resetMediaFiles,currentChatId,mediaFiles,setCurrentFile,currentFile} = useChatStore()
+       const {selectFile, toggleSlectFile} = useAssetsStore()
+
 
     const handlePreviewChange = (file)=>{
         setCurrentFile(file)
     }
 
+    useEffect(()=>{
+        console.log("INDEX :: ",autoSelect)
+        if(autoSelect === 0){
+            setCurrentFile(file)
+        }
+    },[])
+
     return(
   <div
   key={key}
-  className={`w-10 h-10 border-1 ${currentFile?.preview === file?.preview || autoSelect ? "border-2 border-green-400" : "border-1"  , classname} flex-shrink-0 flex justify-center items-center rounded-md `}>
+  className={`w-10 h-10  ${classname, currentFile?.preview === file?.preview ? "border-2 border-green-400" : ""  , classname} flex-shrink-0 flex justify-center items-center rounded-md `}>
 
         {
             file && 
@@ -100,7 +112,10 @@ const PreviewBox = function({
 
         {
             !file &&
-            <Plus size={21} className='text-white'/>
+            <FileUpload 
+                UploadIcon={"plus"}
+            />
+           
         }
 
         </div>

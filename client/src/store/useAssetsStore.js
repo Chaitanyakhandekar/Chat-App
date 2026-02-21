@@ -8,7 +8,18 @@ export const useAssetsStore = create(
 
             setScrollToBottomInChat:(value)=>(
                 set({scrollToBottomInChat:value})
-                )
-        })
+                ),
+
+            selectFile:false,
+
+            toggleSlectFile:(val)=>{
+                set((state)=>({
+                    selectFile:val
+                }))
+            }
+        }),
+
+
+
     )
 )
