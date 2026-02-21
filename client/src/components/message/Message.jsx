@@ -70,10 +70,15 @@ function Message({ msg, key }) {
 
       {
         msg?.attachments && 
-          <div className="w-full">
-        <img
+          <div className="w-full relative">
+          <img
           className='rounded-md object-cover'
          src={msg?.attachments[0]?.preview || ""} alt="" />
+            
+         {
+          msg.status==="uploading" &&
+          <div className="w-10 h-10 rounded-[50%] animate-spin text-green-500 border-2 border-green-500 bg-gray-600/70 bg-blur-md  font-bold-2xl absolute top-[50%] left-[50%] z-20"></div>
+         }
       </div>
       }
 
@@ -84,7 +89,7 @@ function Message({ msg, key }) {
           msg.sender === user._id && (
             <div className="z-10">
           {
-            msg.status === "sent" || msg.status === "uploading"  && <CheckIcon className={`w-4 h-4  text-gray-500 z-20`} />
+            msg.status === "sent"   && <CheckIcon className={`w-4 h-4  text-gray-500 z-20`} />
           }
           {
             msg.status === "seen" &&
