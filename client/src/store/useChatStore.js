@@ -191,6 +191,15 @@ export const useChatStore = create(
                 }))
             },
 
+            removeMediaFile:(chatId,file)=>{
+                set(state=>({
+                    mediaFiles:{
+                        ...state.mediaFiles,
+                        [chatId]:state.mediaFiles[chatId].filter(media=> media.preview !== file.preview)
+                    }
+                }))
+            },
+
             resetMediaFiles:(chatId)=>{
                 set(state=>({
                     mediaFiles:{
