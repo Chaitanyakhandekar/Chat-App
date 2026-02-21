@@ -114,7 +114,7 @@ function Home() {
                 message:message.trim() !== "" ? message : "",
                 sender:user._id,
                 attachments:mediaFiles[currentChatId] || [],
-                status:"sent",
+                status:"uploading",
                 createdAt:"2026-02-21T08:49:25.317Z"
             })
 

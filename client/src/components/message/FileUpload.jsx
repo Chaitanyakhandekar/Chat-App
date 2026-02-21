@@ -54,17 +54,22 @@ function FileUpload({
 
          {
             UploadIcon==="plus" ?
-             (<Plus
-                    size={21}
-                    className='text-white cursor-pointer'
+             (
+                <div className='w-full h-full flex justify-center items-center'>
+                    <Plus
+                    size={18}
+                    className='text-white cursor-pointer border-2 w-full h-full rounded-md'
                     onClick={handleClick}
-                        /> ) :
+                        /> 
+                </div>
+             ) :
 
             <Paperclip
             className={`absolute right-10 z-20 cursor-pointer `}
             size={20}
             onClick={handleClick}
            />
+           
          }
 
          
