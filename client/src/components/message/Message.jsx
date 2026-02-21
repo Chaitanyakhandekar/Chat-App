@@ -66,22 +66,25 @@ function Message({ msg, key }) {
     
     <div
      ref={messageRef}
-     key={key} className={`ml-10 mt-10 w-fit  max-w-[70%] min-w-20 h-auto   mt-20 ${msg.sender === context.user._id ? "bg-blue-400" : "bg-green-400"} text-black ${msg?.attachments.length && msg?.message ? " p-3" : "p-"}  flex flex-col flex-wrap  rounded-md relative`}>
+     key={key} className={`ml-10 mt-10 w-fit  max-w-[70%] min-w-20 h-auto   mt-20 ${msg.sender === context.user._id ? "bg-blue-400" : "bg-green-400"} text-black ${msg?.attachments?.length && msg?.message ? " p-3" : "p-"}  flex flex-col flex-wrap  rounded-md relative`}>
 
-      <div className="w-full">
+      {
+        msg?.attachments && 
+          <div className="w-full">
         <img
           className='rounded-md object-cover'
-         src="https://media.istockphoto.com/id/1550071750/photo/green-tea-tree-leaves-camellia-sinensis-in-organic-farm-sunlight-fresh-young-tender-bud.jpg?s=612x612&w=0&k=20&c=RC_xD5DY5qPH_hpqeOY1g1pM6bJgGJSssWYjVIvvoLw=" alt="" />
+         src={msg?.attachments[0]?.preview || ""} alt="" />
       </div>
+      }
 
-      <div className="mb-2 w-full break-words whitespace-pre-wrap px-3 pt-2 pb-3">{msg.message}</div>
+      <div className="mb-2 w-full break-words whitespace-pre-wrap px-3 pt-2 pb-3">{msg?.message}</div>
       <div className="flex absolute bottom-1 right-1 items-center justify-end gap-1 mr-1">
-        {msg.createdAt && <span className='text-xs text-white ml-2 z-10'>{getTime(msg.createdAt)}</span>}
+        {msg?.createdAt && <span className='text-xs text-white ml-2 z-10'>{getTime(msg?.createdAt)}</span>}
         {
           msg.sender === user._id && (
             <div className="z-10">
           {
-            msg.status === "sent" && <CheckIcon className={`w-4 h-4  text-gray-500 z-20`} />
+            msg.status === "sent" || msg.status === "uploading"  && <CheckIcon className={`w-4 h-4  text-gray-500 z-20`} />
           }
           {
             msg.status === "seen" &&

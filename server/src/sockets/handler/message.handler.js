@@ -29,6 +29,7 @@ export const messageHandler = (io,socket)=>{
         const newMessage = await Message.create({    // save message to database
             sender:socket.user._id,
             receiver:data.receiver,
+            attachments:data.attachments,
             message:data.message,
             chatId: newChat?._id || data.chatId
         })
@@ -46,7 +47,8 @@ export const messageHandler = (io,socket)=>{
             io.to(socket.user._id.toString()).emit(socketEvents.MESSAGE_SENT_SINGLE_CHAT , {       // Notifying Sender About Message Status as Sent
                 message:newMessage,
                 chatId:newMessage.chatId,
-                sentAt:newMessage.createdAt
+                sentAt:newMessage.createdAt,
+                tempId:data.tempId
             } )
         }
     })
