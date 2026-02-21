@@ -13,15 +13,22 @@ function FileUpload() {
 
     const handleChange = (e) =>{
 
-        const file = e.target.files[0]
+        const files = e.target.files
 
-        addMediaFile(currentChatId,{
+      Array.from(files).forEach((file)=>{
+
+            console.log("FILE FOR URL :: ",file)
+
+            addMediaFile(currentChatId,{
             file,
             preview:URL.createObjectURL(file),
             progress:0,
             uploading: true
         })
-        console.log('File Selected :: ',e.target.files[0])
+
+        })
+        
+        console.log('File Selected :: ',e.target.files)
     }
 
     useEffect(()=>{
@@ -39,6 +46,7 @@ function FileUpload() {
 
         <input
             type="file"
+            multiple
             className='hidden'
             onChange={handleChange}
             ref={fileInputRef}
