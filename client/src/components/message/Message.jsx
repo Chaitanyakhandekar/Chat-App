@@ -77,7 +77,7 @@ function Message({ msg, key }) {
             
          {
           msg.status==="uploading" &&
-          <div className="w-10 h-10 rounded-[50%] animate-spin text-green-500 border-2 border-green-500 bg-gray-600/70 bg-blur-md  font-bold-2xl absolute top-[50%] left-[50%] z-20"></div>
+          <div className="w-10 h-10 rounded-[50%] animate-spin text-green-500 border-2 border-b-green-500 border-t-green-500 bg-gray-600/70 bg-blur-md  font-bold-2xl absolute top-[50%] left-[50%] z-20"></div>
          }
       </div>
       }

@@ -119,6 +119,8 @@ function Home() {
                 createdAt:"2026-02-21T08:49:25.317Z"
             })
 
+              setScrollToBottomInChat(true);
+           
             const formData = new FormData()
             let uploadInfo;
 
@@ -127,9 +129,11 @@ function Home() {
                 formData.append("images",image.file)
             })
 
+            resetMediaFiles(currentChatId)
+
              uploadInfo = await messageApi.uploadImages(formData)
 
-             resetMediaFiles(currentChatId)
+             
 
             console.log("Upload Info :: ",uploadInfo)
 
@@ -148,7 +152,8 @@ function Home() {
             message: message || "",
             attachments:uploadInfo?.data || [],
             receiver: context.currentChatUser._id,
-            chatId: currentChatId || null
+            chatId: currentChatId || null,
+            tempId:tempId
         }, (ack) => {
             console.log("Ack from server:", ack);
         })
