@@ -43,7 +43,7 @@ export const messageHandler = (io,socket)=>{
         else{
             socket.to(getUserSocket(data.receiver)).emit(socketEvents.NEW_MESSAGE , newMessage)     // Sending Message to Other user in Chat
 
-            console.log("Emitting Message to User : ",socket.user._id.toString())
+            console.log("Emitting Message to User (TEMPID) : ",data.tempId)
             io.to(socket.user._id.toString()).emit(socketEvents.MESSAGE_SENT_SINGLE_CHAT , {       // Notifying Sender About Message Status as Sent
                 message:newMessage,
                 chatId:newMessage.chatId,
