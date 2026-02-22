@@ -54,7 +54,8 @@ function Home() {
          incrementNewMessagesCountByN,
          resetNewMessagesCount,
          mediaFiles,
-         removeMessage
+         removeMessage,
+         resetMediaFiles
     } = useChatStore()
 
 
@@ -118,37 +119,39 @@ function Home() {
                 createdAt:"2026-02-21T08:49:25.317Z"
             })
 
-        //     const formData = new FormData()
-        //     let uploadInfo;
+            const formData = new FormData()
+            let uploadInfo;
 
-        //     if(mediaFiles[currentChatId]?.length > 0){
-        //           mediaFiles[currentChatId].length > 0 && mediaFiles[currentChatId].forEach(image=>{
-        //         formData.append("images",image.file)
-        //     })
+            if(mediaFiles[currentChatId]?.length > 0){
+                  mediaFiles[currentChatId].length > 0 && mediaFiles[currentChatId].forEach(image=>{
+                formData.append("images",image.file)
+            })
 
-        //      uploadInfo = await messageApi.uploadImages(formData)
+             uploadInfo = await messageApi.uploadImages(formData)
 
-        //     console.log("Upload Info :: ",uploadInfo)
+             resetMediaFiles(currentChatId)
 
-        //     if(!uploadInfo.success){        // if Upload Failed Then Cancel Whole Transaction/Process
+            console.log("Upload Info :: ",uploadInfo)
 
-        //         removeMessage(currentChatId,tempId)
+            if(!uploadInfo.success){        // if Upload Failed Then Cancel Whole Transaction/Process
 
-        //         alert("Message Failed Please Try Again.")
-        //     }
-        //     }
+                removeMessage(currentChatId,tempId)
+
+                alert("Message Failed Please Try Again.")
+            }
+            }
 
 
-        // if (!socket) return
+        if (!socket) return
 
-        // socket.emit(socketEvents.NEW_MESSAGE, {
-        //     message: message || "",
-        //     attachments:uploadInfo?.data || [],
-        //     receiver: context.currentChatUser._id,
-        //     chatId: currentChatId || null
-        // }, (ack) => {
-        //     console.log("Ack from server:", ack);
-        // })
+        socket.emit(socketEvents.NEW_MESSAGE, {
+            message: message || "",
+            attachments:uploadInfo?.data || [],
+            receiver: context.currentChatUser._id,
+            chatId: currentChatId || null
+        }, (ack) => {
+            console.log("Ack from server:", ack);
+        })
 
 
         setMessage("")
@@ -193,6 +196,12 @@ function Home() {
         }
 
     }, [setIsAtBottom])
+
+    useEffect(() => {
+
+    console.log("Messages :: ",messages)
+
+    }, [messages])
 
     useEffect(() => {
         console.log("Scroll to bottom in chat:", scrollToBottomInChat);

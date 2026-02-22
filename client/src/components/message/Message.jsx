@@ -34,7 +34,7 @@ function Message({ msg, key }) {
 
           if(entry.isIntersecting){     // seen event emit
 
-            console.log("Message " + msg.message +  " is On viewport...")
+            console.log("Message " + msg?.message +  " is On viewport...")
 
             socket.emit(socketEvents.MESSAGE_SEEN_SINGLE_CHAT,{     // emiting message seen event for single chat
               messageId:msg._id,
@@ -73,7 +73,7 @@ function Message({ msg, key }) {
           <div className="w-full relative">
           <img
           className='rounded-md object-cover'
-         src={msg?.attachments[0]?.preview || ""} alt="" />
+         src={msg?.attachments[0]?.preview || msg?.attachments[0]?.secure_url} alt="" />
             
          {
           msg.status==="uploading" &&

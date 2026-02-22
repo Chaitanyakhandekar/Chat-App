@@ -32,11 +32,11 @@ export const useChatStore = create(
                 set((state)=>({
                     userMessages:{
                         ...state.userMessages,
-                        [chatId]:[
+                        [chatId]:
                             state.userMessages[chatId].map((chat)=>(
                                 chat._id  === tempId ? message : chat
                             ))
-                        ]
+                        
                     }
                 }))
             },
