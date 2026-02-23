@@ -1,7 +1,7 @@
 import React from 'react'
 import { userApi } from '../../api/user.api'
 import { useContext } from 'react'
-import {authContext} from '../../context/authContext.jsx'
+import {authContext} from '../../context/AuthProvider.jsx'
 import { useNavigate } from 'react-router-dom'
 import { userAuthStore } from '../../store/userStore.js'
 

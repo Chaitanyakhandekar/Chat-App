@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useContext } from 'react'
-import { authContext } from '../../context/authContext.jsx'
+import { authContext } from '../../context/AuthProvider.jsx'
 import { messageApi } from '../../api/message.api.js';
 import { useChatStore } from '../../store/useChatStore.js';
 import { chatApi } from '../../api/chat.api.js';
