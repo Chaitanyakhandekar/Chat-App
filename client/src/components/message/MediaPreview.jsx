@@ -1,6 +1,5 @@
 import {
     Send,
-    Plus,
     X
 } from 'lucide-react'
 import React, { useEffect } from 'react'
@@ -10,30 +9,21 @@ import FileUpload from './FileUpload'
 
 function MediaPreview({
     isMedia,
-    handleSend = () => { }
+    handleSend = () => { },
+    message="",
+    setMessage
 }) {
 
     const { resetMediaFiles, currentChatId, mediaFiles, setCurrentFile, currentFile } = useChatStore()
     const { selectFile, toggleSelectFile } = useAssetsStore()
+    // const [message, setMessage] = React.useState("")
 
     return (
         <>
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&display=swap');
 
-                .mp-root {
-                    width: 100%;
-                    height: 100%;
-                    background: #0a0b0f;
-                    display: flex;
-                    flex-direction: column;
-                    font-family: 'Sora', sans-serif;
-                    position: relative;
-                    overflow: hidden;
-                }
-
-                /* subtle ambient glow behind image */
-                .mp-root::before {
+                .mp-orb::before {
                     content: '';
                     position: absolute;
                     top: 20%;
@@ -46,189 +36,59 @@ function MediaPreview({
                     z-index: 0;
                 }
 
-                .mp-main {
-                    flex: 1;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    position: relative;
-                    z-index: 1;
-                }
-
-                .mp-close-btn {
-                    position: absolute;
-                    top: 24px;
-                    left: 24px;
-                    width: 36px;
-                    height: 36px;
-                    background: rgba(255,255,255,0.07);
-                    border: 1px solid rgba(255,255,255,0.1);
-                    border-radius: 10px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    transition: background 0.18s, transform 0.15s;
-                    z-index: 10;
-                }
-
-                .mp-close-btn:hover {
-                    background: rgba(239,68,68,0.15);
-                    border-color: rgba(239,68,68,0.3);
+                .mp-close:hover {
+                    background: rgba(239,68,68,0.15) !important;
+                    border-color: rgba(239,68,68,0.3) !important;
                     transform: scale(1.05);
                 }
 
-                .mp-img-frame {
-                    width: min(480px, 80%);
-                    max-height: 65vh;
-                    border-radius: 16px;
-                    overflow: hidden;
-                    border: 1px solid rgba(255,255,255,0.08);
-                    box-shadow: 0 8px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.12);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    background: #13151d;
-                }
-
-                .mp-img-frame img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: contain;
-                    display: block;
-                }
-
-                /* ── BOTTOM STRIP ── */
-                .mp-bottom {
-                    height: 88px;
-                    border-top: 1px solid rgba(255,255,255,0.06);
-                    background: rgba(14,16,24,0.9);
-                    backdrop-filter: blur(16px);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 12px;
-                    padding: 0 24px;
-                    z-index: 1;
-                }
-
-                .mp-thumbs-scroll {
-                    display: flex;
-                    gap: 8px;
-                    overflow-x: auto;
-                    align-items: center;
-                    max-width: 400px;
-                    padding: 4px 2px;
-                    scrollbar-width: none;
-                }
-
-                .mp-thumbs-scroll::-webkit-scrollbar { display: none; }
-
-                /* ── SEND BTN ── */
-                .mp-send-btn {
-                    width: 44px;
-                    height: 44px;
-                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-                    border: none;
-                    border-radius: 14px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    flex-shrink: 0;
-                    box-shadow: 0 4px 14px rgba(99,102,241,0.4);
-                    transition: transform 0.15s, box-shadow 0.15s;
-                }
-
-                .mp-send-btn:hover {
+                .mp-send:hover {
                     transform: translateY(-2px) scale(1.04);
-                    box-shadow: 0 6px 20px rgba(99,102,241,0.5);
+                    box-shadow: 0 6px 20px rgba(99,102,241,0.5) !important;
                 }
+                .mp-send:active { transform: scale(0.96); }
 
-                .mp-send-btn:active { transform: scale(0.96); }
-
-                /* ── PREVIEW BOX ── */
-                .pb-wrap {
-                    width: 52px;
-                    height: 52px;
-                    border-radius: 10px;
-                    flex-shrink: 0;
-                    position: relative;
-                    cursor: pointer;
-                    transition: transform 0.15s;
-                    border: 2px solid transparent;
-                    overflow: visible;
-                }
+                .mp-thumbs { scrollbar-width: none; }
+                .mp-thumbs::-webkit-scrollbar { display: none; }
 
                 .pb-wrap:hover { transform: scale(1.06); }
 
-                .pb-wrap.active {
-                    border-color: #6366f1;
-                    box-shadow: 0 0 0 2px rgba(99,102,241,0.3);
-                    border-radius: 10px;
-                }
-
-                .pb-img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                    border-radius: 8px;
-                    display: block;
-                }
-
-                .pb-remove {
-                    position: absolute;
-                    top: -6px;
-                    right: -6px;
-                    width: 18px;
-                    height: 18px;
-                    background: #ef4444;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 20;
-                    border: 2px solid #0a0b0f;
+                .pb-wrap .pb-remove {
                     opacity: 0;
                     transform: scale(0.7);
-                    transition: opacity 0.15s, transform 0.15s;
                     pointer-events: none;
+                    transition: opacity 0.15s, transform 0.15s;
                 }
-
                 .pb-wrap:hover .pb-remove {
                     opacity: 1;
                     transform: scale(1);
                     pointer-events: all;
                 }
 
-                /* ── ADD MORE BOX ── */
-                .pb-add {
-                    width: 52px;
-                    height: 52px;
-                    border-radius: 10px;
-                    flex-shrink: 0;
-                    border: 1.5px dashed rgba(255,255,255,0.15);
-                    background: rgba(255,255,255,0.04);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    transition: border-color 0.18s, background 0.18s;
+                .pb-add:hover {
+                    border-color: rgba(99,102,241,0.5) !important;
+                    background: rgba(99,102,241,0.08) !important;
                 }
 
-                .pb-add:hover {
-                    border-color: rgba(99,102,241,0.5);
-                    background: rgba(99,102,241,0.08);
+                .mp-message:focus {
+                    border-color: rgba(99,102,241,0.45) !important;
+                    box-shadow: 0 0 0 3px rgba(99,102,241,0.12) !important;
                 }
+                .mp-message::placeholder { color: #4a4e6a; }
             `}</style>
 
-            <div className="mp-root">
+            {/* Root */}
+            <div
+                className="mp-orb relative flex flex-col w-full h-full bg-[#0a0b0f] overflow-hidden"
+                style={{ fontFamily: "'Sora', sans-serif" }}
+            >
+                {/* ── Main preview ── */}
+                <div className="relative flex flex-1 items-center justify-center z-[1]">
 
-                {/* Main preview area */}
-                <div className="mp-main">
-
+                    {/* Close btn */}
                     <div
-                        className="mp-close-btn"
+                        className="mp-close absolute top-6 left-6 z-10 flex items-center justify-center w-9 h-9 rounded-[10px] cursor-pointer transition-all duration-[180ms]"
+                        style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}
                         onClick={() => {
                             resetMediaFiles(currentChatId)
                             setCurrentFile(null)
@@ -237,23 +97,54 @@ function MediaPreview({
                         <X size={16} color="#e2e4f0" />
                     </div>
 
-                    <div className="mp-img-frame">
-                        <img src={currentFile?.preview} alt="" />
+                    {/* Image frame */}
+                    <div
+                        className="flex items-center justify-center max-h-[60vh] rounded-2xl overflow-hidden bg-[#13151d]"
+                        style={{
+                            width: 'min(480px, 80%)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            boxShadow: '0 8px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.12)'
+                        }}
+                    >
+                        <img src={currentFile?.preview} alt="" className="w-full h-full object-contain block" />
                     </div>
                 </div>
 
-                {/* Bottom strip */}
-                <div className="mp-bottom">
-                    <div className="mp-thumbs-scroll">
+                {/* ── Bottom strip ── */}
+                <div
+                    className="flex flex-col items-center justify-center gap-3 px-6 py-4 z-[1] border-t border-white/[0.06]"
+                    style={{ background: 'rgba(14,16,24,0.9)', backdropFilter: 'blur(16px)' }}
+                >
+                    {/* message input + send row */}
+                    <div className="flex items-center gap-3 w-full max-w-[520px]">
+                        <div className="flex flex-1 items-center gap-2 bg-[#1a1d28] border border-white/[0.06] rounded-[20px] px-1 pr-1.5 transition-all duration-200 focus-within:border-[rgba(99,102,241,0.35)] focus-within:shadow-[0_0_0_3px_rgba(99,102,241,0.15)]">
+                            <input
+                                type="text"
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend(e, message)}
+                                placeholder="Add a message…"
+                                className="mp-message flex-1 bg-transparent border-none outline-none text-[#f1f2f7] text-sm py-3 px-3 transition-all duration-200"
+                            />
+                        </div>
+
+                        {/* Send */}
+                        <button
+                            className="mp-send flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-[14px] border-none cursor-pointer transition-all duration-150"
+                            style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 14px rgba(99,102,241,0.4)' }}
+                            onClick={(e) => handleSend(e, message)}
+                        >
+                            <Send size={18} color="#fff" />
+                        </button>
+                    </div>
+
+                    {/* Thumbnails */}
+                    <div className="mp-thumbs flex gap-2 items-center overflow-x-auto max-w-[400px] py-1 px-0.5">
                         {mediaFiles[currentChatId] && mediaFiles[currentChatId].map((file, index) => (
                             <PreviewBox file={file} key={file.preview} autoSelect={index} />
                         ))}
                         <PreviewBox key={"xhdsdskffdfdofdo"} />
                     </div>
-
-                    <button className="mp-send-btn" onClick={handleSend}>
-                        <Send size={18} color="#fff" />
-                    </button>
                 </div>
             </div>
         </>
@@ -289,7 +180,10 @@ const PreviewBox = function ({
 
     if (!file) {
         return (
-            <div className="pb-add">
+            <div
+                className="pb-add flex-shrink-0 flex items-center justify-center w-[52px] h-[52px] rounded-[10px] cursor-pointer transition-all duration-[180ms]"
+                style={{ border: '1.5px dashed rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.04)' }}
+            >
                 <FileUpload UploadIcon={"plus"} />
             </div>
         )
@@ -300,10 +194,17 @@ const PreviewBox = function ({
             key={key}
             onMouseEnter={() => setVisible(true)}
             onMouseLeave={() => setVisible(false)}
-            className={`pb-wrap ${currentFile?.preview === file?.preview ? 'active' : ''}`}
+            className={`pb-wrap relative flex-shrink-0 w-[52px] h-[52px] rounded-[10px] cursor-pointer transition-transform duration-150 border-2 overflow-visible
+                ${currentFile?.preview === file?.preview
+                    ? 'border-[#6366f1] shadow-[0_0_0_2px_rgba(99,102,241,0.3)]'
+                    : 'border-transparent'
+                }`}
         >
             {visible && (
-                <div className="pb-remove" onClick={handleRemoveMedia}>
+                <div
+                    className="pb-remove absolute -top-[6px] -right-[6px] z-20 flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#ef4444] border-2 border-[#0a0b0f]"
+                    onClick={handleRemoveMedia}
+                >
                     <X size={9} color="#fff" strokeWidth={3} />
                 </div>
             )}
@@ -312,7 +213,7 @@ const PreviewBox = function ({
                 onClick={() => handlePreviewChange(file)}
                 src={file?.preview}
                 alt=""
-                className="pb-img"
+                className="w-full h-full object-cover rounded-[8px] block"
             />
         </div>
     )

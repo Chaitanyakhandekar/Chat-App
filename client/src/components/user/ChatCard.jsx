@@ -54,142 +54,16 @@ function ChatCard({
     return (
         <>
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap');
 
-                .chat-card {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    padding: 10px 12px;
-                    border-radius: 12px;
-                    cursor: pointer;
-                    margin-bottom: 2px;
-                    position: relative;
-                    transition: background 0.18s ease;
-                    font-family: 'Sora', sans-serif;
-                }
-
-                .chat-card:hover {
-                    background: rgba(255,255,255,0.05);
-                }
-
-                .chat-card:active {
-                    background: rgba(99,102,241,0.1);
-                }
-
-                .chat-card-avatar-wrap {
-                    position: relative;
-                    flex-shrink: 0;
-                    width: 44px;
-                    height: 44px;
-                }
-
-                .chat-card-avatar {
-                    width: 44px;
-                    height: 44px;
-                    border-radius: 50%;
-                    object-fit: cover;
-                    border: 2px solid rgba(255,255,255,0.07);
-                    display: block;
-                }
-
-                .chat-card-online-dot {
-                    position: absolute;
-                    bottom: 1px;
-                    right: 1px;
-                    width: 10px;
-                    height: 10px;
-                    background: #22d3a0;
-                    border-radius: 50%;
-                    border: 2px solid #0e1018;
-                    box-shadow: 0 0 6px #22d3a0;
-                }
-
-                .chat-card-body {
-                    flex: 1;
-                    min-width: 0;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 2px;
-                }
-
-                .chat-card-name {
-                    font-size: 13.5px;
-                    font-weight: 600;
-                    color: #f1f2f7;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    letter-spacing: -0.2px;
-                }
-
-                .chat-card-sub {
-                    font-size: 11.5px;
-                    color: #4a4e6a;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-
-                .chat-card-sub.typing {
-                    color: #22d3a0;
-                    display: flex;
-                    align-items: center;
-                    gap: 4px;
-                }
-
-                .typing-dots {
-                    display: flex;
-                    gap: 2px;
-                    align-items: center;
-                }
-
-                .typing-dots span {
-                    width: 3px;
-                    height: 3px;
-                    background: #22d3a0;
-                    border-radius: 50%;
-                    animation: blink-card 1.2s infinite;
-                }
-
-                .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-                .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-
+                .typing-dot-card { animation: blink-card 1.2s infinite; }
+                .typing-dot-card:nth-child(2) { animation-delay: 0.2s; }
+                .typing-dot-card:nth-child(3) { animation-delay: 0.4s; }
                 @keyframes blink-card {
                     0%, 80%, 100% { opacity: 0.2; }
                     40% { opacity: 1; }
                 }
-
-                .chat-card-right {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: flex-end;
-                    gap: 5px;
-                    flex-shrink: 0;
-                }
-
-                .chat-card-time {
-                    font-size: 10.5px;
-                    color: #4a4e6a;
-                    font-family: 'JetBrains Mono', monospace;
-                    letter-spacing: -0.3px;
-                }
-
-                .chat-card-badge {
-                    min-width: 18px;
-                    height: 18px;
-                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-                    border-radius: 20px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 0 5px;
-                    font-size: 10px;
-                    font-weight: 700;
-                    color: #fff;
-                    box-shadow: 0 2px 8px rgba(99,102,241,0.45);
-                    font-family: 'Sora', sans-serif;
-                }
+                .chat-card-time { font-family: 'JetBrains Mono', monospace; }
             `}</style>
 
             <div
@@ -203,26 +77,40 @@ function ChatCard({
                         createSingleChat();
                     }
                 }}
-                className="chat-card"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer mb-0.5 transition-all duration-[180ms] hover:bg-white/[0.05] active:bg-[rgba(99,102,241,0.1)]"
+                style={{ fontFamily: "'Sora', sans-serif" }}
             >
                 {/* Avatar */}
-                <div className="chat-card-avatar-wrap">
-                    <img className="chat-card-avatar" src={user.avtar} alt="" />
-                    {online && <div className="chat-card-online-dot" />}
+                <div className="relative flex-shrink-0 w-11 h-11">
+                    <img
+                        src={user.avtar}
+                        alt=""
+                        className="w-11 h-11 rounded-full object-cover border-2 border-white/[0.07] block"
+                    />
+                    {online && (
+                        <div
+                            className="absolute bottom-[1px] right-[1px] w-2.5 h-2.5 rounded-full bg-[#22d3a0] border-2 border-[#0e1018]"
+                            style={{ boxShadow: '0 0 6px #22d3a0' }}
+                        />
+                    )}
                 </div>
 
-                {/* Name + typing/status */}
-                <div className="chat-card-body">
-                    <span className="chat-card-name">{user.username}</span>
+                {/* Name + status */}
+                <div className="flex flex-col flex-1 min-w-0 gap-[2px]">
+                    <span className="text-[13.5px] font-semibold text-[#f1f2f7] tracking-[-0.2px] truncate">
+                        {user.username}
+                    </span>
                     {typing ? (
-                        <span className="chat-card-sub typing">
-                            <span className="typing-dots">
-                                <span /><span /><span />
+                        <span className="flex items-center gap-1 text-[11.5px] text-[#22d3a0] truncate">
+                            <span className="flex gap-[2px] items-center">
+                                <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
+                                <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
+                                <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
                             </span>
                             typing
                         </span>
                     ) : (
-                        <span className="chat-card-sub">
+                        <span className="text-[11.5px] text-[#4a4e6a] truncate">
                             {online ? 'Online' : ''}
                         </span>
                     )}
@@ -230,9 +118,18 @@ function ChatCard({
 
                 {/* Time + unread badge */}
                 {newMessages > 0 && (
-                    <div className="chat-card-right">
-                        {time && <span className="chat-card-time">{time}</span>}
-                        <div className="chat-card-badge">{newMessages}</div>
+                    <div className="flex flex-col items-end gap-[5px] flex-shrink-0">
+                        {time && (
+                            <span className="chat-card-time text-[10.5px] text-[#4a4e6a] tracking-[-0.3px]">
+                                {time}
+                            </span>
+                        )}
+                        <div
+                            className="flex items-center justify-center min-w-[18px] h-[18px] px-[5px] rounded-[20px] text-[10px] font-bold text-white"
+                            style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 2px 8px rgba(99,102,241,0.45)' }}
+                        >
+                            {newMessages}
+                        </div>
                     </div>
                 )}
             </div>

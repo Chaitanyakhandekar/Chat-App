@@ -389,7 +389,12 @@ function Home() {
                             </nav>
 
                             {isMedia ? (
-                                <MediaPreview isMedia={isMedia} handleSend={handleSend} />
+                                <MediaPreview
+                                    isMedia={isMedia}
+                                    handleSend={handleSend}
+                                    message={message}
+                                    setMessage={setMessage}
+                                />
                             ) : (
                                 <>
                                     {/* Messages */}
