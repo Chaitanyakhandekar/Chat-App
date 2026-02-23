@@ -2,7 +2,7 @@ import axios from "axios";
 
 class ChatApi{
    constructor(){
-        this.baseUrl = `${import.meta.env.VITE_BACKEND_URL}/api/chats`
+        this.baseUrl = `${import.meta.env.VITE_ENV === "production" ? import.meta.env.VITE_BACKEND_URL_PROD : import.meta.env.VITE_BACKEND_URL}/api/chats`
     }
 
     createSingleChat = async (otherUserId) =>{

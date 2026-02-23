@@ -2,7 +2,7 @@ import axios from "axios";
 
 class UserApi{
     constructor(){
-        this.baseUrl = "http://localhost:3000/api/users"
+        this.baseUrl = `${import.meta.env.VITE_ENV === "production" ? import.meta.env.VITE_BACKEND_URL_PROD : import.meta.env.VITE_BACKEND_URL}/api/users`
     }
 
     registerUser = async (userData) => {

@@ -2,7 +2,7 @@ import axios from "axios";
 
 class MessageApi{
     constructor(){
-        this.baseUrl = `${import.meta.env.VITE_BACKEND_URL}/api/messages`
+        this.baseUrl = `${import.meta.env.VITE_ENV === "production" ? import.meta.env.VITE_BACKEND_URL_PROD : import.meta.env.VITE_BACKEND_URL}/api/messages`
     }
 
     getConversation = async (otherUserId) =>{
