@@ -1,4 +1,4 @@
-import { httpServer } from "../../server.js";
+import { httpServer } from "../server.js";
 import { parseCookies } from "./utils/cookieParser.js";
 import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
