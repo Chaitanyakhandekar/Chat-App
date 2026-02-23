@@ -9,13 +9,17 @@ export const onlineStatusHandler = async(io,socket)=>{
 
     addUserSocket(socket.user?._id.toString(),socket.id)  // maping socket.id with user id in memory
 
-    let userChatPartners = JSON.parse(await redis.get(`chat-participants-${socket.user._id}`))      // Checking In Redis cache if chat partners of user are already cached
+    let userChatPartners;
+
+   try {
+      userChatPartners = JSON.parse(await redis.get(`chat-participants-${socket.user._id}`))      // Checking In Redis cache if chat partners of user are already cached
+   } catch (error) {
+    console.log("Redis Error :: ", error.message)
+   }
 
     if(!userChatPartners){      // if not cached then get from database and cache it
         userChatPartners = await getUserChatPartners(socket.user._id)   // getting all chat partners of user to notify them about online status
-        await redis.set(`chat-participants-${socket.user._id}`,JSON.stringify(userChatPartners),{
-            EX:300    // cache will expire in 5 minutes
-        })
+        await redis.set(`chat-participants-${socket.user._id}`,JSON.stringify(userChatPartners))
     }
         // console.log("User Chat Partners : ",userChatPartners)
     
