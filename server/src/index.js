@@ -1,7 +1,7 @@
-import connectDB from "./src/db/db.js"
+import connectDB from "./db/db.js"
 import {httpServer} from "./server.js";
-import { initializeSocket } from "./src/sockets/index.js";
-import { redis } from "./src/redis/config.js";
+import { initializeSocket } from "./sockets/index.js";
+import { redis } from "./redis/config.js";
 
 connectDB().then(async () => {
   initializeSocket(); // Initialize socket handlers

@@ -31,9 +31,9 @@ app.use(express.urlencoded({
 app.use(express.static("public"))
 
 
-import userRouter from "./src/routes/user.route.js"
-import messageRouter from "./src/routes/message.route.js"
-import chatRouter from "./src/routes/chat.route.js"
+import userRouter from "./routes/user.route.js"
+import messageRouter from "./routes/message.route.js"
+import chatRouter from "./routes/chat.route.js"
 
 app.use("/api/users",userRouter)
 app.use("/api/messages",messageRouter)
