@@ -3,7 +3,7 @@ import ChatCard from '../../components/user/ChatCard.jsx'
 import { useEffect } from 'react'
 import { userApi } from '../../api/user.api.js'
 import { useContext } from 'react'
-import { authContext } from '../../context/authContext.jsx'
+import { authContext } from '../../context/AuthProvider.jsx'
 import { socket } from '../../socket/socket.js'
 import {
     MessageCircle,

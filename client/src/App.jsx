@@ -5,7 +5,7 @@ import Register from './pages/auth/Register.jsx'
 import Login from './pages/auth/Login.jsx'
 import Home from './pages/user/Home.jsx'
 import { useContext } from 'react'
-import { authContext } from './context/authContext.jsx'
+import { authContext } from './context/AuthProvider.jsx'
 import { userApi } from './api/user.api.js'
 import { userAuthStore } from './store/userStore.js'
 

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useContext } from 'react'
-import { authContext } from '../../context/authContext'
+import { authContext } from '../../context/AuthProvider'
 import { getTime } from '../../services/getTime'
 import {
     CheckIcon,

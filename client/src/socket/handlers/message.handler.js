@@ -1,7 +1,7 @@
 import { useChatStore } from "../../store/useChatStore";
 import { socketEvents } from "../../constants/socketEvents";
 import { useContext } from "react";
-import { authContext } from "../../context/authContext";
+import { authContext } from "../../context/AuthProvider";
 import { userAuthStore } from "../../store/userStore";
 
 export const messageHandler = (socket) =>{
