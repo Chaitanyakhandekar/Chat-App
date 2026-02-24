@@ -6,6 +6,7 @@ import { useChatStore } from '../../store/useChatStore.js';
 import { chatApi } from '../../api/chat.api.js';
 import { userAuthStore } from '../../store/userStore.js';
 import { useAssetsStore } from '../../store/useAssetsStore.js';
+import { useNavigate } from 'react-router-dom';
 
 const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount } = useChatStore.getState();
 
@@ -25,6 +26,7 @@ function ChatCard({
 }) {
 
     const context = useContext(authContext);
+    const navigate = useNavigate()
     const { userChats } = useChatStore();
     const user1 = userAuthStore().user;
     const { scrollToBottomInChat, setScrollToBottomInChat } = useAssetsStore()
@@ -71,7 +73,8 @@ function ChatCard({
                 onClick={() => {
                     if (isChatExists()) {
                         setCurrentChatId(chatId);
-                        setShowSidebar(false)
+                        // setShowSidebar(false)
+                        navigate(`/chat/${chat._id}`)
                         getConversationMessages();
                         resetNewMessagesCount(chatId);
                         setScrollToBottomInChat(true);

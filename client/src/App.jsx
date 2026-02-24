@@ -10,6 +10,7 @@ import { userApi } from './api/user.api.js'
 import { userAuthStore } from './store/userStore.js'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import ProtectedRouteAuth from './components/ProtectedRouteAuth.jsx'
+import Chat from "./pages/user/Chat.jsx"
 
 function App() {
 
@@ -38,7 +39,7 @@ function App() {
     <Route path='/register' element={<ProtectedRouteAuth><Register /></ProtectedRouteAuth>}/>
     <Route path='/login' element={<ProtectedRouteAuth><Login /></ProtectedRouteAuth>}/>
     <Route path='/home' element={<ProtectedRoute><Home /></ProtectedRoute>}/>
-    <Route path='/home/:id' element={<ProtectedRoute><Chat /></ProtectedRoute>}/>
+    <Route path='/chat/:id' element={<ProtectedRoute><Chat /></ProtectedRoute>}/>
 
    </Routes>
   )

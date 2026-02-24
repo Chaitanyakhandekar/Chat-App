@@ -353,7 +353,7 @@ function Home() {
                 {/* ── MAIN CHAT WINDOW ── */}
                 <div className={`
                     noise-bg relative flex flex-col flex-1 h-full bg-[#0c0e16] overflow-hidden
-                    ${showSidebar ? 'hidden' : 'flex'} md:flex
+                    hidden  md:flex
                       `}>
 
                     {/* Ambient orbs */}
