@@ -290,7 +290,7 @@ function Home() {
             `}</style>
 
             {/* Root */}
-            <div className="flex h-screen bg-[#0a0b0f] text-[#f1f2f7] overflow-hidden">
+            <div className="flex h-[100dvh] bg-[#0a0b0f] text-[#f1f2f7] overflow-hidden">
 
                 {/* ── SIDEBAR ── */}
                 <div className={`
@@ -439,9 +439,7 @@ function Home() {
 
                                     {/* Footer */}
                                     <footer
-                                        style={{
-                                            paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)"
-                                        }}
+                                        
                                         className="z-10 flex items-center gap-3 h-20 px-5 border-t border-white/[0.06] bg-[rgba(14,16,24,0.9)] backdrop-blur-xl">
                                         <div className="msg-input-wrap flex flex-1 items-center gap-2 bg-[#1a1d28] border border-white/[0.06] rounded-[20px] px-1 pr-1.5 transition-all duration-200">
                                             <div className="flex items-center px-1 text-[#4a4e6a] flex-shrink-0">
