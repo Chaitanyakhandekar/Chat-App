@@ -290,7 +290,7 @@ function Home() {
             `}</style>
 
             {/* Root */}
-            <div className="flex h-screen bg-[#0a0b0f] text-[#f1f2f7] overflow-hidden">
+            <div className="flex h-[100dvh] bg-[#0a0b0f] text-[#f1f2f7] overflow-hidden">
 
                 {/* ── SIDEBAR ── */}
                 <div className={`
