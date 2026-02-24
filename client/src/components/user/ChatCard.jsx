@@ -20,7 +20,8 @@ function ChatCard({
     online = false,
     chat = null,
     newMessages = 0,
-    time = null
+    time = null,
+    setShowSidebar
 }) {
 
     const context = useContext(authContext);
@@ -70,6 +71,7 @@ function ChatCard({
                 onClick={() => {
                     if (isChatExists()) {
                         setCurrentChatId(chatId);
+                        setShowSidebar(false)
                         getConversationMessages();
                         resetNewMessagesCount(chatId);
                         setScrollToBottomInChat(true);

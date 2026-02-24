@@ -8,6 +8,8 @@ import { useContext } from 'react'
 import { authContext } from './context/AuthProvider.jsx'
 import { userApi } from './api/user.api.js'
 import { userAuthStore } from './store/userStore.js'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
+import ProtectedRouteAuth from './components/ProtectedRouteAuth.jsx'
 
 function App() {
 
@@ -32,10 +34,11 @@ function App() {
   return (
    <Routes>
 
-    <Route path='/' element={<Login />}/>
-    <Route path='/register' element={<Register />}/>
-    <Route path='/login' element={<Login />}/>
-    <Route path='/home' element={<Home />}/>
+    <Route path='/' element={<ProtectedRoute><Home /></ProtectedRoute>}/>
+    <Route path='/register' element={<ProtectedRouteAuth><Register /></ProtectedRouteAuth>}/>
+    <Route path='/login' element={<ProtectedRouteAuth><Login /></ProtectedRouteAuth>}/>
+    <Route path='/home' element={<ProtectedRoute><Home /></ProtectedRoute>}/>
+    <Route path='/home/:id' element={<ProtectedRoute><Chat /></ProtectedRoute>}/>
 
    </Routes>
   )
