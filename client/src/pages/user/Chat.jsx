@@ -297,7 +297,7 @@ function Home() {
                     sidebar-accent relative flex flex-col 
                     w-full md:w-80 md:min-w-[280px] 
                     h-screen bg-[#0e1018] border-r border-white/[0.06]
-                    ${showSidebar ? 'flex' : 'hidden'} md:flex
+                    hidden md:flex
                     `}>
 
                     {/* Brand */}
@@ -353,7 +353,7 @@ function Home() {
                 {/* ── MAIN CHAT WINDOW ── */}
                 <div className={`
                     noise-bg relative flex flex-col flex-1 h-full bg-[#0c0e16] overflow-hidden
-                    hidden  md:flex
+                     md:flex
                       `}>
 
                     {/* Ambient orbs */}
