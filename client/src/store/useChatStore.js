@@ -80,12 +80,28 @@ export const useChatStore = create(
                 })
             },
 
+            addChat:(chat)=>{
+                set((state)=>(
+                    {
+                    userChats:[
+                        ...state.userChats,
+                        chat
+                    ]
+                }
+                ))
+            },
 
             userSearch:[],
 
             setUserSearch:(users)=>{
                 set({
                     userSearch:users
+                })
+            },
+
+            resetUserSearch:()=>{
+                set({
+                    userSearch:[]
                 })
             },
 

@@ -348,7 +348,7 @@ function Home() {
                             />
                         ))}
                         {query && userSearch?.map((chat) => (
-                            <ChatCard key={chat._id} user={chat} searchMode={true} />
+                            <ChatCard key={chat._id} user={chat} searchMode={true} query={query} setQuery={setQuery} />
                         ))}
                     </div>
                 </div>

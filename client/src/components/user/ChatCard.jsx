@@ -22,18 +22,30 @@ function ChatCard({
     chat = null,
     newMessages = 0,
     time = null,
-    setShowSidebar
+    setShowSidebar,
+    query,
+    setQuery
 }) {
 
     const context = useContext(authContext);
     const navigate = useNavigate()
-    const { userChats,setCurrentPreviewFile } = useChatStore();
+    const { userChats,setCurrentPreviewFile,addChat ,resetUserSearch} = useChatStore();
     const user1 = userAuthStore().user;
     const { scrollToBottomInChat, setScrollToBottomInChat } = useAssetsStore()
 
     const createSingleChat = async () => {
         const response = await chatApi.createSingleChat(user._id);
-        if (response.success) {}
+        if (response.success) {
+            addChat(response.data)
+            setCurrentChatId(response.data._id)
+            setCurrentPreviewFile(null)
+            navigate(`/chat/${response.data._id}`)
+             getConversationMessages();
+             resetNewMessagesCount(response.data._id);
+             setScrollToBottomInChat(true);
+             setQuery("")
+             resetUserSearch();
+            }
     }
 
     const getConversationMessages = async () => {

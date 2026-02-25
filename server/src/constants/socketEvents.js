@@ -13,5 +13,6 @@ export const socketEvents = {
     MESSAGE_SEEN_SINGLE_CHAT:"message_seen_single_chat",
     MESSAGE_SENT_SINGLE_CHAT:"message_sent_single_chat",
     MESSAGE_SEEN_ERROR:"message_seen_error",
-    USER_LOGGED_IN:"user_logged_in"
+    USER_LOGGED_IN:"user_logged_in",
+    NEW_SINGLE_CHAT:"new_single_chat",
 }

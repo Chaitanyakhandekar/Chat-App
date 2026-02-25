@@ -19,6 +19,7 @@ export const initializeSocket = () =>{
     }
 })
 
+
 /**
  @description this is the middleware used to communicate only authenticated sockets
  */
@@ -40,3 +41,4 @@ io.on("connection",(socket)=>{    // Listen for client connections
 return io
 
 }
+
