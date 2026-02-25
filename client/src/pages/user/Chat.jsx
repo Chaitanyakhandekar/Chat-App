@@ -23,6 +23,7 @@ import { socketEvents } from '../../constants/socketEvents.js'
 import { useAssetsStore } from '../../store/useAssetsStore.js'
 import FileUpload from '../../components/message/FileUpload.jsx'
 import MediaPreview from '../../components/message/MediaPreview.jsx'
+import SingleFilePreview from '../../components/message/SingleFilePreview.jsx'
 
 function Home() {
 
@@ -53,7 +54,9 @@ function Home() {
         resetNewMessagesCount,
         mediaFiles,
         removeMessage,
-        resetMediaFiles
+        resetMediaFiles,
+        setCurrentPreviewFile,
+            currentPreviewFile
     } = useChatStore()
 
     const {
@@ -405,7 +408,13 @@ function Home() {
                                     message={message}
                                     setMessage={setMessage}
                                 />
-                            ) : (
+                            ) : 
+                            
+                            currentPreviewFile ? (
+                                <SingleFilePreview/>
+                            ):
+
+                            (
                                 <>
                                     {/* Messages */}
                                     <div
@@ -485,6 +494,9 @@ function Home() {
                             </p>
                         </div>
                     )}
+
+                
+
                 </div>
             </div>
         </>
