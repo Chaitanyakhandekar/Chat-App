@@ -23,6 +23,7 @@ import { socketEvents } from '../../constants/socketEvents.js'
 import { useAssetsStore } from '../../store/useAssetsStore.js'
 import FileUpload from '../../components/message/FileUpload.jsx'
 import MediaPreview from '../../components/message/MediaPreview.jsx'
+import SingleFilePreview from '../../components/message/SingleFilePreview.jsx'
 
 function Home() {
 
@@ -53,7 +54,9 @@ function Home() {
         resetNewMessagesCount,
         mediaFiles,
         removeMessage,
-        resetMediaFiles
+        resetMediaFiles,
+        setCurrentPreviewFile,
+            currentPreviewFile
     } = useChatStore()
 
     const {
@@ -312,8 +315,8 @@ function Home() {
                     </div>
 
                     {/* Search */}
-                    <div className="relative px-4 pb-4">
-                        <Search className="absolute left-8 top-1/2 -translate-y-1/2 pointer-events-none text-[#4a4e6a]" size={15} />
+                    <div className="relative px-4 pb-4 ">
+                        <Search className="absolute left-8 bottom-[50%]  pointer-events-none text-[#4a4e6a]" size={15} />
                         <input
                             type="text"
                             placeholder="Search conversations..."
@@ -345,7 +348,7 @@ function Home() {
                             />
                         ))}
                         {query && userSearch?.map((chat) => (
-                            <ChatCard key={chat._id} user={chat} searchMode={true} />
+                            <ChatCard key={chat._id} user={chat} searchMode={true} query={query} setQuery={setQuery} />
                         ))}
                     </div>
                 </div>
@@ -405,7 +408,13 @@ function Home() {
                                     message={message}
                                     setMessage={setMessage}
                                 />
-                            ) : (
+                            ) : 
+                            
+                            currentPreviewFile ? (
+                                <SingleFilePreview/>
+                            ):
+
+                            (
                                 <>
                                     {/* Messages */}
                                     <div
@@ -485,6 +494,9 @@ function Home() {
                             </p>
                         </div>
                     )}
+
+                
+
                 </div>
             </div>
         </>

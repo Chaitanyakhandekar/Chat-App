@@ -14,7 +14,7 @@ class ChatApi{
                 }
             );
 
-            // console.log("Create Single Chat Response :: ",response);
+            console.log("Create Single Chat Response :: ",response.data.data);
 
             return {
                 success:true,

@@ -15,7 +15,7 @@ function Message({ msg, key }) {
 
     const context = useContext(authContext)
     const { user } = userAuthStore()
-    const { resetNewMessagesCount } = useChatStore()
+    const { resetNewMessagesCount, setCurrentPreviewFile , currentPreviewFile} = useChatStore()
 
     const messageRef = React.useRef(null)
 
@@ -98,7 +98,11 @@ function Message({ msg, key }) {
                 >
                     {/* Image */}
                     {hasImage && (
-                        <div className="relative w-full min-w-[180px] max-w-[320px]">
+                        <div
+                        onClick={()=>{
+                            setCurrentPreviewFile( msg.attachments[0]?.secure_url || msg.attachments[0]?.preview )
+                        }}
+                         className="relative w-full min-w-[180px] max-w-[320px] cursor-pointer">
                             <img
                                 className="block w-full object-cover rounded-[inherit]"
                                 src={msg.attachments[0]?.preview || msg.attachments[0]?.secure_url}

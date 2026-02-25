@@ -4,6 +4,8 @@ import { useContext } from 'react'
 import {authContext} from '../../context/AuthProvider.jsx'
 import { useNavigate } from 'react-router-dom'
 import { userAuthStore } from '../../store/userStore.js'
+import { socket } from '../../socket/socket.js'
+import { socketEvents } from '../../constants/socketEvents.js'
 
 function Login() {
 
@@ -36,6 +38,7 @@ function Login() {
             // authData.setIsLoggedIn(true);
             // authData.setUser(response.data);
             console.log("User set in context:",response.data);
+            socket.emit(socketEvents.USER_LOGGED_IN)
             navigate('/home')
         }
         console.log("Login response:",response);

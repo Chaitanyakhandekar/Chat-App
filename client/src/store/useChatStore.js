@@ -80,12 +80,28 @@ export const useChatStore = create(
                 })
             },
 
+            addChat:(chat)=>{
+                set((state)=>(
+                    {
+                    userChats:[
+                        ...state.userChats,
+                        chat
+                    ]
+                }
+                ))
+            },
 
             userSearch:[],
 
             setUserSearch:(users)=>{
                 set({
                     userSearch:users
+                })
+            },
+
+            resetUserSearch:()=>{
+                set({
+                    userSearch:[]
                 })
             },
 
@@ -212,6 +228,14 @@ export const useChatStore = create(
             setCurrentFile:(file)=>{
                 set({
                     currentFile:file
+                })
+            },
+
+            currentPreviewFile:{},
+
+            setCurrentPreviewFile:(file)=>{
+                set({
+                    currentPreviewFile:file
                 })
             }
 
