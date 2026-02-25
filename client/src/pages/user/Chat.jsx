@@ -315,8 +315,8 @@ function Home() {
                     </div>
 
                     {/* Search */}
-                    <div className="relative px-4 pb-4">
-                        <Search className="absolute left-8 top-1/2 -translate-y-1/2 pointer-events-none text-[#4a4e6a]" size={15} />
+                    <div className="relative px-4 pb-4 ">
+                        <Search className="absolute left-8 bottom-[50%]  pointer-events-none text-[#4a4e6a]" size={15} />
                         <input
                             type="text"
                             placeholder="Search conversations..."
