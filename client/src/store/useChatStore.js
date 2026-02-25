@@ -215,7 +215,7 @@ export const useChatStore = create(
                 })
             },
 
-            currentPreviewFile:null,
+            currentPreviewFile:{},
 
             setCurrentPreviewFile:(file)=>{
                 set({

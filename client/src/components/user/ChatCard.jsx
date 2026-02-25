@@ -27,7 +27,7 @@ function ChatCard({
 
     const context = useContext(authContext);
     const navigate = useNavigate()
-    const { userChats } = useChatStore();
+    const { userChats,setCurrentPreviewFile } = useChatStore();
     const user1 = userAuthStore().user;
     const { scrollToBottomInChat, setScrollToBottomInChat } = useAssetsStore()
 
@@ -73,7 +73,7 @@ function ChatCard({
                 onClick={() => {
                     if (isChatExists()) {
                         setCurrentChatId(chatId);
-                        // setShowSidebar(false)
+                       setCurrentPreviewFile(null)
                         navigate(`/chat/${chat._id}`)
                         getConversationMessages();
                         resetNewMessagesCount(chatId);
