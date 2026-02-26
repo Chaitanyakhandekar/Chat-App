@@ -1,6 +1,6 @@
 import React from 'react'
-import { userAuthStore } from '../store/userStore'
-import Login from '../pages/auth/Login'
+import { userAuthStore } from '../../store/userStore'
+import Login from '../../pages/auth/Login'
 import { Navigate } from 'react-router-dom'
 
 function ProtectedRoute({children}) {
