@@ -729,10 +729,9 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     bio,
   } = req.body
 
-  const fields = [name, username, bio]
-  const fieldsName = ["name", "username", "bio"]
+  console.log("Update Profile Request Body =", req.body);
 
-  if((!name || name && name.trim() === "") || (!username || username && username.trim() === "" ) || (!bio || bio && bio.trim() === "")){
+  if((!name || (name && name.trim() === "")) && (!username || (username && username.trim() === "") ) && (!bio || (bio && bio.trim() === ""))){
     throw new ApiError(400,"Atleast 1 Filed is Required for Update.")
   }
 
@@ -759,7 +758,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   const updatedProfile = await User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: updateFields
+      $set: updateFileds
     },
     {
       new: true

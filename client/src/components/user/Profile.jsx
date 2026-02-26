@@ -4,6 +4,7 @@ import {
     X, User, Settings, LogOut, ChevronRight, ChevronLeft,
     Camera, Check, Bell, Shield, Palette, Globe, Trash2
 } from 'lucide-react'
+import { userApi } from '../../api/user.api'
 
 function Profile({ setActivePanel = () => {} }) {
 
@@ -122,6 +123,17 @@ function Profile({ setActivePanel = () => {} }) {
 
 /* ─── MAIN VIEW ─────────────────────────────────── */
 function MainView({ user, setActivePanel, setView }) {
+
+    const handleSignOut = async () => {
+        const response = await userApi.logoutUser();
+        console.log("Logout Response:", response);
+        if(response.success){
+            setActivePanel(null);
+        } else {
+            console.error("Logout failed:", response.message);
+        }
+    }
+
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
@@ -177,7 +189,9 @@ function MainView({ user, setActivePanel, setView }) {
                 </div>
 
                 {/* Sign out pushed to bottom */}
-                <div className="mt-auto pt-4 pb-3">
+                <div
+                onClick={handleSignOut}
+                className="mt-auto pt-4 pb-3">
                     <div className="panel-divider mb-3" />
                     <div className="action-row" style={{ color: '#f87171' }}>
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -200,10 +214,20 @@ function EditProfileView({ user, setView }) {
     const [saved, setSaved] = useState(false)
     const fileRef = useRef(null)
 
-    const handleSave = () => {
-        // existing save logic goes here
-        setSaved(true)
-        setTimeout(() => setSaved(false), 2000)
+    const handleSave = async () => {
+        
+        const updatedData = { name, username, bio }
+
+        console.log("Updated profile data to save:", updatedData)
+
+        const response = await userApi.updateProfile(updatedData)
+
+        if (response.success) {
+            setSaved(true)
+            
+        } else {
+            alert("Error saving profile changes. Please try again.")
+        }
     }
 
     return (
