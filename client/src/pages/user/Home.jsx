@@ -33,6 +33,8 @@ import FileUpload from '../../components/message/FileUpload.jsx'
 import MediaPreview from '../../components/message/MediaPreview.jsx'
 import SingleFilePreview from '../../components/message/SingleFilePreview.jsx'
 import Profile from '../../components/user/Profile.jsx'
+import CreateGroup from '../../components/user/CreateGroup.jsx'
+import SettingsPanel from '../../components/user/Settings.jsx'
 
 function Home() {
 
@@ -468,81 +470,12 @@ function Home() {
 
                     {/* ── Panel: new group ── */}
                     {activePanel === 'newGroup' && (
-                        <div className="slide-in-panel flex flex-col h-full">
-                            <div className="flex items-center justify-between px-5 pt-6 pb-4">
-                                <span className="text-[15px] font-bold tracking-tight">New Group</span>
-                                <button onClick={() => setActivePanel(null)} className="text-[#4a4e6a] hover:text-[#818cf8] transition-colors">
-                                    <X size={16} />
-                                </button>
-                            </div>
-                            <div className="panel-divider" />
-                            <div className="px-4 flex flex-col gap-3 pb-4 flex-1 overflow-y-auto custom-scroll">
-                                <div>
-                                    <label className="text-[10.5px] uppercase tracking-[1px] text-[#4a4e6a] font-semibold mb-1.5 block">Group Name</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. Design Team"
-                                        className="w-full py-2.5 px-3.5 bg-[#1a1d28] border border-white/[0.06] rounded-[12px] text-[13.5px] text-[#f1f2f7] outline-none placeholder-[#4a4e6a] search-input transition-all duration-200"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10.5px] uppercase tracking-[1px] text-[#4a4e6a] font-semibold mb-1.5 block">Add Members</label>
-                                    <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#4a4e6a]" size={13} />
-                                        <input
-                                            type="text"
-                                            placeholder="Search users…"
-                                            className="w-full py-2.5 pl-8 pr-3.5 bg-[#1a1d28] border border-white/[0.06] rounded-[12px] text-[13.5px] text-[#f1f2f7] outline-none placeholder-[#4a4e6a] search-input transition-all duration-200"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex flex-col gap-1">
-                                    {users?.slice(0, 8).map(chat => {
-                                        const u = chat.participants[0]._id === user._id ? chat.participants[1] : chat.participants[0]
-                                        return (
-                                            <label key={chat._id} className="action-row" style={{ cursor: 'pointer' }}>
-                                                <input type="checkbox" className="w-3.5 h-3.5 accent-indigo-500 flex-shrink-0" />
-                                                <img src={u.avtar} alt="" className="w-7 h-7 rounded-full object-cover border border-white/[0.07]" />
-                                                <span className="text-[13px] text-[#c4c6e7]">{u.username}</span>
-                                            </label>
-                                        )
-                                    })}
-                                </div>
-                                <button
-                                    className="w-full py-2.5 rounded-[12px] text-[13.5px] font-semibold text-white mt-1 transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
-                                    style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 14px rgba(99,102,241,0.35)' }}
-                                >
-                                    Create Group
-                                </button>
-                            </div>
-                        </div>
+                      <CreateGroup setActivePanel={setActivePanel} users={users} />
                     )}
 
                     {/* ── Panel: settings ── */}
                     {activePanel === 'settings' && (
-                        <div className="slide-in-panel flex flex-col h-full">
-                            <div className="flex items-center justify-between px-5 pt-6 pb-4">
-                                <span className="text-[15px] font-bold tracking-tight">Settings</span>
-                                <button onClick={() => setActivePanel(null)} className="text-[#4a4e6a] hover:text-[#818cf8] transition-colors">
-                                    <X size={16} />
-                                </button>
-                            </div>
-                            <div className="panel-divider" />
-                            <div className="px-3 flex flex-col gap-0.5">
-                                {[
-                                    { label: 'Notifications', icon: Bell },
-                                    { label: 'Privacy & Security', icon: User },
-                                    { label: 'Appearance', icon: Zap },
-                                    { label: 'Blocked Users', icon: X },
-                                ].map(({ label, icon: Icon }) => (
-                                    <div key={label} className="action-row">
-                                        <Icon size={15} color="#6366f1" />
-                                        <span>{label}</span>
-                                        <ChevronRight size={13} color="#4a4e6a" className="ml-auto" />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        <SettingsPanel setActivePanel={setActivePanel} />
                     )}
 
                     {/* ── Default: chats list ── */}
