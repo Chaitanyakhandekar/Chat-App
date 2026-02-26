@@ -8,8 +8,8 @@ import { useContext } from 'react'
 import { authContext } from './context/AuthProvider.jsx'
 import { userApi } from './api/user.api.js'
 import { userAuthStore } from './store/userStore.js'
-import ProtectedRoute from './components/ProtectedRoute.jsx'
-import ProtectedRouteAuth from './components/ProtectedRouteAuth.jsx'
+import ProtectedRoute from './components/guards/ProtectedRoute.jsx'
+import ProtectedRouteAuth from './components/guards/ProtectedRouteAuth.jsx'
 import Chat from "./pages/user/Chat.jsx"
 
 function App() {

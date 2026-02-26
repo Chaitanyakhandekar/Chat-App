@@ -32,6 +32,10 @@ const userSchema = new mongoose.Schema({
         type:String,
         default:"https://static.vecteezy.com/system/resources/previews/024/983/914/non_2x/simple-user-default-icon-free-png.png"
     },
+    bio:{
+        type:String,
+        default:""
+    },
     refreshToken:{
         type:String,
     },

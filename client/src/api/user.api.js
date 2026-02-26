@@ -44,6 +44,25 @@ class UserApi{
         }
     }
 
+    logoutUser = async () => {
+        try {
+            const response = await axios.get(`${this.baseUrl}/logout`,{
+                withCredentials:true
+            });
+            return {
+                success:true,
+                message:response.data.message,
+                data: response.data.data
+            }
+        } catch (error) {
+            return {
+                success:false,
+                message:error.message,
+                error: error
+            }
+        }
+    }
+
     getAllUsers = async () => {
         try {
             const response = await axios.get(`${this.baseUrl}/all`,{
@@ -90,6 +109,28 @@ class UserApi{
             const response = await axios.get(`${this.baseUrl}/search/?query=${query}`,{
                 withCredentials:true
             });
+            return {
+                success:true,
+                message:response.data.message,
+                data: response.data.data
+            }
+        } catch (error) {
+            return {
+                success:false,
+                message:error.message,
+                error: error
+            }
+        }
+    }
+
+    updateProfile = async (profileData) => {
+        try {
+            const response = await axios.put(`${this.baseUrl}/update-profile`, profileData,{
+                withCredentials:true
+            });
+
+            console.log("Update Profile Response :: ", response.data);
+
             return {
                 success:true,
                 message:response.data.message,

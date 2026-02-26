@@ -80,6 +80,12 @@ function Message({ msg, key }) {
 
             {/* Row */}
             <div
+                onMouseDown={() => {
+                    setTimeout(()=>{
+                //   alert("Message: " + msg?.message + "\n\nCreated At: " + new Date(msg.createdAt).toLocaleString())
+
+                    }, 2000)
+                }}
                 ref={messageRef}
                 key={key}
                 className={`msg-anim flex mb-1.5 px-1 ${isSent ? 'justify-end' : 'justify-start'}`}
