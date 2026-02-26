@@ -726,57 +726,35 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   const {
     name,
     username,
-    location,
-    website,
-    githubUrl,
-    twitterUrl,
-    linkedinUrl,
     bio,
-    skills,
   } = req.body
 
-  const fields = [name, username, location, website, githubUrl, twitterUrl, linkedinUrl, bio]
-  const fieldsName = ["name", "username", "location", "website", "githubUrl", "twitterUrl", "linkedinUrl", "bio"]
-  let updateFields = {}
-  let throwError = false
-  let skillError = false
-  let filteredSkills
+  const fields = [name, username, bio]
+  const fieldsName = ["name", "username", "bio"]
 
-  if (skills) {
-    if (!Array.isArray(skills)) {
-      throw new ApiError(400, "Skills Must Be Array.")
-    }
-    if (Array.isArray(skills) && !skills.length) {
-      skillError = true
-    }
-    else if (Array.isArray(skills) && skills.length) {
+  if((!name || name && name.trim() === "") || (!username || username && username.trim() === "" ) || (!bio || bio && bio.trim() === "")){
+    throw new ApiError(400,"Atleast 1 Filed is Required for Update.")
+  }
 
-      filteredSkills = skills.filter(skill => skill && skill.trim() !== "")
-      if (!filteredSkills.length) {
-        skillError = true
-      }
+  const updateFileds = {}
+
+  if(name){
+    if(name.trim() !== ""){
+      updateFileds.name = name
     }
   }
 
-  if (!fields.some(field => field)) {
-    throwError = true
-  }
-
-  if (throwError && skillError) {
-    throw new ApiError(400, "Atleast One Field is Required for Profile Update.")
-  }
-
-  fields.forEach((field, index) => {
-    if (field && field.trim() !== "") {
-      updateFields = { ...updateFields, [fieldsName[index]]: field }
+  if(username){
+    if(username.trim() !== ""){
+      updateFileds.username = username
     }
-  })
-
-  if (skills && skills.length) {
-    updateFields.skills = filteredSkills
   }
 
-  console.log("Update Fields = ", updateFields)
+  if(bio){
+    if(bio.trim() !== ""){
+      updateFileds.bio = bio
+    }
+  }
 
   const updatedProfile = await User.findByIdAndUpdate(
     req.user._id,
@@ -786,7 +764,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     {
       new: true
     }
-  ).select("-password -refreshToken -verificationToken -verificationTokenExpiry -email")
+  ).select("-password -refreshToken")
 
   if (!updatedProfile) {
     throw new ApiError(500, "Server Error While Updating Profile Details.")
