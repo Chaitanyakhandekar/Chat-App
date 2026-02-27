@@ -13,7 +13,8 @@ const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersI
 function ChatCard({
     user = {
         name: "John Doe",
-        avatar: "https://static.vecteezy.com/system/resources/previews/024/983/914/non_2x/simple-user-default-icon-free-png.png"
+        avatar: "https://static.vecteezy.com/system/resources/previews/024/983/914/non_2x/simple-user-default-icon-free-png.png",
+        groupName:""
     },
     searchMode = false,
     chatId = null,
@@ -24,7 +25,8 @@ function ChatCard({
     time = null,
     setShowSidebar,
     query,
-    setQuery
+    setQuery,
+    isGroupChat = false
 }) {
 
     const context = useContext(authContext);
@@ -59,7 +61,7 @@ function ChatCard({
     const isChatExists = () => {
         let isExists = false;
         userChats.forEach((chat) => {
-            if (chat.participants[0]._id === user._id || chat.participants[1]._id === user._id) {
+            if (chat.participants[0]?._id === user._id || chat.participants[1]?._id === user._id) {
                 isExists = true;
             }
         })
@@ -115,7 +117,7 @@ function ChatCard({
                 {/* Name + status */}
                 <div className="flex flex-col flex-1 min-w-0 gap-[2px]">
                     <span className="text-[13.5px] font-semibold text-[#f1f2f7] tracking-[-0.2px] truncate">
-                        {user.username}
+                        {user?.username || chat?.groupName }
                     </span>
                     {typing ? (
                         <span className="flex items-center gap-1 text-[11.5px] text-[#22d3a0] truncate">

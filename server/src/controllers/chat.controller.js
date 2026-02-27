@@ -61,7 +61,7 @@ const createGroupChat = asyncHandler(async (req, res) => {
         throw new ApiError(400,"GroupName is Required.")
     }
 
-    groupData = {
+   let groupData = {
         groupName,
         createdBy:req.user._id,
         isGroupChat:true,
@@ -82,7 +82,12 @@ const createGroupChat = asyncHandler(async (req, res) => {
         }
     }
 
-    groupData.participants.push(new mongoose.Types.ObjectId(req.user._id))      // adding admin as participant
+    if(!groupData.participants || groupData.participants.length === 0){
+        groupData.participants = [req.user._id]
+    }
+    else{
+        groupData.participants.push(req.user._id)
+    }
 
     const newGroup = await Chat.create(groupData)
 
@@ -96,7 +101,6 @@ const createGroupChat = asyncHandler(async (req, res) => {
             new ApiResponse(201,newGroup,"New Group Created")
         )
 
-        
 
 })
 
