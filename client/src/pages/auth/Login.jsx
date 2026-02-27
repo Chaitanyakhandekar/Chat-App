@@ -35,10 +35,8 @@ function Login() {
         if(response.success){
             authData.login(response.data);
             setUser1(response.data)
-            // authData.setIsLoggedIn(true);
-            // authData.setUser(response.data);
             console.log("User set in context:",response.data);
-            socket.emit(socketEvents.USER_LOGGED_IN)
+            // socket.emit(socketEvents.USER_LOGGED_IN)
             navigate('/home')
         }
         console.log("Login response:",response);

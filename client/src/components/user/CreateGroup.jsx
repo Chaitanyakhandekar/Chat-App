@@ -47,8 +47,8 @@ function CreateGroup({
                                         return (
                                             <label key={chat._id} className="action-row" style={{ cursor: 'pointer' }}>
                                                 <input type="checkbox" className="w-3.5 h-3.5 accent-indigo-500 flex-shrink-0" />
-                                                <img src={u.avtar} alt="" className="w-7 h-7 rounded-full object-cover border border-white/[0.07]" />
-                                                <span className="text-[13px] text-[#c4c6e7]">{u.username}</span>
+                                                <img src={u?.avtar} alt="" className="w-7 h-7 rounded-full object-cover border border-white/[0.07]" />
+                                                <span className="text-[13px] text-[#c4c6e7]">{u?.username}</span>
                                             </label>
                                         )
                                     })}

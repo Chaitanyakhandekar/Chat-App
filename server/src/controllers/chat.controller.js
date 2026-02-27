@@ -52,6 +52,55 @@ const createSingleChat = asyncHandler(async (req, res) => {
 })
 
 const createGroupChat = asyncHandler(async (req, res) => {
+    const {
+        groupName,
+        participants,
+    } = req.body
+
+    if(!groupName || groupName && groupName.trim() === ""){
+        throw new ApiError(400,"GroupName is Required.")
+    }
+
+   let groupData = {
+        groupName,
+        createdBy:req.user._id,
+        isGroupChat:true,
+        admins:[req.user._id]
+    }
+
+    if(participants && participants.length > 0){
+        let validParticipants = new Array()
+
+        Array.from(participants).forEach((user)=>{
+            if(mongoose.Types.ObjectId.isValid(user)){
+                validParticipants.push(new mongoose.Types.ObjectId(user))
+            }
+        })
+
+        if(validParticipants.length > 0){
+            groupData.participants = validParticipants
+        }
+    }
+
+    if(!groupData.participants || groupData.participants.length === 0){
+        groupData.participants = [req.user._id]
+    }
+    else{
+        groupData.participants.push(req.user._id)
+    }
+
+    const newGroup = await Chat.create(groupData)
+
+    if(!newGroup){
+        throw new ApiError(500,"Server Error While Creating Group.")
+    }
+
+    return res
+        .status(201)
+        .json(
+            new ApiResponse(201,newGroup,"New Group Created")
+        )
+
 
 })
 

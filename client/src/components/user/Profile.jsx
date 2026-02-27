@@ -5,6 +5,7 @@ import {
     Camera, Check, Bell, Shield, Palette, Globe, Trash2
 } from 'lucide-react'
 import { userApi } from '../../api/user.api'
+import { useNavigate } from 'react-router-dom'
 
 function Profile({ setActivePanel = () => {} }) {
 
@@ -124,11 +125,17 @@ function Profile({ setActivePanel = () => {} }) {
 /* ─── MAIN VIEW ─────────────────────────────────── */
 function MainView({ user, setActivePanel, setView }) {
 
+    const { logout } = userAuthStore()
+
+    const navigate = useNavigate()
+
     const handleSignOut = async () => {
         const response = await userApi.logoutUser();
         console.log("Logout Response:", response);
         if(response.success){
-            setActivePanel(null);
+            logout();
+            navigate('/login');
+
         } else {
             console.error("Logout failed:", response.message);
         }

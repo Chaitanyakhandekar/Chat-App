@@ -3,7 +3,8 @@ import {userAuth} from "../middlewares/userAuth.middleware.js"
 import
  {
      createSingleChat,
-     getUserChats
+     getUserChats,
+     createGroupChat
      } from "../controllers/chat.controller.js";
 
 const router = Router();
@@ -11,5 +12,6 @@ const router = Router();
 // router.route("/send").post();
 // router.route("/receive").get();
 router.route("/single/:userId").post(userAuth,createSingleChat)
+router.route("/group").post(userAuth,createGroupChat)
 router.route("/").get(userAuth,getUserChats)
 export default router;
