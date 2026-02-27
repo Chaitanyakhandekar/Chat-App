@@ -10,7 +10,8 @@ function ChatList({
     query="",
     setQuery=()=>{},
     users=[],
-    setShowSidebar=()=>{}
+    setShowSidebar=()=>{},
+    groupsOnly=false
    
 }) {
 
@@ -77,8 +78,9 @@ function ChatList({
 
                             {/* Users */}
                             <div className="flex-1 overflow-y-auto px-2 custom-scroll">
-                                {(!query || query.trim() === "") && users?.map((chat) => (
-                                    <ChatCard
+                                {((!query   || query.trim() === "") && groupsOnly) && users?.map((chat) => (
+                                    chat.isGroupChat ? 
+                                     <ChatCard
                                         key={chat._id}
                                         user={chat.participants[0]._id === user._id ? chat.participants[1] : chat.participants[0]}
                                         searchMode={false}
@@ -89,7 +91,22 @@ function ChatList({
                                         newMessages={chatUsersInfo[chat?._id].newMessages || 0}
                                         time={chatUsersInfo[chat._id].time}
                                         setShowSidebar={setShowSidebar}
-                                    />
+                                    />: <></>
+                                ))}
+                                {((!query  || query.trim() === "") && !groupsOnly) && users?.map((chat) => (
+                                    !chat.isGroupChat ? 
+                                     <ChatCard
+                                        key={chat._id}
+                                        user={chat.participants[0]._id === user._id ? chat.participants[1] : chat.participants[0]}
+                                        searchMode={false}
+                                        chatId={chat._id}
+                                        typing={chatUsersInfo[chat._id]?.typing || false}
+                                        online={onlineStatus[chat.participants[0]?._id === user?._id ? chat.participants[1]?._id : chat.participants[0]?._id] || false}
+                                        chat={chat}
+                                        newMessages={chatUsersInfo[chat?._id].newMessages || 0}
+                                        time={chatUsersInfo[chat._id].time}
+                                        setShowSidebar={setShowSidebar}
+                                    />: <></>
                                 ))}
                                 {query && userSearch?.map((chat) => (
                                     <ChatCard key={chat._id} user={chat} searchMode={true} query={query} setQuery={setQuery} />

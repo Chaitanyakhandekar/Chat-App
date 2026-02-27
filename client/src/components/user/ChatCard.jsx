@@ -102,7 +102,7 @@ function ChatCard({
                 {/* Avatar */}
                 <div className="relative flex-shrink-0 w-11 h-11">
                     <img
-                        src={user.avtar}
+                        src={user.avtar || ""}
                         alt=""
                         className="w-11 h-11 rounded-full object-cover border-2 border-white/[0.07] block"
                     />

@@ -86,6 +86,7 @@ function Home() {
     const [isAtBottom, setIsAtBottom] = React.useState(true);
     const isMedia = mediaFiles[currentChatId]?.length > 0
     const [showSidebar, setShowSidebar] = useState(true)
+    const [groupsOnly, setGroupsOnly] = useState(false)
 
     // Total unread count for notification badge
     const totalUnread = Object.values(chatUsersInfo).reduce((sum, c) => sum + (c?.newMessages || 0), 0)
@@ -201,8 +202,13 @@ function Home() {
     }, [setIsAtBottom])
 
     useEffect(() => {
-        console.log("Messages :: ", messages)
-    }, [messages])
+       if(activePanel !== "newGroup"){
+            setGroupsOnly(true)
+       }else{
+        setGroupsOnly(false)
+       }
+
+    }, [activePanel])
 
     useEffect(() => {
         console.log("Scroll to bottom in chat:", scrollToBottomInChat);
@@ -471,7 +477,8 @@ function Home() {
 
                     {/* ── Panel: new group ── */}
                     {activePanel === 'newGroup' && (
-                        <CreateGroup setActivePanel={setActivePanel} users={users} />
+                        // <CreateGroup setActivePanel={setActivePanel} users={users} />
+                        <ChatList togglePanel={setActivePanel}  query={query} setQuery={setQuery} users={users} setShowSidebar={setShowSidebar} groupsOnly={true} />
                     )}
 
                     {/* ── Panel: settings ── */}
@@ -481,7 +488,7 @@ function Home() {
 
                     {/* ── Default: chats list ── */}
                     {(activePanel === null || activePanel === 'chats') && (
-                        <ChatList togglePanel={setActivePanel}  query={query} setQuery={setQuery} users={users} setShowSidebar={setShowSidebar}/>
+                        <ChatList togglePanel={setActivePanel}  query={query} setQuery={setQuery} users={users} setShowSidebar={setShowSidebar} groupsOnly={false} />
                     )}
                 </div>
 
