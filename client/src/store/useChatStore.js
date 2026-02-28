@@ -237,10 +237,24 @@ export const useChatStore = create(
                 set({
                     currentPreviewFile:file
                 })
+            },
+
+            isGroupChat:false,
+
+
+            setIsGroupChat:(value)=>{
+                set({
+                    isGroupChat:value
+                })
+            },
+
+            groupChat:null,
+
+            setGroupChat:(chat)=>{
+                set({
+                    groupChat:chat
+                })
             }
-
-            
-
 
         }),
         {name:"Chat Store"}

@@ -36,6 +36,7 @@ import Profile from '../../components/user/Profile.jsx'
 import CreateGroup from '../../components/user/CreateGroup.jsx'
 import SettingsPanel from '../../components/user/Settings.jsx'
 import ChatList from '../../components/user/ChatList.jsx'
+import GroupInfo from '../../components/user/GroupInfo.jsx'
 
 function Home() {
 
@@ -71,7 +72,8 @@ function Home() {
         removeMessage,
         resetMediaFiles,
         setCurrentPreviewFile,
-        currentPreviewFile
+        currentPreviewFile,
+        isGroupChat
     } = useChatStore()
 
     const {
@@ -490,6 +492,11 @@ function Home() {
                     {(activePanel === null || activePanel === 'chats') && (
                         <ChatList togglePanel={setActivePanel}  query={query} setQuery={setQuery} users={users} setShowSidebar={setShowSidebar} groupsOnly={false} />
                     )}
+
+                    {/* ── Panel: Group Info ── */}
+                    {(activePanel  === 'groupInfo') && (
+                        <GroupInfo />
+                    )}
                 </div>
 
                 {/* ── MAIN CHAT WINDOW ── */}
@@ -507,7 +514,9 @@ function Home() {
                     {context.currentChatUser ? (
                         <>
                             {/* Nav */}
-                            <nav className="sticky top-0 z-10 flex items-center gap-3.5 h-16 px-6 border-b border-white/[0.06] bg-[rgba(14,16,24,0.85)] backdrop-blur-xl">
+                            <nav
+                            title={isGroupChat ? 'Group Info' : "User Profile"}
+                            className="sticky top-0 z-10 flex items-center gap-3.5 h-16 px-6 border-b border-white/[0.06] bg-[rgba(14,16,24,0.85)] backdrop-blur-xl">
                                 <div className="relative w-10 h-10 flex-shrink-0">
                                     <img
                                         src={context.currentChatUser.avtar}
@@ -521,7 +530,7 @@ function Home() {
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-[15px] font-semibold tracking-tight text-[#f1f2f7]">
-                                        {context.currentChatUser.username}
+                                        {context.currentChatUser?.username}
                                     </span>
                                     {chatUsersInfo[currentChatId]?.typing ? (
                                         <span className="flex items-center gap-1 text-xs text-[#22d3a0] font-medium">
