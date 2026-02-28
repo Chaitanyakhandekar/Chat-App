@@ -11,6 +11,7 @@ import { userAuthStore } from './store/userStore.js'
 import ProtectedRoute from './components/guards/ProtectedRoute.jsx'
 import ProtectedRouteAuth from './components/guards/ProtectedRouteAuth.jsx'
 import Chat from "./pages/user/Chat.jsx"
+import GroupInfo from './components/user/GroupInfo.jsx'
 
 function App() {
 
@@ -40,6 +41,7 @@ function App() {
     <Route path='/login' element={<ProtectedRouteAuth><Login /></ProtectedRouteAuth>}/>
     <Route path='/home' element={<ProtectedRoute><Home /></ProtectedRoute>}/>
     <Route path='/chat/:id' element={<ProtectedRoute><Chat /></ProtectedRoute>}/>
+    <Route path='/chat/:id/group-info' element={<ProtectedRoute><GroupInfo /></ProtectedRoute>}/>
 
    </Routes>
   )

@@ -493,7 +493,7 @@ function Home() {
 
                       {/* ── Panel: Group Info ── */}
                     {(activePanel  === 'groupInfo') && (
-                        <GroupInfo />
+                        <GroupInfo setActivePanel={setActivePanel} activePanel={activePanel} />
                     )}
                 </div>
 
