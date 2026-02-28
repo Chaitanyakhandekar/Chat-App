@@ -260,6 +260,12 @@ function Home() {
         }, 2000);
     };
 
+    const handleChatInfoClick = () =>{
+        if(isGroupChat){
+            setActivePanel("groupInfo")
+        }
+    }
+
     // ── Nav icon button helper ──────────────────────────────────────
     const NavIconBtn = ({ icon: Icon, panel, badge, tooltip }) => {
         const active = activePanel === panel
@@ -516,6 +522,7 @@ function Home() {
                             {/* Nav */}
                             <nav
                             title={isGroupChat ? 'Group Info' : "User Profile"}
+                            onClick={handleChatInfoClick}
                             className="sticky top-0 z-10 flex items-center gap-3.5 h-16 px-6 border-b border-white/[0.06] bg-[rgba(14,16,24,0.85)] backdrop-blur-xl">
                                 <div className="relative w-10 h-10 flex-shrink-0">
                                     <img

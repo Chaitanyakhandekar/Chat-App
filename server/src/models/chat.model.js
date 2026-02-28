@@ -30,6 +30,15 @@ const chatSchema = new mongoose.Schema({
         ref: 'User',
     },
 
+    groupDescription:{
+        type:String,
+    },
+
+    isPrivateGroup:{
+        type:Boolean,
+        default:false
+    },
+
     lastMessage:{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Message"
