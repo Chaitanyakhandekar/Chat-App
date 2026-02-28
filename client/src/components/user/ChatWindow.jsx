@@ -11,7 +11,7 @@ import { useState } from 'react'
 
 
 function ChatWindow({
-
+    activePanel,
 }) {
 
         const context = useContext(authContext);
@@ -38,6 +38,7 @@ function ChatWindow({
         // Emit message via socket
         setMessage("");
         setIsMedia(false);
+        
     }
 
     

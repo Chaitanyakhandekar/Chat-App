@@ -36,6 +36,8 @@ import Profile from '../../components/user/Profile.jsx'
 import CreateGroup from '../../components/user/CreateGroup.jsx'
 import SettingsPanel from '../../components/user/Settings.jsx'
 import ChatList from '../../components/user/ChatList.jsx'
+import GroupInfo from '../../components/user/GroupInfo.jsx'
+import { useNavigate } from 'react-router-dom'
 
 function Home() {
 
@@ -71,7 +73,9 @@ function Home() {
         removeMessage,
         resetMediaFiles,
         setCurrentPreviewFile,
-        currentPreviewFile
+        currentPreviewFile,
+        isGroupChat,
+        groupChat,
     } = useChatStore()
 
     const {
@@ -87,6 +91,7 @@ function Home() {
     const isMedia = mediaFiles[currentChatId]?.length > 0
     const [showSidebar, setShowSidebar] = useState(true)
     const [groupsOnly, setGroupsOnly] = useState(false)
+    const navigate = useNavigate()
 
     // Total unread count for notification badge
     const totalUnread = Object.values(chatUsersInfo).reduce((sum, c) => sum + (c?.newMessages || 0), 0)
@@ -208,6 +213,20 @@ function Home() {
         setGroupsOnly(false)
        }
 
+       switch(activePanel){
+
+        case "newGroup":
+            setGroupsOnly(false)
+            break;
+
+        default:
+            setGroupsOnly(true)
+            break;
+        
+        case "groupInfo":
+            navigate(`/chat/${currentChatId}/group-info`)
+        }
+
     }, [activePanel])
 
     useEffect(() => {
@@ -257,6 +276,12 @@ function Home() {
             isTypingRef.current = false;
         }, 2000);
     };
+
+    const handleChatInfoClick = () =>{
+        if(isGroupChat){
+            setActivePanel("groupInfo")
+        }
+    }
 
     // ── Nav icon button helper ──────────────────────────────────────
     const NavIconBtn = ({ icon: Icon, panel, badge, tooltip }) => {
@@ -490,12 +515,17 @@ function Home() {
                     {(activePanel === null || activePanel === 'chats') && (
                         <ChatList togglePanel={setActivePanel}  query={query} setQuery={setQuery} users={users} setShowSidebar={setShowSidebar} groupsOnly={false} />
                     )}
+
+                    {/* ── Panel: Group Info ──
+                    {(activePanel  === 'groupInfo') && (
+                        <GroupInfo setActivePanel={setActivePanel} activePanel={activePanel}/>
+                    )} */}
                 </div>
 
                 {/* ── MAIN CHAT WINDOW ── */}
                 <div className={`
                     noise-bg relative flex flex-col flex-1 h-full bg-[#0c0e16] overflow-hidden
-                     md:flex
+                   md:flex
                       `}>
 
                     {/* Ambient orbs */}
@@ -507,7 +537,10 @@ function Home() {
                     {context.currentChatUser ? (
                         <>
                             {/* Nav */}
-                            <nav className="sticky top-0 z-10 flex items-center gap-3.5 h-16 px-6 border-b border-white/[0.06] bg-[rgba(14,16,24,0.85)] backdrop-blur-xl">
+                            <nav
+                            title={isGroupChat ? 'Group Info' : "User Profile"}
+                            onClick={handleChatInfoClick}
+                            className="sticky top-0 z-10 flex items-center gap-3.5 h-16 px-6 border-b border-white/[0.06] bg-[rgba(14,16,24,0.85)] backdrop-blur-xl">
                                 <div className="relative w-10 h-10 flex-shrink-0">
                                     <img
                                         src={context.currentChatUser.avtar}
@@ -521,7 +554,7 @@ function Home() {
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-[15px] font-semibold tracking-tight text-[#f1f2f7]">
-                                        {context.currentChatUser.username}
+                                        {context.currentChatUser?.username || (isGroupChat ? groupChat?.groupName : "Unknown User")}
                                     </span>
                                     {chatUsersInfo[currentChatId]?.typing ? (
                                         <span className="flex items-center gap-1 text-xs text-[#22d3a0] font-medium">

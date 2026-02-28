@@ -36,6 +36,7 @@ import Profile from '../../components/user/Profile.jsx'
 import CreateGroup from '../../components/user/CreateGroup.jsx'
 import SettingsPanel from '../../components/user/Settings.jsx'
 import ChatList from '../../components/user/ChatList.jsx'
+import GroupInfo from '../../components/user/GroupInfo.jsx'
 
 function Home() {
 
@@ -488,6 +489,11 @@ function Home() {
                     {/* ── Default: chats list ── */}
                     {(activePanel === null || activePanel === 'chats') && (
                        <ChatList togglePanel={setActivePanel}  query={query} setQuery={setQuery} users={users} setShowSidebar={setShowSidebar} groupsOnly={false} />
+                    )}
+
+                      {/* ── Panel: Group Info ── */}
+                    {(activePanel  === 'groupInfo') && (
+                        <GroupInfo setActivePanel={setActivePanel} activePanel={activePanel} />
                     )}
                 </div>
 

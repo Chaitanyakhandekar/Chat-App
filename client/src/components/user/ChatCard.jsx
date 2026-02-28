@@ -8,7 +8,7 @@ import { userAuthStore } from '../../store/userStore.js';
 import { useAssetsStore } from '../../store/useAssetsStore.js';
 import { useNavigate } from 'react-router-dom';
 
-const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount } = useChatStore.getState();
+const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount , setIsGroupChat, setGroupChat } = useChatStore.getState();
 
 function ChatCard({
     user = {
@@ -87,6 +87,10 @@ function ChatCard({
                 onClick={() => {
                     if (isChatExists()) {
                         setCurrentChatId(chatId);
+                        setIsGroupChat(chat.isGroupChat);
+                        if(chat.isGroupChat){
+                            setGroupChat(chat);
+                        }
                        setCurrentPreviewFile(null)
                         navigate(`/chat/${chat._id}`)
                         getConversationMessages();
