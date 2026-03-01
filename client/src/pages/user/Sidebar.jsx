@@ -79,7 +79,7 @@ function Sidebar({
   return (
     <>
       {/* ICON RAIL */}
-      <div className={`${hideOnMobile ? 'hidden md:flex' : 'flex'} flex-col items-center gap-1.5 w-[62px] min-w-[62px] h-screen bg-[#0a0b0f] border-r border-white/[0.05] pt-5 pb-4 z-30`}>
+      <div className={`${hideOnMobile ? 'hidden md:flex' : 'flex'} flex-col items-center gap-1.5 w-[62px] min-w-[62px] h-[100dvh] bg-[#0a0b0f] border-r border-white/[0.05] pt-5 pb-4 z-30`}>
 
         <div
           className="flex items-center justify-center w-9 h-9 rounded-[11px] mb-4"
