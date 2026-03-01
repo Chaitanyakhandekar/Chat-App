@@ -19,7 +19,9 @@ import {
     Plus,
     LogOut,
     X,
-    ChevronRight
+    ChevronRight,
+    Reply,
+    ImageIcon,
 } from 'lucide-react'
 import Swal from 'sweetalert2';
 import Message from '../../components/message/Message.jsx'
@@ -46,7 +48,6 @@ function Home() {
     const [message, setMessage] = React.useState("")
     const [query, setQuery] = React.useState("")
 
-    // Panel state: null | 'notifications' | 'profile' | 'newGroup' | 'settings'
     const [activePanel, setActivePanel] = useState(null)
 
     const { user } = userAuthStore()
@@ -77,6 +78,10 @@ function Home() {
         currentPreviewFile,
         isGroupChat,
         groupChat,
+        isReplying,
+        setIsReplying,
+        messageBeingReplied,
+        setMessageBeingReplied
     } = useChatStore()
 
     const {
@@ -89,13 +94,13 @@ function Home() {
     const isTypingRef = useRef(false);
     const messageEndRef = useRef(null);
     const chatContainerRef = useRef(null)
+    const inputRef = useRef(null)
     const [isAtBottom, setIsAtBottom] = React.useState(true);
     const isMedia = mediaFiles[currentChatId || paramChatId]?.length > 0
     const [showSidebar, setShowSidebar] = useState(true)
     const [groupsOnly, setGroupsOnly] = useState(false)
     const navigate = useNavigate()
 
-    // Total unread count for notification badge
     const totalUnread = Object.values(chatUsersInfo).reduce((sum, c) => sum + (c?.newMessages || 0), 0)
 
     const togglePanel = (panel) => setActivePanel(prev => prev === panel ? null : panel)
@@ -120,6 +125,11 @@ function Home() {
         const messages = await messageApi.getConversation(otherUserId)
     }
 
+    const handleCancelReply = () => {
+        setIsReplying(false)
+        setMessageBeingReplied(null)
+    }
+
     const handleSend = async (e) => {
         e.preventDefault()
         console.log("Send button clicked");
@@ -138,10 +148,14 @@ function Home() {
             sender: user._id,
             attachments: mediaFiles[currentChatId] || [],
             status: "uploading",
-            createdAt: "2026-02-21T08:49:25.317Z"
+            createdAt: "2026-02-21T08:49:25.317Z",
+            ...(isReplying && messageBeingReplied ? { replyTo: messageBeingReplied } : {})
         })
 
         setScrollToBottomInChat(true);
+
+        // Clear reply state
+        if (isReplying) handleCancelReply()
 
         const formData = new FormData()
         let uploadInfo;
@@ -170,7 +184,8 @@ function Home() {
             attachments: uploadInfo?.data || [],
             receiver: context.currentChatUser._id,
             chatId: currentChatId || null,
-            tempId: tempId
+            tempId: tempId,
+            ...(isReplying && messageBeingReplied ? { replyTo: messageBeingReplied } : {})
         }, (ack) => {
             console.log("Ack from server:", ack);
         })
@@ -183,6 +198,13 @@ function Home() {
         if (!container) return;
         container.scrollTop = container.scrollHeight;
     };
+
+    // Auto-focus input when reply starts
+    useEffect(() => {
+        if (isReplying && inputRef.current) {
+            inputRef.current.focus()
+        }
+    }, [isReplying])
 
     useEffect(() => {
         getAllUsers();
@@ -216,19 +238,15 @@ function Home() {
        }
 
        switch(activePanel){
-
         case "newGroup":
             setGroupsOnly(false)
             break;
-
         default:
             setGroupsOnly(true)
             break;
-        
         case "groupInfo":
             navigate(`/chat/${currentChatId}/group-info`)
         }
-
     }, [activePanel])
 
     useEffect(() => {
@@ -285,13 +303,11 @@ function Home() {
         }
     }
 
-    // ── Nav icon button helper ──────────────────────────────────────
     const NavIconBtn = ({ icon: Icon, panel, badge, tooltip }) => {
         const active = activePanel === panel
         return (
             <button
                 onClick={() => togglePanel(panel)}
-                // title={tooltip}
                 className="relative flex items-center justify-center w-10 h-10 rounded-[13px] transition-all duration-200 group"
                 style={{
                     background: active
@@ -308,12 +324,82 @@ function Home() {
                         {badge > 9 ? '9+' : badge}
                     </span>
                 )}
-                {/* Tooltip */}
                 <span className="absolute left-full ml-2.5 px-2 py-1 text-[11px] font-medium text-[#c4c6e7] bg-[#1a1d28] border border-white/[0.08] rounded-[8px] whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50"
                     style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}>
                     {tooltip}
                 </span>
             </button>
+        )
+    }
+
+    // ── Reply preview strip ──────────────────────────────────────────
+    const ReplyPreviewStrip = () => {
+        if (!isReplying || !messageBeingReplied) return null
+
+        const isOwn = messageBeingReplied.sender === user._id
+        const hasAttachment = messageBeingReplied?.attachments?.length > 0
+        const hasText = messageBeingReplied?.message?.trim()
+        const senderLabel = isOwn ? 'You' : (context.currentChatUser?.username || 'Them')
+        const thumbUrl = hasAttachment
+            ? (messageBeingReplied.attachments[0]?.secure_url || messageBeingReplied.attachments[0]?.preview)
+            : null
+        const previewText = hasText
+            ? messageBeingReplied.message
+            : hasAttachment ? 'Photo' : ''
+
+        return (
+            <div
+                className="flex items-center gap-2.5 px-4 py-2 border-t border-white/[0.05]"
+                style={{ background: 'rgba(10,11,20,0.6)', animation: 'replyStripIn 0.18s cubic-bezier(0.16,1,0.3,1)' }}
+            >
+                {/* Left: indigo bar + icon + content */}
+                <div className="flex items-center gap-2.5 flex-1 min-w-0 rounded-[11px] px-3 py-2"
+                    style={{
+                        background: 'rgba(99,102,241,0.07)',
+                        borderLeft: '3px solid #6366f1',
+                    }}>
+
+                    {/* Reply icon */}
+                    <Reply size={12} color="#818cf8" style={{ transform: 'scaleX(-1)', flexShrink: 0 }} />
+
+                    {/* Text */}
+                    <div className="flex flex-col min-w-0 flex-1">
+                        <span className="text-[11px] font-semibold leading-none mb-[3px]" style={{ color: '#818cf8' }}>
+                            {senderLabel}
+                        </span>
+                        <span className="text-[12px] truncate leading-snug" style={{ color: '#6b7280' }}>
+                            {hasAttachment && (
+                                <span className="inline-flex items-center gap-1 mr-1">
+                                    <ImageIcon size={10} style={{ display: 'inline', color: '#818cf8' }} />
+                                    {!hasText && 'Photo'}
+                                </span>
+                            )}
+                            {hasText && previewText}
+                        </span>
+                    </div>
+
+                    {/* Image thumbnail */}
+                    {thumbUrl && (
+                        <img
+                            src={thumbUrl}
+                            alt=""
+                            className="w-9 h-9 rounded-[7px] object-cover flex-shrink-0"
+                            style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                        />
+                    )}
+                </div>
+
+                {/* Cancel */}
+                <button
+                    onClick={handleCancelReply}
+                    className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full transition-colors duration-150"
+                    style={{ background: 'rgba(255,255,255,0.05)' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                >
+                    <X size={12} color="#4a4e6a" />
+                </button>
+            </div>
         )
     }
 
@@ -345,12 +431,14 @@ function Home() {
                     from { opacity: 0; transform: translateX(-50%) translateY(8px); }
                     to   { opacity: 1; transform: translateX(-50%) translateY(0); }
                 }
-                .slide-in-panel {
-                    animation: slideInPanel 0.22s cubic-bezier(0.16,1,0.3,1);
-                }
+                .slide-in-panel { animation: slideInPanel 0.22s cubic-bezier(0.16,1,0.3,1); }
                 @keyframes slideInPanel {
                     from { opacity: 0; transform: translateX(-12px); }
                     to   { opacity: 1; transform: translateX(0); }
+                }
+                @keyframes replyStripIn {
+                    from { opacity: 0; transform: translateY(6px); }
+                    to   { opacity: 1; transform: translateY(0); }
                 }
                 .custom-scroll { scrollbar-width: thin; scrollbar-color: #1a1d28 transparent; }
                 .custom-scroll::-webkit-scrollbar { width: 4px; }
@@ -373,39 +461,27 @@ function Home() {
                     z-index: 0;
                     opacity: 0.4;
                 }
-                .search-input:focus {
-                    border-color: rgba(99,102,241,0.35) !important;
-                    box-shadow: 0 0 0 3px rgba(99,102,241,0.15) !important;
-                }
                 .msg-input-wrap:focus-within {
                     border-color: rgba(99,102,241,0.35) !important;
                     box-shadow: 0 0 0 3px rgba(99,102,241,0.15) !important;
+                }
+                .msg-input-wrap-replying {
+                    border-color: rgba(99,102,241,0.28) !important;
+                    box-shadow: 0 0 0 2px rgba(99,102,241,0.1) !important;
+                }
+                .msg-input-wrap-replying:focus-within {
+                    border-color: rgba(99,102,241,0.5) !important;
+                    box-shadow: 0 0 0 3px rgba(99,102,241,0.18) !important;
                 }
                 .panel-divider {
                     height: 1px;
                     background: linear-gradient(90deg, rgba(99,102,241,0.15), rgba(139,92,246,0.08), transparent);
                     margin: 0 16px 12px 16px;
                 }
-                .action-row {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    padding: 9px 12px;
-                    border-radius: 12px;
-                    cursor: pointer;
-                    transition: background 0.15s;
-                    font-size: 13px;
-                    color: #c4c6e7;
-                }
-                .action-row:hover { background: rgba(99,102,241,0.1); }
                 .notif-item {
-                    display: flex;
-                    gap: 10px;
-                    align-items: flex-start;
-                    padding: 10px 12px;
-                    border-radius: 12px;
-                    cursor: pointer;
-                    transition: background 0.15s;
+                    display: flex; gap: 10px; align-items: flex-start;
+                    padding: 10px 12px; border-radius: 12px;
+                    cursor: pointer; transition: background 0.15s;
                     border: 1px solid transparent;
                 }
                 .notif-item:hover { background: rgba(99,102,241,0.07); }
@@ -415,9 +491,8 @@ function Home() {
             {/* Root */}
             <div className="flex h-[100dvh] bg-[#0a0b0f] text-[#f1f2f7] overflow-hidden">
 
-               
                 {/* ── SIDEBAR ── */}
-                 <Sidebar
+                <Sidebar
                     activePanel={activePanel}
                     setActivePanel={setActivePanel}
                     query={query}
@@ -429,13 +504,10 @@ function Home() {
                     user={user}
                     hideOnMobile={true}
                     searchUsers={searchUsers}
-                    />
+                />
 
                 {/* ── MAIN CHAT WINDOW ── */}
-                <div className={`
-                    noise-bg relative flex flex-col flex-1 h-full bg-[#0c0e16] overflow-hidden
-                   md:flex
-                      `}>
+                <div className="noise-bg relative flex flex-col flex-1 h-full bg-[#0c0e16] overflow-hidden md:flex">
 
                     {/* Ambient orbs */}
                     <div className="absolute -top-24 -right-24 w-[400px] h-[400px] rounded-full pointer-events-none z-0"
@@ -447,9 +519,9 @@ function Home() {
                         <>
                             {/* Nav */}
                             <nav
-                            title={isGroupChat ? 'Group Info' : "User Profile"}
-                            onClick={handleChatInfoClick}
-                            className="sticky top-0 z-10 flex items-center gap-3.5 h-16 px-6 border-b border-white/[0.06] bg-[rgba(14,16,24,0.85)] backdrop-blur-xl">
+                                title={isGroupChat ? 'Group Info' : "User Profile"}
+                                onClick={handleChatInfoClick}
+                                className="sticky top-0 z-10 flex items-center gap-3.5 h-16 px-6 border-b border-white/[0.06] bg-[rgba(14,16,24,0.85)] backdrop-blur-xl">
                                 <div className="relative w-10 h-10 flex-shrink-0">
                                     <img
                                         src={context.currentChatUser.avtar}
@@ -489,71 +561,92 @@ function Home() {
                                     message={message}
                                     setMessage={setMessage}
                                 />
-                            ) :
+                            ) : currentPreviewFile ? (
+                                <SingleFilePreview />
+                            ) : (
+                                <>
+                                    {/* Messages */}
+                                    <div
+                                        ref={chatContainerRef}
+                                        className="flex-1 overflow-y-auto px-6 pt-6 pb-2 z-[1] custom-scroll"
+                                    >
+                                        {messages[currentChatId]?.map((msg) => (
+                                            <Message
+                                                key={msg._id}
+                                                msg={msg}
+                                                // onReply={(msg) => {
+                                                //     setMessageBeingReplied(msg)
+                                                //     setIsReplying(true)
+                                                // }}
+                                            />
+                                        ))}
 
-                                currentPreviewFile ? (
-                                    <SingleFilePreview />
-                                ) :
-
-                                    (
-                                        <>
-                                            {/* Messages */}
-                                            <div
-                                                ref={chatContainerRef}
-                                                className="flex-1 overflow-y-auto px-6 pt-6 pb-2 z-[1] custom-scroll"
+                                        {!isAtBottom && (
+                                            <button
+                                                onClick={scrollToBottom}
+                                                className="fixed z-20 bottom-24 right-8 w-9 h-9 flex items-center justify-center rounded-full bg-[#6366f1] border-none cursor-pointer transition-all duration-150 hover:-translate-y-0.5"
+                                                style={{ boxShadow: '0 4px 16px rgba(99,102,241,0.4)' }}
                                             >
-                                                {messages[currentChatId]?.map((msg) => (
-                                                    <Message key={msg._id} msg={msg} />
-                                                ))}
+                                                <ArrowDownCircleIcon size={18} color="#fff" />
+                                            </button>
+                                        )}
 
-                                                {!isAtBottom && (
-                                                    <button
-                                                        onClick={scrollToBottom}
-                                                        className="fixed z-20 bottom-24 right-8 w-9 h-9 flex items-center justify-center rounded-full bg-[#6366f1] border-none cursor-pointer transition-all duration-150 hover:-translate-y-0.5"
-                                                        style={{ boxShadow: '0 4px 16px rgba(99,102,241,0.4)' }}
-                                                    >
-                                                        <ArrowDownCircleIcon size={18} color="#fff" />
-                                                    </button>
-                                                )}
+                                        <div ref={messageEndRef} />
+                                    </div>
 
-                                                <div ref={messageEndRef} />
-                                            </div>
-
-                                            {/* Unread badge */}
-                                            {chatUsersInfo[currentChatId]?.newMessages > 0 && (
-                                                <div className="fade-in-up absolute bottom-[88px] left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3.5 py-1.5 rounded-[20px] text-xs font-medium text-[#818cf8] border border-[rgba(99,102,241,0.35)] bg-[rgba(99,102,241,0.12)] backdrop-blur-md">
-                                                    <MoveDown size={13} />
-                                                    {chatUsersInfo[currentChatId].newMessages} unread messages
-                                                </div>
-                                            )}
-
-                                            {/* Footer */}
-                                            <footer
-                                                style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
-                                                className="z-10 flex items-center gap-3 h-20 px-5 border-t border-white/[0.06] bg-[rgba(14,16,24,0.9)] backdrop-blur-xl">
-                                                <div className="msg-input-wrap flex flex-1 items-center gap-2 bg-[#1a1d28] border border-white/[0.06] rounded-[20px] px-1 pr-1.5 transition-all duration-200">
-                                                    <div className="flex items-center px-1 text-[#4a4e6a] flex-shrink-0">
-                                                        <FileUpload />
-                                                    </div>
-                                                    <input
-                                                        type="text"
-                                                        value={message}
-                                                        onChange={(e) => handleTyping(e)}
-                                                        onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend(e)}
-                                                        placeholder="Type a message…"
-                                                        className="flex-1 bg-transparent border-none outline-none text-[#f1f2f7] text-sm py-3.5 px-2 placeholder-[#4a4e6a]"
-                                                    />
-                                                </div>
-                                                <button
-                                                    onClick={handleSend}
-                                                    className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-[14px] border-none cursor-pointer transition-all duration-150 hover:-translate-y-0.5 hover:scale-[1.04] active:scale-95"
-                                                    style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 14px rgba(99,102,241,0.4)' }}
-                                                >
-                                                    <Send size={18} color="#fff" />
-                                                </button>
-                                            </footer>
-                                        </>
+                                    {/* Unread badge */}
+                                    {chatUsersInfo[currentChatId]?.newMessages > 0 && (
+                                        <div className="fade-in-up absolute bottom-[88px] left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3.5 py-1.5 rounded-[20px] text-xs font-medium text-[#818cf8] border border-[rgba(99,102,241,0.35)] bg-[rgba(99,102,241,0.12)] backdrop-blur-md">
+                                            <MoveDown size={13} />
+                                            {chatUsersInfo[currentChatId].newMessages} unread messages
+                                        </div>
                                     )}
+
+                                    {/* ── FOOTER ── */}
+                                    <footer
+                                        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
+                                        className="z-10 flex flex-col border-t border-white/[0.06] bg-[rgba(14,16,24,0.9)] backdrop-blur-xl"
+                                    >
+                                        {/* Reply preview strip — slides in when isReplying */}
+                                        <ReplyPreviewStrip />
+
+                                        {/* Input row */}
+                                        <div className="flex items-center gap-3 h-20 px-5">
+                                            <div className={`msg-input-wrap flex flex-1 items-center gap-2 bg-[#1a1d28] border border-white/[0.06] rounded-[20px] px-1 pr-1.5 transition-all duration-200 ${isReplying ? 'msg-input-wrap-replying' : ''}`}>
+                                                <div className="flex items-center px-1 text-[#4a4e6a] flex-shrink-0">
+                                                    <FileUpload />
+                                                </div>
+                                                <input
+                                                    ref={inputRef}
+                                                    type="text"
+                                                    value={message}
+                                                    onChange={(e) => handleTyping(e)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Escape' && isReplying) {
+                                                            handleCancelReply()
+                                                            return
+                                                        }
+                                                        e.key === 'Enter' && !e.shiftKey && handleSend(e)
+                                                    }}
+                                                    placeholder={
+                                                        isReplying
+                                                            ? `Reply to ${messageBeingReplied?.sender === user._id ? 'yourself' : context.currentChatUser?.username}…`
+                                                            : "Type a message…"
+                                                    }
+                                                    className="flex-1 bg-transparent border-none outline-none text-[#f1f2f7] text-sm py-3.5 px-2 placeholder-[#4a4e6a]"
+                                                />
+                                            </div>
+                                            <button
+                                                onClick={handleSend}
+                                                className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-[14px] border-none cursor-pointer transition-all duration-150 hover:-translate-y-0.5 hover:scale-[1.04] active:scale-95"
+                                                style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 14px rgba(99,102,241,0.4)' }}
+                                            >
+                                                <Send size={18} color="#fff" />
+                                            </button>
+                                        </div>
+                                    </footer>
+                                </>
+                            )}
                         </>
                     ) : (
                         /* Empty state */

@@ -13,20 +13,15 @@ import {
     MoreHorizontal,
     X,
     Info,
+    ImageIcon,
 } from 'lucide-react'
 import { userAuthStore } from '../../store/userStore'
 import { socket } from '../../socket/socket'
 import { socketEvents } from '../../constants/socketEvents'
 import { useChatStore } from '../../store/useChatStore'
 
-/* ─────────────────────────────────────────────────────────────
-   Emoji reactions palette
-───────────────────────────────────────────────────────────── */
 const QUICK_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏']
 
-/* ─────────────────────────────────────────────────────────────
-   Tiny hook: detect click/touch outside a ref
-───────────────────────────────────────────────────────────── */
 function useOutsideClick(ref, handler) {
     useEffect(() => {
         const listener = (e) => {
@@ -42,14 +37,10 @@ function useOutsideClick(ref, handler) {
     }, [ref, handler])
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Context menu — floats near the message bubble
-   Props: open, isSent, onAction, onClose, anchorRef
-───────────────────────────────────────────────────────────── */
+/* ─── Context menu ─── */
 function MessageContextMenu({ open, isSent, onAction, onClose, anchorRef }) {
     const menuRef = useRef(null)
     useOutsideClick(menuRef, onClose)
-
     const [pos, setPos] = useState({ top: 0, left: 0 })
 
     useEffect(() => {
@@ -58,27 +49,22 @@ function MessageContextMenu({ open, isSent, onAction, onClose, anchorRef }) {
         const menu = menuRef.current.getBoundingClientRect()
         const vw = window.innerWidth
         const vh = window.innerHeight
-
         let top = bubble.bottom + 6
         let left = isSent ? bubble.right - menu.width : bubble.left
-
-        // Flip up if not enough space below
         if (top + menu.height > vh - 16) top = bubble.top - menu.height - 6
-        // Clamp horizontally
         if (left + menu.width > vw - 8) left = vw - menu.width - 8
         if (left < 8) left = 8
-
         setPos({ top, left })
     }, [open])
 
     if (!open) return null
 
     const actions = [
-        { id: 'reply',   icon: Reply,          label: 'Reply',        always: true },
-        { id: 'copy',    icon: Copy,            label: 'Copy',         always: true },
-        { id: 'forward', icon: Forward,         label: 'Forward',      always: true },
-        { id: 'info',    icon: Info,            label: 'Info',         onlySent: true },
-        { id: 'delete',  icon: Trash2,          label: 'Delete',       onlySent: true, danger: true },
+        { id: 'reply',   icon: Reply,   label: 'Reply',   always: true },
+        { id: 'copy',    icon: Copy,    label: 'Copy',    always: true },
+        { id: 'forward', icon: Forward, label: 'Forward', always: true },
+        { id: 'info',    icon: Info,    label: 'Info',    onlySent: true },
+        { id: 'delete',  icon: Trash2,  label: 'Delete',  onlySent: true, danger: true },
     ].filter(a => a.always || (a.onlySent && isSent))
 
     return (
@@ -99,9 +85,7 @@ function MessageContextMenu({ open, isSent, onAction, onClose, anchorRef }) {
                     onClick={() => { onAction(a.id); onClose() }}
                     className={[
                         'flex items-center gap-3 w-full px-4 py-2.5 text-[13px] font-medium transition-colors duration-100',
-                        a.danger
-                            ? 'text-red-400 hover:bg-red-500/10'
-                            : 'text-[#c4c6e7] hover:bg-white/[0.06]',
+                        a.danger ? 'text-red-400 hover:bg-red-500/10' : 'text-[#c4c6e7] hover:bg-white/[0.06]',
                         i !== 0 ? 'border-t border-white/[0.04]' : ''
                     ].join(' ')}
                 >
@@ -113,9 +97,7 @@ function MessageContextMenu({ open, isSent, onAction, onClose, anchorRef }) {
     )
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Emoji quick-react bar — appears above bubble on hover/long-press
-───────────────────────────────────────────────────────────── */
+/* ─── Emoji bar ─── */
 function EmojiBar({ show, isSent, onPick }) {
     if (!show) return null
     return (
@@ -131,17 +113,10 @@ function EmojiBar({ show, isSent, onPick }) {
                     from { opacity:0; transform:translateY(6px) scale(0.88); }
                     to   { opacity:1; transform:translateY(0) scale(1); }
                 }
-                @keyframes emojiBounce {
-                    0%,100% { transform:scale(1); }
-                    40%     { transform:scale(1.35); }
-                }
             `}</style>
             {QUICK_EMOJIS.map((em) => (
-                <button
-                    key={em}
-                    onClick={() => onPick(em)}
-                    className="w-7 h-7 flex items-center justify-center text-base rounded-full hover:bg-white/10 transition-all duration-100 hover:scale-125 active:scale-110"
-                >
+                <button key={em} onClick={() => onPick(em)}
+                    className="w-7 h-7 flex items-center justify-center text-base rounded-full hover:bg-white/10 transition-all duration-100 hover:scale-125 active:scale-110">
                     {em}
                 </button>
             ))}
@@ -149,25 +124,17 @@ function EmojiBar({ show, isSent, onPick }) {
     )
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Reaction chips displayed below the bubble
-───────────────────────────────────────────────────────────── */
+/* ─── Reaction chips ─── */
 function ReactionChips({ reactions, isSent }) {
     if (!reactions || reactions.length === 0) return null
-
-    // Group by emoji
     const grouped = reactions.reduce((acc, r) => {
         acc[r.emoji] = (acc[r.emoji] || 0) + 1
         return acc
     }, {})
-
     return (
         <div className={`flex flex-wrap gap-1 mt-0.5 ${isSent ? 'justify-end' : 'justify-start'}`}>
             {Object.entries(grouped).map(([emoji, count]) => (
-                <span
-                    key={emoji}
-                    className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] border border-white/[0.1] bg-[#1a1d2e] text-[#c4c6e7] shadow-sm"
-                >
+                <span key={emoji} className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] border border-white/[0.1] bg-[#1a1d2e] text-[#c4c6e7] shadow-sm">
                     {emoji} {count > 1 && <span className="text-[10px] text-[#818cf8]">{count}</span>}
                 </span>
             ))}
@@ -176,30 +143,73 @@ function ReactionChips({ reactions, isSent }) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Reply Quote — shows above message text inside the bubble
+   Reply Quote — production grade, inside bubble
 ───────────────────────────────────────────────────────────── */
 function ReplyQuote({ replyTo, isSent }) {
     if (!replyTo) return null
+
+    const hasThumb = replyTo?.attachments?.length > 0
+    const thumbUrl = hasThumb
+        ? (replyTo.attachments[0]?.secure_url || replyTo.attachments[0]?.preview)
+        : null
+    const hasText = replyTo?.message?.trim()
+
     return (
-        <div className={[
-            'mx-2.5 mt-2.5 mb-1 px-2.5 py-1.5 rounded-[10px] border-l-[3px] text-[11.5px]',
-            isSent
-                ? 'bg-white/10 border-white/40 text-white/70'
-                : 'bg-white/[0.04] border-[#818cf8]/70 text-[#9ca3c4]'
-        ].join(' ')}>
-            <p className={`font-semibold text-[10.5px] mb-0.5 ${isSent ? 'text-white/50' : 'text-[#818cf8]'}`}>
-                {replyTo.senderName || 'Message'}
-            </p>
-            <p className="truncate leading-snug">
-                {replyTo.attachments?.length > 0 && !replyTo.message ? '📎 Media' : replyTo.message}
-            </p>
+        <div
+            className={[
+                'mx-2.5 mt-2.5 mb-1.5 rounded-[10px] overflow-hidden flex items-stretch',
+                'cursor-pointer select-none transition-opacity duration-150 active:opacity-70',
+                isSent ? 'bg-white/[0.12]' : 'bg-black/[0.20]',
+            ].join(' ')}
+            style={{ borderLeft: isSent ? '3px solid rgba(255,255,255,0.45)' : '3px solid #6366f1' }}
+        >
+            {/* Content */}
+            <div className="flex flex-col justify-center flex-1 min-w-0 px-2.5 py-[7px]">
+                {/* Sender row */}
+                <span className={[
+                    'flex items-center gap-[5px] text-[10.5px] font-bold leading-none mb-[4px]',
+                    isSent ? 'text-white/55' : 'text-[#818cf8]'
+                ].join(' ')}>
+                    <Reply
+                        size={9}
+                        strokeWidth={2.8}
+                        style={{ transform: 'scaleX(-1)', flexShrink: 0 }}
+                    />
+                    {replyTo.senderName || 'Message'}
+                </span>
+
+                {/* Preview */}
+                <span className={[
+                    'text-[11.5px] leading-[1.4] truncate',
+                    isSent ? 'text-white/45' : 'text-[#71788f]'
+                ].join(' ')}>
+                    {hasThumb ? (
+                        <span className="inline-flex items-center gap-1">
+                            <ImageIcon size={10} strokeWidth={2} style={{ flexShrink: 0, opacity: 0.75 }} />
+                            {hasText ? replyTo.message : 'Photo'}
+                        </span>
+                    ) : (
+                        replyTo.message
+                    )}
+                </span>
+            </div>
+
+            {/* Thumbnail — full height, flush right */}
+            {thumbUrl && (
+                <div className="w-[44px] flex-shrink-0 self-stretch">
+                    <img
+                        src={thumbUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        draggable={false}
+                    />
+                </div>
+            )}
         </div>
     )
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Delete confirm modal
-───────────────────────────────────────────────────────────── */
+/* ─── Delete modal ─── */
 function DeleteModal({ show, onClose, onDeleteForMe, onDeleteForEveryone }) {
     if (!show) return null
     return (
@@ -221,22 +231,16 @@ function DeleteModal({ show, onClose, onDeleteForMe, onDeleteForEveryone }) {
                     <p className="text-[12.5px] text-[#4a4e6a] leading-relaxed">This action cannot be undone.</p>
                 </div>
                 <div className="px-3 pb-4 flex flex-col gap-2">
-                    <button
-                        onClick={onDeleteForEveryone}
-                        className="w-full py-3 rounded-[12px] text-[13.5px] font-semibold text-white bg-gradient-to-r from-red-500/90 to-rose-600/90 hover:opacity-90 active:scale-[0.98] transition-all duration-150 shadow-[0_4px_14px_rgba(239,68,68,0.3)]"
-                    >
+                    <button onClick={onDeleteForEveryone}
+                        className="w-full py-3 rounded-[12px] text-[13.5px] font-semibold text-white bg-gradient-to-r from-red-500/90 to-rose-600/90 hover:opacity-90 active:scale-[0.98] transition-all duration-150 shadow-[0_4px_14px_rgba(239,68,68,0.3)]">
                         Delete for everyone
                     </button>
-                    <button
-                        onClick={onDeleteForMe}
-                        className="w-full py-3 rounded-[12px] text-[13.5px] font-medium text-[#c4c6e7] bg-white/[0.06] hover:bg-white/[0.09] active:scale-[0.98] transition-all duration-150"
-                    >
+                    <button onClick={onDeleteForMe}
+                        className="w-full py-3 rounded-[12px] text-[13.5px] font-medium text-[#c4c6e7] bg-white/[0.06] hover:bg-white/[0.09] active:scale-[0.98] transition-all duration-150">
                         Delete for me
                     </button>
-                    <button
-                        onClick={onClose}
-                        className="w-full py-2.5 rounded-[12px] text-[12.5px] font-medium text-[#4a4e6a] hover:text-[#c4c6e7] transition-colors"
-                    >
+                    <button onClick={onClose}
+                        className="w-full py-2.5 rounded-[12px] text-[12.5px] font-medium text-[#4a4e6a] hover:text-[#c4c6e7] transition-colors">
                         Cancel
                     </button>
                 </div>
@@ -245,9 +249,7 @@ function DeleteModal({ show, onClose, onDeleteForMe, onDeleteForEveryone }) {
     )
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Message Info modal — read receipts / delivery status
-───────────────────────────────────────────────────────────── */
+/* ─── Message Info modal ─── */
 function MessageInfoModal({ show, onClose, msg }) {
     if (!show) return null
     return (
@@ -291,12 +293,20 @@ function Message({ msg, key, onReply }) {
 
     const context = useContext(authContext)
     const { user } = userAuthStore()
-    const { resetNewMessagesCount, setCurrentPreviewFile, currentPreviewFile, removeMessage } = useChatStore()
+    const {
+        resetNewMessagesCount,
+        setCurrentPreviewFile,
+        currentPreviewFile,
+        removeMessage,
+        isReplying,
+        setIsReplying,
+        messageBeingReplied,
+        setMessageBeingReplied
+    } = useChatStore()
 
     const messageRef = useRef(null)
     const bubbleRef = useRef(null)
 
-    // UI state
     const [showMenu, setShowMenu] = useState(false)
     const [showEmojiBar, setShowEmojiBar] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -304,19 +314,18 @@ function Message({ msg, key, onReply }) {
     const [reactions, setReactions] = useState(msg?.reactions || [])
     const [copied, setCopied] = useState(false)
 
-    // Long-press for mobile
     const longPressTimer = useRef(null)
     const longPressTriggered = useRef(false)
 
     const isSent = msg.sender === user._id
     const hasImage = msg?.attachments?.length > 0
     const hasText = msg?.message && msg.message.trim() !== ""
+    const hasReply = !!msg?.replyTo
 
     /* ── Intersection observer (seen) ── */
     useEffect(() => {
         if (msg.sender === user._id) return
         if (msg.status === "seen") return
-
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
@@ -332,17 +341,14 @@ function Message({ msg, key, onReply }) {
             },
             { threshold: 0.6 }
         )
-
         if (messageRef.current) observer.observe(messageRef.current)
         return () => observer.disconnect()
     }, [msg._id])
 
-    /* ── Close emoji bar when menu opens ── */
     useEffect(() => {
         if (showMenu) setShowEmojiBar(false)
     }, [showMenu])
 
-    /* ── Long-press handlers (mobile) ── */
     const handleTouchStart = useCallback(() => {
         longPressTriggered.current = false
         longPressTimer.current = setTimeout(() => {
@@ -351,21 +357,16 @@ function Message({ msg, key, onReply }) {
         }, 500)
     }, [])
 
-    const handleTouchEnd = useCallback(() => {
-        clearTimeout(longPressTimer.current)
-    }, [])
+    const handleTouchEnd = useCallback(() => { clearTimeout(longPressTimer.current) }, [])
+    const handleTouchMove = useCallback(() => { clearTimeout(longPressTimer.current) }, [])
 
-    const handleTouchMove = useCallback(() => {
-        clearTimeout(longPressTimer.current)
-    }, [])
-
-    /* ── Action handlers ── */
     const handleAction = (actionId) => {
         switch (actionId) {
             case 'reply':
                 if (onReply) onReply(msg)
+                setIsReplying(true)
+                setMessageBeingReplied(msg)
                 break
-
             case 'copy':
                 if (msg.message) {
                     navigator.clipboard.writeText(msg.message).then(() => {
@@ -374,20 +375,15 @@ function Message({ msg, key, onReply }) {
                     })
                 }
                 break
-
             case 'forward':
-                // Emit forward event — consumer handles recipient selection
                 socket.emit(socketEvents.FORWARD_MESSAGE || 'forward_message', { messageId: msg._id })
                 break
-
             case 'info':
                 setShowInfoModal(true)
                 break
-
             case 'delete':
                 setShowDeleteModal(true)
                 break
-
             default:
                 break
         }
@@ -422,18 +418,23 @@ function Message({ msg, key, onReply }) {
         })
     }
 
-    /* ── Hover intent for desktop emoji bar ── */
     const hoverTimer = useRef(null)
-    const handleMouseEnter = () => {
-        hoverTimer.current = setTimeout(() => setShowEmojiBar(true), 400)
-    }
-    const handleMouseLeave = () => {
-        clearTimeout(hoverTimer.current)
-        setShowEmojiBar(false)
-    }
+    const handleMouseEnter = () => { hoverTimer.current = setTimeout(() => setShowEmojiBar(true), 400) }
+    const handleMouseLeave = () => { clearTimeout(hoverTimer.current); setShowEmojiBar(false) }
 
     return (
         <>
+            <style>{`
+                @keyframes msgIn {
+                    from { opacity: 0; transform: translateY(6px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes replyQuoteIn {
+                    from { opacity: 0; transform: scaleY(0.8); transform-origin: top; }
+                    to   { opacity: 1; transform: scaleY(1); }
+                }
+            `}</style>
+
             {/* Row */}
             <div
                 ref={messageRef}
@@ -449,7 +450,7 @@ function Message({ msg, key, onReply }) {
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
             >
-                {/* Action button — left side for received */}
+                {/* Action btn — left (received) */}
                 {!isSent && (
                     <div className="flex items-center mr-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150 self-end pb-1">
                         <button
@@ -461,11 +462,9 @@ function Message({ msg, key, onReply }) {
                     </div>
                 )}
 
-                {/* Bubble column (bubble + reactions) */}
+                {/* Bubble column */}
                 <div className={`flex flex-col ${isSent ? 'items-end' : 'items-start'} max-w-[65%]`}>
-                    {/* Bubble wrapper — position relative for emoji bar */}
                     <div className="relative">
-                        {/* Emoji bar */}
                         <EmojiBar show={showEmojiBar} isSent={isSent} onPick={handleEmojiPick} />
 
                         {/* Bubble */}
@@ -480,8 +479,12 @@ function Message({ msg, key, onReply }) {
                                 msg.status === 'uploading' ? 'opacity-75' : '',
                             ].join(' ')}
                         >
-                            {/* Reply quote */}
-                            {msg?.replyTo && <ReplyQuote replyTo={msg.replyTo} isSent={isSent} />}
+                            {/* ── Reply Quote ── */}
+                            {hasReply && (
+                                <div style={{ animation: 'replyQuoteIn 0.16s ease' }}>
+                                    <ReplyQuote replyTo={msg.replyTo} isSent={isSent} />
+                                </div>
+                            )}
 
                             {/* Image */}
                             {hasImage && (
@@ -514,12 +517,10 @@ function Message({ msg, key, onReply }) {
                                 </div>
                             )}
 
-                            {/* Meta: time + ticks */}
+                            {/* Meta */}
                             <div className={[
                                 'absolute bottom-[5px] right-[10px] flex items-center gap-[3px]',
-                                hasImage && !hasText
-                                    ? 'bg-black/45 backdrop-blur-[6px] rounded-[20px] px-[7px] py-[2px]'
-                                    : ''
+                                hasImage && !hasText ? 'bg-black/45 backdrop-blur-[6px] rounded-[20px] px-[7px] py-[2px]' : ''
                             ].join(' ')}>
                                 {msg?.createdAt && (
                                     <span className="font-[JetBrains_Mono,monospace] text-[10.5px] opacity-65 tracking-[-0.3px]" style={{ color: 'inherit' }}>
@@ -535,12 +536,11 @@ function Message({ msg, key, onReply }) {
                             </div>
                         </div>
 
-                        {/* Reaction chips */}
                         <ReactionChips reactions={reactions} isSent={isSent} />
                     </div>
                 </div>
 
-                {/* Action button — right side for sent */}
+                {/* Action btn — right (sent) */}
                 {isSent && (
                     <div className="flex items-center ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150 self-end pb-1">
                         <button
@@ -561,7 +561,6 @@ function Message({ msg, key, onReply }) {
                 </div>
             )}
 
-            {/* Context menu portal */}
             <MessageContextMenu
                 open={showMenu}
                 isSent={isSent}
@@ -570,7 +569,6 @@ function Message({ msg, key, onReply }) {
                 anchorRef={bubbleRef}
             />
 
-            {/* Delete modal */}
             <DeleteModal
                 show={showDeleteModal}
                 onClose={() => setShowDeleteModal(false)}
@@ -578,20 +576,11 @@ function Message({ msg, key, onReply }) {
                 onDeleteForEveryone={handleDeleteForEveryone}
             />
 
-            {/* Info modal */}
             <MessageInfoModal
                 show={showInfoModal}
                 onClose={() => setShowInfoModal(false)}
                 msg={msg}
             />
-
-            {/* Global keyframes */}
-            <style>{`
-                @keyframes msgIn {
-                    from { opacity: 0; transform: translateY(6px); }
-                    to   { opacity: 1; transform: translateY(0); }
-                }
-            `}</style>
         </>
     )
 }

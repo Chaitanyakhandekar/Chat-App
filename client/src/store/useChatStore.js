@@ -254,8 +254,26 @@ export const useChatStore = create(
                 set({
                     groupChat:chat
                 })
+            },
+
+            isReplying:false,
+
+            setIsReplying:(value)=>{
+                set({
+                    isReplying:value
+                })
+            },
+
+            messageBeingReplied:null,
+
+            setMessageBeingReplied:(message)=>{
+                set({
+                    messageBeingReplied:message
+                    
+                })
             }
 
+            
         }),
         {name:"Chat Store"}
     )
