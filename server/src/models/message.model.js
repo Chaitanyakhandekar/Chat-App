@@ -45,10 +45,17 @@ const messageSchema = new mongoose.Schema({
     },
 
     replyTo:{
-        type:mongoose.Types.ObjectId,
-        ref:"Message"
+       messageId:{
+         type:mongoose.Types.ObjectId,
+         ref:"Message"
+       },
+       message:{
+         type:String,
+         trim:true
+       }
     },
 
+    reactions:[String],
 
     status:{
         type:String,

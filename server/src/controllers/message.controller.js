@@ -90,6 +90,13 @@ const uploadImage = asyncHandler(async (req,res)=>{
 
 })
 
+const replyToMessage = asyncHandler(async (req,res)=>{
+
+    const {messageId,replyMessage} = req.body
+
+    
+})
+
 export {
     getConversation,
     uploadImage
