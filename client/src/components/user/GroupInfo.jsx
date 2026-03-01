@@ -5,6 +5,7 @@ import {
     Check, Copy, Link2, Users, Lock, Globe, ChevronRight,
     Image, FileText, Hash, Settings, Edit3
 } from 'lucide-react'
+import { useChatStore } from '../../store/useChatStore'
 
 // ─── Mock data ─────────────────────────────────────────────────────────────
 const MOCK_MEMBERS = [
@@ -16,23 +17,29 @@ const MOCK_MEMBERS = [
     { _id: '6', username: 'priya_s',     avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=priya',  role: 'member', online: true  },
 ]
 
-const MOCK_GROUP = {
-    _id: 'g1',
-    name: 'Design Systems Team',
-    description: 'Crafting pixel-perfect interfaces and scalable design tokens. 🎨',
-    avatar: 'https://api.dicebear.com/7.x/shapes/svg?seed=group1',
-    createdAt: 'Jan 12, 2025',
-    memberCount: 6,
-    isPublic: false,
-    media: [
-        'https://picsum.photos/seed/a/80/80',
-        'https://picsum.photos/seed/b/80/80',
-        'https://picsum.photos/seed/c/80/80',
-        'https://picsum.photos/seed/d/80/80',
-        'https://picsum.photos/seed/e/80/80',
-        'https://picsum.photos/seed/f/80/80',
-    ]
-}
+
+
+// const {
+//         userSearch,
+//         setUserSearch,
+//         setChatUsersInfo,
+//         chatUsersInfo,
+//         emitedTyping,
+//         toogleEmitedTyping,
+//         onlineStatus,
+//         incrementNewMessagesCount,
+//         incrementNewMessagesCountByN,
+//         resetNewMessagesCount,
+//         mediaFiles,
+//         removeMessage,
+//         resetMediaFiles,
+//         setCurrentPreviewFile,
+//         currentPreviewFile,
+//         isGroupChat,
+//         groupChat,
+//     } = useChatStore()
+
+const MOCK_GROUP = {}
 
 const CURRENT_USER_ID = '1'
 
@@ -113,7 +120,7 @@ function GroupInfo({ setActivePanel = () => {}, group = MOCK_GROUP, currentUserI
     const [view, setView] = useState('main')
 
     return (
-        <div className="flex flex-col h-full bg-[#0e1018]">
+        <div className="flex flex-col h-full w-full bg-[#0e1018]">
             {view === 'main'    && <MainView    group={group} currentUserId={currentUserId} setView={setView} setActivePanel={setActivePanel} />}
             {view === 'members' && <MembersView group={group} currentUserId={currentUserId} setView={setView} />}
             {view === 'media'   && <MediaView   group={group} setView={setView} />}

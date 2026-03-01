@@ -11,7 +11,8 @@ function ChatList({
     setQuery=()=>{},
     users=[],
     setShowSidebar=()=>{},
-    groupsOnly=false
+    groupsOnly=false,
+    searchUsers=()=>{}
    
 }) {
 
