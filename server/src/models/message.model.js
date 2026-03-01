@@ -44,7 +44,7 @@ const messageSchema = new mongoose.Schema({
         default:false
     },
 
-    replyTo:{
+    reply:{
        messageId:{
          type:mongoose.Types.ObjectId,
          ref:"Message"
