@@ -429,6 +429,7 @@ function GroupInfoMain() {
                     user={user}
                     hideOnMobile={true}
                     paramChatId={paramChatId}
+                    searchUsers={searchUsers}
                     />
 
                 {/* ── MAIN CHAT WINDOW ── */}

@@ -400,6 +400,7 @@ function Home() {
                     chatUsersInfo={chatUsersInfo}
                     totalUnread={totalUnread}
                     user={user}
+                    searchUsers={searchUsers}
                     />
                 {/* ── MAIN CHAT WINDOW ── */}
                 <div className={`

@@ -25,7 +25,8 @@ function Sidebar({
   totalUnread,
   user,
   hideOnMobile = false,
-  paramChatId=null
+  searchUsers=()=>{},
+  paramChatId = null
 }) {
 
   const togglePanel = (panel) =>
@@ -214,6 +215,7 @@ function Sidebar({
             setShowSidebar={setShowSidebar}
             groupsOnly={true}
             paramChatId={paramChatId}
+            searchUsers={searchUsers}
           />
         )}
 
@@ -238,6 +240,7 @@ function Sidebar({
             setShowSidebar={setShowSidebar}
             groupsOnly={false}
             paramChatId={paramChatId}
+            searchUsers={searchUsers}
           />
 
         )}
@@ -254,6 +257,7 @@ function Sidebar({
             setShowSidebar={setShowSidebar}
             groupsOnly={true}
             paramChatId={paramChatId}
+            searchUsers={searchUsers}
           />
 
         )}

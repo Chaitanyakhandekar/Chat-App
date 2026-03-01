@@ -428,7 +428,7 @@ function Home() {
                     totalUnread={totalUnread}
                     user={user}
                     hideOnMobile={true}
-                    paramChatId={paramChatId}
+                    searchUsers={searchUsers}
                     />
 
                 {/* ── MAIN CHAT WINDOW ── */}
