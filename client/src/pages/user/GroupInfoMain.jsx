@@ -40,14 +40,14 @@ import GroupInfo from '../../components/user/GroupInfo.jsx'
 import { useNavigate, useParams } from 'react-router-dom'
 import Sidebar from './Sidebar.jsx'
 
-function Home() {
+function GroupInfoMain() {
 
     const context = useContext(authContext);
     const [message, setMessage] = React.useState("")
     const [query, setQuery] = React.useState("")
 
     // Panel state: null | 'notifications' | 'profile' | 'newGroup' | 'settings'
-    const [activePanel, setActivePanel] = useState(null)
+    const [activePanel, setActivePanel] = useState("groupInfo")
 
     const { user } = userAuthStore()
 
@@ -432,7 +432,20 @@ function Home() {
                     />
 
                 {/* ── MAIN CHAT WINDOW ── */}
-                <div className={`
+                {
+                    activePanel === "groupInfo" ? <GroupInfo
+                    activePanel={activePanel}
+                    setActivePanel={setActivePanel}
+                    query={query}
+                    setQuery={setQuery}
+                    users={users}
+                    setShowSidebar={setShowSidebar}
+                    chatUsersInfo={chatUsersInfo}
+                    totalUnread={totalUnread}
+                    user={user}
+                     /> : 
+
+                      <div className={`
                     noise-bg relative flex flex-col flex-1 h-full bg-[#0c0e16] overflow-hidden
                    md:flex
                       `}>
@@ -574,9 +587,10 @@ function Home() {
                         </div>
                     )}
                 </div>
+                }
             </div>
         </>
     )
 }
 
-export default Home
+export default GroupInfoMain

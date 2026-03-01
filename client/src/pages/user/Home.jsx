@@ -37,6 +37,7 @@ import CreateGroup from '../../components/user/CreateGroup.jsx'
 import SettingsPanel from '../../components/user/Settings.jsx'
 import ChatList from '../../components/user/ChatList.jsx'
 import GroupInfo from '../../components/user/GroupInfo.jsx'
+import Sidebar from './Sidebar.jsx'
 
 function Home() {
 
@@ -388,115 +389,18 @@ function Home() {
             {/* Root */}
             <div className="flex h-[100dvh] bg-[#0a0b0f] text-[#f1f2f7] overflow-hidden">
 
-                {/* ── ICON RAIL (far left) ── */}
-                <div className=" md:flex flex-col items-center gap-1.5 w-[62px] min-w-[62px] h-screen bg-[#0a0b0f] border-r border-white/[0.05] pt-5 pb-4 z-30">
-                    {/* Brand mark */}
-                    <div
-                        className="flex items-center justify-center w-9 h-9 rounded-[11px] mb-4 flex-shrink-0"
-                        style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 14px rgba(99,102,241,0.45)' }}
-                    >
-                        <Zap size={15} color="#fff" />
-                    </div>
-
-                    <NavIconBtn icon={MessageCircle} panel="chats" tooltip="Chats" />
-                    <NavIconBtn icon={Bell} panel="notifications" badge={totalUnread} tooltip="Notifications" />
-                    <NavIconBtn icon={Users} panel="newGroup" tooltip="New Group" />
-
-                    <div className="flex-1" />
-
-                    <NavIconBtn icon={Settings} panel="settings" tooltip="Settings" />
-                    <NavIconBtn icon={User} panel="profile" tooltip="My Profile" />
-
-                    {/* Avatar */}
-                    {/* <button className="relative mt-1.5 flex-shrink-0 group" title={user?.username}>
-                        <img
-                            src={user?.avtar || user?.avatar}
-                            alt={user?.username}
-                            className="w-9 h-9 rounded-full object-cover border-2 border-white/[0.08] transition-all duration-150 group-hover:border-[#6366f1]/60"
-                        />
-                        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#22d3a0] border-2 border-[#0a0b0f]" />
-                    </button> */}
-                </div>
-
                 {/* ── SIDEBAR ── */}
-                <div className={`
-                    sidebar-accent relative flex flex-col 
-                    w-full md:w-[280px] md:min-w-[260px]
-                    h-screen bg-[#0e1018] border-r border-white/[0.06]
-                     md:flex
-                    `}>
-
-                    {/* ── Panel: notifications ── */}
-                    {activePanel === 'notifications' && (
-                        <div className="slide-in-panel flex flex-col h-full">
-                            <div className="flex items-center justify-between px-5 pt-6 pb-4">
-                                <span className="text-[15px] font-bold tracking-tight">Notifications</span>
-                                <button onClick={() => setActivePanel(null)} className="text-[#4a4e6a] hover:text-[#818cf8] transition-colors">
-                                    <X size={16} />
-                                </button>
-                            </div>
-                            <div className="panel-divider" />
-                            <div className="flex-1 overflow-y-auto px-3 custom-scroll flex flex-col gap-1.5 pb-4">
-                                {totalUnread > 0 ? (
-                                    Object.entries(chatUsersInfo).filter(([, c]) => c?.newMessages > 0).map(([chatId, info]) => {
-                                        const chat = users?.find(c => c._id === chatId)
-                                        const otherUser = chat ? (chat.participants[0]._id === user._id ? chat.participants[1] : chat.participants[0]) : null
-                                        if (!otherUser) return null
-                                        return (
-                                            <div key={chatId} className="notif-item unread" onClick={() => setActivePanel(null)}>
-                                                <img src={otherUser.avtar} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0 border border-white/[0.07]" />
-                                                <div className="flex flex-col min-w-0">
-                                                    <span className="text-[13px] font-semibold text-[#f1f2f7] truncate">{otherUser.username}</span>
-                                                    <span className="text-[11.5px] text-[#6366f1] font-medium mt-0.5">{info.newMessages} new message{info.newMessages > 1 ? 's' : ''}</span>
-                                                    {info.time && <span className="text-[10.5px] text-[#4a4e6a] mt-0.5">{info.time}</span>}
-                                                </div>
-                                                <span className="ml-auto flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold text-white"
-                                                    style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}>
-                                                    {info.newMessages > 9 ? '9+' : info.newMessages}
-                                                </span>
-                                            </div>
-                                        )
-                                    })
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center flex-1 gap-2 py-12">
-                                        <div className="w-12 h-12 rounded-[14px] flex items-center justify-center"
-                                            style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)' }}>
-                                            <Bell size={20} color="#818cf8" />
-                                        </div>
-                                        <p className="text-[13px] text-[#4a4e6a] text-center">No new notifications</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ── Panel: profile ── */}
-                    {activePanel === 'profile' && (
-                       <Profile setActivePanel={setActivePanel} />
-                    )}
-
-                    {/* ── Panel: new group ── */}
-                 {activePanel === 'newGroup' && (
-                        // <CreateGroup setActivePanel={setActivePanel} users={users} />
-                        <ChatList togglePanel={setActivePanel}  query={query} setQuery={setQuery} users={users} setShowSidebar={setShowSidebar} groupsOnly={true} />
-                    )}
-
-                    {/* ── Panel: settings ── */}
-                    {activePanel === 'settings' && (
-                        <SettingsPanel setActivePanel={setActivePanel} />
-                    )}
-
-                    {/* ── Default: chats list ── */}
-                    {(activePanel === null || activePanel === 'chats') && (
-                       <ChatList togglePanel={setActivePanel}  query={query} setQuery={setQuery} users={users} setShowSidebar={setShowSidebar} groupsOnly={false} />
-                    )}
-
-                      {/* ── Panel: Group Info ── */}
-                    {(activePanel  === 'groupInfo') && (
-                        <GroupInfo setActivePanel={setActivePanel} activePanel={activePanel} />
-                    )}
-                </div>
-
+                <Sidebar
+                    activePanel={activePanel}
+                    setActivePanel={setActivePanel}
+                    query={query}
+                    setQuery={setQuery}
+                    users={users}
+                    setShowSidebar={setShowSidebar}
+                    chatUsersInfo={chatUsersInfo}
+                    totalUnread={totalUnread}
+                    user={user}
+                    />
                 {/* ── MAIN CHAT WINDOW ── */}
                 <div className={`
                     noise-bg relative flex flex-col flex-1 h-full bg-[#0c0e16] overflow-hidden
