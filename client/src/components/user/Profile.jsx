@@ -113,7 +113,7 @@ function Profile({ setActivePanel = () => {} }) {
                 }
             `}</style>
 
-            <div className="profile-slide flex flex-col h-full">
+            <div className="profile-slide flex flex-col h-[100dvh]">
                 {view === 'main' && <MainView user={user} setActivePanel={setActivePanel} setView={setView} />}
                 {view === 'edit' && <EditProfileView user={user} setView={setView} />}
                 {view === 'settings' && <AccountSettingsView user={user} setView={setView} />}
