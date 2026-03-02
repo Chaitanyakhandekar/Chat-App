@@ -145,14 +145,14 @@ function ReactionChips({ reactions, isSent }) {
 /* ─────────────────────────────────────────────────────────────
    Reply Quote — production grade, inside bubble
 ───────────────────────────────────────────────────────────── */
-function ReplyQuote({ replyTo, isSent }) {
-    if (!replyTo) return null
+function ReplyQuote({ reply, isSent }) {
+    if (!reply) return null
 
-    const hasThumb = replyTo?.attachments?.length > 0
+    const hasThumb = reply?.attachments?.length > 0
     const thumbUrl = hasThumb
-        ? (replyTo.attachments[0]?.secure_url || replyTo.attachments[0]?.preview)
+        ? (reply.attachments[0]?.secure_url || reply.attachments[0]?.preview)
         : null
-    const hasText = replyTo?.message?.trim()
+    const hasText = reply?.message?.trim()
 
     return (
         <div
@@ -175,7 +175,7 @@ function ReplyQuote({ replyTo, isSent }) {
                         strokeWidth={2.8}
                         style={{ transform: 'scaleX(-1)', flexShrink: 0 }}
                     />
-                    {replyTo.senderName || 'Message'}
+                    {reply.senderName || 'Message'}
                 </span>
 
                 {/* Preview */}
@@ -186,10 +186,10 @@ function ReplyQuote({ replyTo, isSent }) {
                     {hasThumb ? (
                         <span className="inline-flex items-center gap-1">
                             <ImageIcon size={10} strokeWidth={2} style={{ flexShrink: 0, opacity: 0.75 }} />
-                            {hasText ? replyTo.message : 'Photo'}
+                            {hasText ? reply.message : 'Photo'}
                         </span>
                     ) : (
-                        replyTo.message
+                        reply.message
                     )}
                 </span>
             </div>
@@ -320,7 +320,7 @@ function Message({ msg, key, onReply }) {
     const isSent = msg.sender === user._id
     const hasImage = msg?.attachments?.length > 0
     const hasText = msg?.message && msg.message.trim() !== ""
-    const hasReply = !!msg?.replyTo
+    const hasReply = !!msg?.reply
 
     /* ── Intersection observer (seen) ── */
     useEffect(() => {
@@ -348,6 +348,9 @@ function Message({ msg, key, onReply }) {
     useEffect(() => {
         if (showMenu) setShowEmojiBar(false)
     }, [showMenu])
+    useEffect(() => {
+        console.log("Replying to message: ", msg.reply)
+    }, [])
 
     const handleTouchStart = useCallback(() => {
         longPressTriggered.current = false
@@ -482,7 +485,7 @@ function Message({ msg, key, onReply }) {
                             {/* ── Reply Quote ── */}
                             {hasReply && (
                                 <div style={{ animation: 'replyQuoteIn 0.16s ease' }}>
-                                    <ReplyQuote replyTo={msg.replyTo} isSent={isSent} />
+                                    <ReplyQuote reply={msg.reply} isSent={isSent} />
                                 </div>
                             )}
 

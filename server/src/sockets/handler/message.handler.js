@@ -8,7 +8,7 @@ import { getOtherChatUser } from "../utils/getOtherChatUser.js"
 export const messageHandler = (io, socket) => {
     socket.on(socketEvents.NEW_MESSAGE, async (data) => {
 
-        console.log("Message : ", data)
+        console.log("Message  : ", data)
         console.log("Sockets Map : ", socketsMap)
 
         let newChat;
@@ -112,7 +112,7 @@ export const messageHandler = (io, socket) => {
 
     socket.on(socketEvents.MESSAGE_REPLY_SINGLE_CHAT, async (data) => {
 
-        console.log("Message : ", data)
+        console.log("Message (Reply) : ", data)
         console.log("Sockets Map : ", socketsMap)
 
         let newChat;
@@ -137,8 +137,8 @@ export const messageHandler = (io, socket) => {
             message: data.message,
             isReply:true,
             reply:{
-                messageId:data.messageId,
-                message:data.replyMessage
+                messageId:data.replyTo._id,
+                message:data.replyTo.message
             },
             chatId: newChat?._id || data.chatId
         })
@@ -160,8 +160,8 @@ export const messageHandler = (io, socket) => {
                 tempId: data.tempId,
                 isReply:true,
                 reply:{
-                    messageId:data.messageId,
-                    message:data.replyMessage
+                    messageId:data.replyTo._id,
+                    message:data.replyTo.message
                 }
             })
         }

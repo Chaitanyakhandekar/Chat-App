@@ -179,16 +179,30 @@ function Home() {
 
         if (!socket) return
 
-        socket.emit(socketEvents.NEW_MESSAGE, {
+        if(isReplying && messageBeingReplied){
+            socket.emit(socketEvents.MESSAGE_REPLY_SINGLE_CHAT, {
             message: message || "",
             attachments: uploadInfo?.data || [],
             receiver: context.currentChatUser._id,
             chatId: currentChatId || null,
             tempId: tempId,
-            ...(isReplying && messageBeingReplied ? { replyTo: messageBeingReplied } : {})
+            replyTo: messageBeingReplied || null
         }, (ack) => {
             console.log("Ack from server:", ack);
         })
+        }
+        else{
+            socket.emit(socketEvents.NEW_MESSAGE, {
+            message: message || "",
+            attachments: uploadInfo?.data || [],
+            receiver: context.currentChatUser._id,
+            chatId: currentChatId || null,
+            tempId: tempId,
+           
+        }, (ack) => {
+            console.log("Ack from server:", ack);
+        })
+        }
 
         setMessage("")
     }
