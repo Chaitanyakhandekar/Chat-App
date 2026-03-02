@@ -6,6 +6,7 @@ import { redis } from "../../redis/config.js";
 export const onlineStatusHandler = async(io,socket)=>{
 
     socket.join(socket.user?._id.toString())     // joining socket/user to its personal room
+    console.log("User Joined Room : ", socket.user?._id.toString())
 
     addUserSocket(socket.user?._id.toString(),socket.id)  // maping socket.id with user id in memory
 
@@ -28,7 +29,7 @@ export const onlineStatusHandler = async(io,socket)=>{
     if(userChatPartners){
         for (let partner of userChatPartners){
             if(getUserSocket(partner.toString())){
-                io.to(partner.toString()).emit(socketEvents.USER_ONLINE,socket.user?._id)
+                io.to(partner.toString()).emit(socketEvents.USER_ONLINE,socket.user._id)
                 // console.log("Emitted Online Status to : ",partner.toString())
                 onlineUsers.push(partner.toString())
             }

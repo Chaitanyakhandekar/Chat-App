@@ -10,6 +10,8 @@ import { deleteFileFromCloudinary, uploadFileOnCloudinary } from "../services/cl
 import { generateOTP } from "../services/generateOTP.js";
 import { sendEmail } from "../services/brevoMail.service.js";
 import { Message } from "../models/message.model.js";
+import { validObjectId } from "../utils/isValidObjectId.js";
+import { assertRequiredFields } from "../utils/assertRequiredFields.js";
 
 
 const getConversation = asyncHandler(async (req,res)=>{
@@ -87,6 +89,25 @@ const uploadImage = asyncHandler(async (req,res)=>{
         .json(
             new ApiResponse(200,imgs,"Uploaded Successfully")
         )
+
+})
+
+const replyToMessage = asyncHandler(async (req,res)=>{
+
+    const {messageId,chatId,replyMessage} = req.body
+
+    if(!validObjectId(messageId) || !validObjectId(chatId)){
+        throw new ApiError(400,"Invalid MessageId.")
+    }
+
+
+    assertRequiredFields([replyMessage])
+
+    const messageReply = await Message.create({
+        message:replyMessage,
+        chatId,
+        sender:""
+    })
 
 })
 

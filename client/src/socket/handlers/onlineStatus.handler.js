@@ -17,6 +17,7 @@ export const onlineStatusHandler = (socket) =>{
     socket.on(socketEvents.ONLINE_USERS,(onlineUsers)=>{       
         // Listener for receiving the list of online users from the socket server when a user comes online
         const { setOnlineStatus } = useChatStore.getState();
+        console.log("Online Users List Received from socket server:",onlineUsers);
         for (let user of onlineUsers){
             setOnlineStatus(user,true)
         }

@@ -114,7 +114,8 @@ export const useChatStore = create(
                             typing:false,
                             newMessages: chat.unreadMessagesCount || 0,
                             online:false,
-                            time:""
+                            time:"",
+                            newReactions:0
                         }
                         
                         return acc;
@@ -254,8 +255,41 @@ export const useChatStore = create(
                 set({
                     groupChat:chat
                 })
-            }
+            },
 
+            isReplying:false,
+
+            setIsReplying:(value)=>{
+                set({
+                    isReplying:value
+                })
+            },
+
+            messageBeingReplied:null,
+
+            setMessageBeingReplied:(message)=>{
+                set({
+                    messageBeingReplied:message
+                    
+                })
+            },
+
+            reaction:null,
+
+            setReaction:(messageId,reaction)=>{
+                set({
+                    reaction:{
+                        messageId,
+                        reaction
+                    }
+                })
+            },
+
+            resetReaction:()=>{
+                set({
+                    reaction:null
+                })
+            }
         }),
         {name:"Chat Store"}
     )

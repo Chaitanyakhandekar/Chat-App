@@ -7,8 +7,8 @@ import { chatHandler } from "./chat.handler.js";
 
 export const registerSocketHandlers = (io,socket)=>{
    
-   onlineStatusAfterLogin(io,socket)
    onlineStatusHandler(io,socket)
+   onlineStatusAfterLogin(io,socket)
    messageHandler(io,socket)
    chatHandler(io,socket)
    disconnectHandler(io,socket)
