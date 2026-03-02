@@ -114,7 +114,8 @@ export const useChatStore = create(
                             typing:false,
                             newMessages: chat.unreadMessagesCount || 0,
                             online:false,
-                            time:""
+                            time:"",
+                            newReactions:0
                         }
                         
                         return acc;
