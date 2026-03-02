@@ -271,9 +271,24 @@ export const useChatStore = create(
                     messageBeingReplied:message
                     
                 })
-            }
+            },
 
-            
+            reaction:null,
+
+            setReaction:(messageId,reaction)=>{
+                set({
+                    reaction:{
+                        messageId,
+                        reaction
+                    }
+                })
+            },
+
+            resetReaction:()=>{
+                set({
+                    reaction:null
+                })
+            }
         }),
         {name:"Chat Store"}
     )

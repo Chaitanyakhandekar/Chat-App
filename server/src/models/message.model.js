@@ -55,7 +55,17 @@ const messageSchema = new mongoose.Schema({
        }
     },
 
-    reactions:[String],
+    reactions:[
+        {
+            emoji:{
+                type:String
+            },
+            user:{
+                type:mongoose.Types.ObjectId,
+                ref:"User"
+            }
+        }
+    ],
 
     status:{
         type:String,

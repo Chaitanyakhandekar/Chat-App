@@ -48,7 +48,7 @@ export const messageHandler = (socket) => {
     socket.on(socketEvents.MESSAGE_SENT_SINGLE_CHAT, (payload) => {      // Listener for Confirming Chat Sent or not
 
         console.log("Message Sent Status Received from socket server:", payload);
-        const { addMessage, replaceMessage } = useChatStore.getState()
+        const { addMessage, replaceMessage,setUserMessages } = useChatStore.getState()
 
         replaceMessage(payload.chatId, payload.tempId, payload.message)
     })
@@ -64,5 +64,12 @@ export const messageHandler = (socket) => {
         const { addMessage, userMessages, updateSeenStatus } = useChatStore.getState()
 
         updateSeenStatus(payload.chatId, payload.messageId, payload.status)
+    })
+
+    socket.on(socketEvents.REACT_MESSAGE_SINGLE_CHAT, (reaction)=>{     // Listener for Updating Reactions on message
+
+        const { addMessage, replaceMessage,setUserMessages } = useChatStore.getState()
+
+        setUserMessages(reaction.chatId,reaction)
     })
 }

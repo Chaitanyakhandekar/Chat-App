@@ -131,6 +131,7 @@ function ReactionChips({ reactions, isSent }) {
         acc[r.emoji] = (acc[r.emoji] || 0) + 1
         return acc
     }, {})
+    // console.log("Grouped Reactions: ", grouped)
     return (
         <div className={`flex flex-wrap gap-1 mt-0.5 ${isSent ? 'justify-end' : 'justify-start'}`}>
             {Object.entries(grouped).map(([emoji, count]) => (
@@ -301,7 +302,10 @@ function Message({ msg, key, onReply }) {
         isReplying,
         setIsReplying,
         messageBeingReplied,
-        setMessageBeingReplied
+        setMessageBeingReplied,
+        reaction,
+        setReaction,
+        resetReaction
     } = useChatStore()
 
     const messageRef = useRef(null)
@@ -348,9 +352,9 @@ function Message({ msg, key, onReply }) {
     useEffect(() => {
         if (showMenu) setShowEmojiBar(false)
     }, [showMenu])
-    useEffect(() => {
-        console.log("Replying to message: ", msg.reply)
-    }, [])
+    // useEffect(() => {
+    //     console.log("Replying to message: ", msg.reply)
+    // }, [])
 
     const handleTouchStart = useCallback(() => {
         longPressTriggered.current = false
@@ -408,17 +412,20 @@ function Message({ msg, key, onReply }) {
     }
 
     const handleEmojiPick = (emoji) => {
+        setReaction(msg._id,emoji)
         setReactions(prev => {
             const existing = prev.find(r => r.userId === user._id && r.emoji === emoji)
             if (existing) return prev.filter(r => !(r.userId === user._id && r.emoji === emoji))
             return [...prev.filter(r => r.userId !== user._id), { userId: user._id, emoji }]
         })
         setShowEmojiBar(false)
-        socket.emit(socketEvents.REACT_MESSAGE || 'react_message', {
+        socket.emit(socketEvents.REACT_MESSAGE_SINGLE_CHAT, {
             messageId: msg._id,
             chatId: msg.chatId,
             emoji
         })
+
+        resetReaction()
     }
 
     const hoverTimer = useRef(null)

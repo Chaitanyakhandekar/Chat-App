@@ -4,8 +4,10 @@ import { getUserSocket, socketsMap } from "../soketsMap.js"
 import { Chat } from "../../models/chat.model.js"
 // import { get } from "http"
 import { getOtherChatUser } from "../utils/getOtherChatUser.js"
+import { isValidObjectId } from "mongoose"
 
 export const messageHandler = (io, socket) => {
+
     socket.on(socketEvents.NEW_MESSAGE, async (data) => {
 
         console.log("Message  : ", data)
@@ -52,7 +54,6 @@ export const messageHandler = (io, socket) => {
             })
         }
     })
-
 
     socket.on(socketEvents.TYPING, async (data) => {   // handling typing event
         console.log("Typing Data : ", data)
@@ -144,7 +145,7 @@ export const messageHandler = (io, socket) => {
         })
 
         if (!newMessage) {   // error while saving message to database means message sending failure
-            socket.emit(socketEvents.ERROR, {
+            socket.to(getUserSocket(data.sender)).emit(socketEvents.ERROR, {
                 type: "Message Sending Error",
                 message: "Error While Sending Message."
             })
@@ -165,6 +166,54 @@ export const messageHandler = (io, socket) => {
                 }
             })
         }
+    })
+
+    socket.on(socketEvents.REACT_MESSAGE_SINGLE_CHAT , async(data)=>{
+        
+        if(!isValidObjectId(data.messageId)){
+            socket.to(getUserSocket(socket.user._id)).emit(socketEvents.ERROR, {
+                type: "Message Reaction Error",
+                message: "Error While Reacting Message."
+            })
+
+            return
+        }
+
+        if(!data.emoji || data.emoji && data.emoji.trim() === ""){
+            socket.to(getUserSocket(socket.user._id)).emit(socketEvents.ERROR, {
+                type: "Message Reaction Error",
+                message: "Emoji is Required to React."
+            })
+
+            return 
+        }
+
+        const reaction = await Message.findByIdAndUpdate(
+            data.messageId,
+            {
+                $push:{
+                    reactions:{
+                        emoji:data.emoji,
+                        user:socket.user._id
+                    }
+                }
+            },
+            {
+                new:true
+            }
+        )
+
+        if(!reaction){
+             socket.to(getUserSocket(socket.user._id)).emit(socketEvents.ERROR, {
+                type: "Message Reaction Error",
+                message: "Error While Creating Reaction."
+            })
+
+            return 
+        }
+
+        socket.to(getUserSocket(data.receiver)).emit(socketEvents.REACT_MESSAGE_SINGLE_CHAT, reaction)
+
     })
 }
 
