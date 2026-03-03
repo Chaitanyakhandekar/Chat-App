@@ -38,6 +38,7 @@ function ChatList({
 
 
   return (
+
      <>
                             {/* Brand */}
                             <div className="flex items-center justify-between px-5 pt-6 pb-4">
@@ -109,6 +110,11 @@ function ChatList({
                                         setShowSidebar={setShowSidebar}
                                     />: <></>
                                 ))}
+
+                                {((!query  || query.trim() === "") && !groupsOnly) && users.length === 0 && (
+                                    <p className="text-center text-[#4a4e6a] py-4">No conversations available</p>
+                                )}
+
                                 {query && userSearch?.map((chat) => (
                                     <ChatCard key={chat._id} user={chat} searchMode={true} query={query} setQuery={setQuery} />
                                 ))}
