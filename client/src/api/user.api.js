@@ -144,6 +144,33 @@ class UserApi{
             }
         }
     }
+
+    updateAvatar = async (avatarFile) => {
+        try {
+            const formData = new FormData();
+            formData.append("newAvatar", avatarFile);
+            const response = await axios.patch(`${this.baseUrl}/avatar`, formData,{
+                withCredentials:true,
+                headers:{
+                    "Content-Type":"multipart/form-data"
+                }
+            });
+
+            console.log("Update Avatar Response :: ", response.data);
+
+            return {
+                success:true,
+                message:response.data.message,
+                data: response.data.data
+            }
+        } catch (error) {
+            return {
+                success:false,
+                message:error.message,
+                error: error
+            }
+        }
+    }
 }
 
 export const userApi = new UserApi();

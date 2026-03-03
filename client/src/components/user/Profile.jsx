@@ -127,6 +127,9 @@ function MainView({ user, setActivePanel, setView }) {
 
     const { logout } = userAuthStore()
 
+    const [loading, setLoading] = useState(false)
+    const [file, setFile] = useState(null)
+
     const navigate = useNavigate()
 
     const handleSignOut = async () => {
@@ -219,6 +222,7 @@ function EditProfileView({ user, setView }) {
     const [username, setUsername] = useState(user?.username || '')
     const [bio, setBio] = useState(user?.bio || '')
     const [saved, setSaved] = useState(false)
+    const [file, setFile] = useState(null)
     const fileRef = useRef(null)
 
     const handleSave = async () => {
@@ -226,6 +230,16 @@ function EditProfileView({ user, setView }) {
         const updatedData = { name, username, bio }
 
         console.log("Updated profile data to save:", updatedData)
+
+        let avatarUpdate;
+
+        if(file){
+            avatarUpdate = await userApi.updateAvatar(file)
+
+            if(avatarUpdate.success){
+                user.avtar = avatarUpdate.data.avtar
+            }
+        }
 
         const response = await userApi.updateProfile(updatedData)
 
@@ -254,7 +268,7 @@ function EditProfileView({ user, setView }) {
                 <div className="flex flex-col items-center gap-3">
                     <div className="relative cursor-pointer group" onClick={() => fileRef.current?.click()}>
                         <img
-                            src={user?.avtar || user?.avatar}
+                            src={ file && user?.avtar ? URL.createObjectURL(file) : !file && user?.avtar ? user.avtar : user?.avtar}
                             alt={user?.username}
                             className="w-20 h-20 rounded-full object-cover border-[3px] transition-opacity group-hover:opacity-70"
                             style={{ borderColor: 'rgba(99,102,241,0.5)', boxShadow: '0 0 24px rgba(99,102,241,0.25)' }}
@@ -263,7 +277,15 @@ function EditProfileView({ user, setView }) {
                             style={{ background: 'rgba(0,0,0,0.5)' }}>
                             <Camera size={18} color="#fff" />
                         </div>
-                        <input ref={fileRef} type="file" accept="image/*" className="hidden" />
+                        <input
+                         ref={fileRef}
+                         onChange={(e)=>{
+                            setFile(e.target.files[0])
+                         }}
+                          type="file"
+                           accept="image/*"
+                            className="hidden"
+                             />
                     </div>
                     <span className="text-[11px] text-[#4a4e6a]">Click to change photo</span>
                 </div>
