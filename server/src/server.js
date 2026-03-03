@@ -34,10 +34,12 @@ app.use(express.static("public"))
 import userRouter from "./routes/user.route.js"
 import messageRouter from "./routes/message.route.js"
 import chatRouter from "./routes/chat.route.js"
+import pingRouter from "./routes/ping.route.js"
 
 app.use("/api/users",userRouter)
 app.use("/api/messages",messageRouter)
 app.use("/api/chats",chatRouter)
+app.use("/api/ping",pingRouter)
 
 // const PORT = process.env.PORT || 3000;
 // httpServer.listen(PORT, () => {
