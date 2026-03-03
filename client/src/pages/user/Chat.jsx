@@ -521,7 +521,7 @@ function Home() {
                 />
 
                 {/* ── MAIN CHAT WINDOW ── */}
-                <div className="noise-bg relative flex flex-col flex-1 h-full bg-[#0c0e16] overflow-hidden md:flex">
+                <div className="noise-bg relative flex flex-col flex-1 h-full bg-[#0c0e16] overflow-hidden md:flex ">
 
                     {/* Ambient orbs */}
                     <div className="absolute -top-24 -right-24 w-[400px] h-[400px] rounded-full pointer-events-none z-0"
@@ -582,7 +582,7 @@ function Home() {
                                     {/* Messages */}
                                     <div
                                         ref={chatContainerRef}
-                                        className="flex-1 overflow-y-auto px-6 pt-6 pb-2 z-[1] custom-scroll"
+                                        className="flex-1 overflow-y-auto md:px-6 pt-6 pb-2 z-[1] custom-scroll"
                                     >
                                         {messages[currentChatId]?.map((msg) => (
                                             <Message

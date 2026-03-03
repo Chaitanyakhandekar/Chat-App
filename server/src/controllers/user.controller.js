@@ -544,14 +544,14 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   const newAvatar = req.file.path
 
   // Delete existing avatar file from Cloudinary directly (avoid calling route handler)
-  try {
-    if (req.user.avatarPublicId) {
-      await deleteFileFromCloudinary(req.user.avatarPublicId)
-    }
-  } catch (err) {
-    // log but do not send a response here; allow update to proceed or fail at upload step
-    console.error("Failed to delete previous avatar from Cloudinary:", err.message || err)
-  }
+  // try {
+  //   if (req.user.avatarPublicId) {
+  //     await deleteFileFromCloudinary(req.user.avatarPublicId)
+  //   }
+  // } catch (err) {
+  //   // log but do not send a response here; allow update to proceed or fail at upload step
+  //   console.error("Failed to delete previous avatar from Cloudinary:", err.message || err)
+  // }
 
   const uploadData = await uploadFileOnCloudinary(newAvatar)
 
@@ -563,8 +563,8 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     req.user._id,
     {
       $set: {
-        avatar: uploadData.secure_url,
-        avatarPublicId: uploadData.public_id
+        avtar: uploadData.secure_url,
+        // avatarPublicId: uploadData.public_id
       }
     },
     {
@@ -581,7 +581,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(200, {
         _id: user._id,
-        avatar: uploadData.secure_url
+        avtar: uploadData.secure_url
       })
     )
 

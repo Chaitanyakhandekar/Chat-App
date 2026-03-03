@@ -46,7 +46,7 @@ function ChatWindow({
   return (
     <div className={`
                     noise-bg relative flex flex-col flex-1 h-full bg-[#0c0e16] overflow-hidden
-                     md:flex
+                     md:flex border-2 border-red-500 rounded-lg
                       `}>
 
                     {/* Ambient orbs */}
