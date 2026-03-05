@@ -16,5 +16,6 @@ export const socketEvents = {
     USER_LOGGED_IN:"user_logged_in",
     NEW_SINGLE_CHAT:"new_single_chat",
     MESSAGE_REPLY_SINGLE_CHAT:"message_reply_single_chat",
-    REACT_MESSAGE_SINGLE_CHAT:"react_message_single_chat"
+    REACT_MESSAGE_SINGLE_CHAT:"react_message_single_chat",
+    GET_ONLINE_STATUS:"get_online_status"
 }
