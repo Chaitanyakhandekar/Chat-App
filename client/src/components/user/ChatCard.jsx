@@ -61,7 +61,7 @@ function ChatCard({
     const isChatExists = () => {
         let isExists = false;
         userChats.forEach((chat) => {
-            if (chat.participants[0]?._id === user._id || chat.participants[1]?._id === user._id) {
+            if (!chat.isGroupChat && (chat.participants[0]?._id === user._id || chat.participants[1]?._id === user._id)) {
                 isExists = true;
             }
         })
@@ -106,7 +106,7 @@ function ChatCard({
                 {/* Avatar */}
                 <div className="relative flex-shrink-0 w-11 h-11">
                     <img
-                        src={user.avtar || ""}
+                        src={!chat.isGroupChat && user.avtar || ""}
                         alt=""
                         className="w-11 h-11 rounded-full object-cover border-2 border-white/[0.07] block"
                     />
@@ -121,7 +121,7 @@ function ChatCard({
                 {/* Name + status */}
                 <div className="flex flex-col flex-1 min-w-0 gap-[2px]">
                     <span className="text-[13.5px] font-semibold text-[#f1f2f7] tracking-[-0.2px] truncate">
-                        {user?.username || chat?.groupName }
+                        {!chat.isGroupChat && user?.username || chat?.groupName }
                     </span>
                     {typing ? (
                         <span className="flex items-center gap-1 text-[11.5px] text-[#22d3a0] truncate">
@@ -134,7 +134,7 @@ function ChatCard({
                         </span>
                     ) : (
                         <span className="text-[11.5px] text-[#4a4e6a] truncate">
-                            {online ? 'Online' : ''}
+                            {!chat.isGroupChat && online ? 'Online' : ''}
                         </span>
                     )}
                 </div>
