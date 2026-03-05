@@ -3,6 +3,7 @@ import { Search, Plus } from 'lucide-react'
 import ChatCard from './ChatCard.jsx'
 import { useChatStore } from '../../store/useChatStore.js'
 import { userAuthStore } from '../../store/userStore.js'
+import CreateGroup from './CreateGroup.jsx'
 
 
 function ChatList({
@@ -12,7 +13,8 @@ function ChatList({
     users=[],
     setShowSidebar=()=>{},
     groupsOnly=false,
-    searchUsers=()=>{}
+    searchUsers=()=>{},
+    createGroup=false
    
 }) {
 
@@ -52,10 +54,10 @@ function ChatList({
                                     )}
                                 </div>
                                 <button
-                                    onClick={() => togglePanel('newGroup')}
+                                    onClick={() => togglePanel('createGroup')}
                                     className="flex items-center justify-center w-7 h-7 rounded-[9px] transition-all duration-150 hover:scale-105"
                                     style={{ background: 'linear-gradient(135deg,rgba(99,102,241,0.2),rgba(139,92,246,0.15))', border: '1px solid rgba(99,102,241,0.3)' }}
-                                    title="New Group"
+                                    title="Create Group"
                                 >
                                     <Plus size={14} color="#818cf8" />
                                 </button>
@@ -80,7 +82,7 @@ function ChatList({
 
                             {/* Users */}
                             <div className="flex-1 overflow-y-auto px-2 custom-scroll">
-                                {((!query   || query.trim() === "") && groupsOnly) && users?.map((chat) => (
+                                {((!query   || query.trim() === "") && groupsOnly) && !createGroup && users?.map((chat) => (
                                     chat.isGroupChat ? 
                                      <ChatCard
                                         key={chat._id}
@@ -88,14 +90,16 @@ function ChatList({
                                         searchMode={false}
                                         chatId={chat._id}
                                         typing={chatUsersInfo[chat._id]?.typing || false}
-                                        online={onlineStatus[chat.participants[0]?._id === user?._id ? chat.participants[1]?._id : chat.participants[0]?._id] || false}
+                                        online={
+                                            !chat.isGroupChat && onlineStatus[chat.participants[0]?._id === user?._id ? chat.participants[1]?._id : chat.participants[0]?._id] || false
+                                        }
                                         chat={chat}
                                         newMessages={chatUsersInfo[chat?._id].newMessages || 0}
                                         time={chatUsersInfo[chat._id].time}
                                         setShowSidebar={setShowSidebar}
                                     />: <></>
                                 ))}
-                                {((!query  || query.trim() === "") && !groupsOnly) && users?.map((chat) => (
+                                {((!query  || query.trim() === "") && !groupsOnly) && !createGroup && users?.map((chat) => (
                                     !chat.isGroupChat ? 
                                      <ChatCard
                                         key={chat._id}
@@ -111,13 +115,19 @@ function ChatList({
                                     />: <></>
                                 ))}
 
-                                {((!query  || query.trim() === "") && !groupsOnly) && users.length === 0 && (
+                                {((!query  || query.trim() === "") && !groupsOnly) && !createGroup && users.length === 0 && (
                                     <p className="text-center text-[#4a4e6a] py-4">No conversations available</p>
                                 )}
 
-                                {query && userSearch?.map((chat) => (
+                                {query && !createGroup && userSearch?.map((chat) => (
                                     <ChatCard key={chat._id} user={chat} searchMode={true} query={query} setQuery={setQuery} />
                                 ))}
+
+                                {
+                                    createGroup && (
+                                        <CreateGroup user={null} searchMode={false} createGroup={true} users={users} />
+                                    )
+                                }
                             </div>
                         </>
   )
