@@ -13,6 +13,7 @@ import Profile from "../../components/user/Profile.jsx"
 import SettingsPanel from "../../components/user/Settings.jsx"
 import ChatList from "./../../components/user/ChatList.jsx"
 import GroupInfo from ".././../components/user/GroupInfo.jsx"
+import { useGroupChatStore } from "../../store/useGroupChatStore.js"
 
 function Sidebar({
   activePanel,
@@ -31,6 +32,8 @@ function Sidebar({
 
   const togglePanel = (panel) =>
     setActivePanel(prev => prev === panel ? null : panel)
+      const {setNewGroupInfo,GroupInfo,newGroupNotication,setNewGroupNotification,resetParticipant,participants} = useGroupChatStore()
+
 
   // Nav button
   const NavIconBtn = ({ icon: Icon, panel, badge, tooltip }) => {
@@ -38,7 +41,12 @@ function Sidebar({
 
     return (
       <button
-        onClick={() => togglePanel(panel)}
+        onClick={() => {
+          togglePanel(panel)
+          resetParticipant()
+          console.log("Clicked Panel :: ", panel)
+          console.log("Clicked Panel :: ", participants)
+        }}
         title={tooltip}
         className="relative flex items-center justify-center w-10 h-10 rounded-[13px] transition-all duration-200 group"
         style={{
@@ -190,6 +198,21 @@ function Sidebar({
                   )
 
                 })}
+
+              {
+                newGroupNotication &&
+                <div className="notif-item unread">
+                  <img
+                    src={""}
+                    className="w-9 h-9 rounded-full"
+                  />
+                  <div
+                    className="text-sm font-medium text-[#c4c6e7]"
+                  >
+                    {"User1 Added you to "}
+                  </div>
+                </div>
+              }
 
             </div>
 

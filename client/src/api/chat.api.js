@@ -30,6 +30,31 @@ class ChatApi{
         }
     }
 
+    createGroupChat = async(groupName,participants) =>{
+        try {
+            const response = await axios.post(`${this.baseUrl}/group`,{
+                groupName,
+                participants
+            },{
+                withCredentials:true
+            });
+        
+            console.log("Create Group Chat Response :: ",response.data.data);
+
+            return {
+                success:true,
+                message:response.data.message,
+                data: response.data.data
+            }
+        } catch (error) {
+            return {
+                success:false,
+                message:error.message,
+                error: error
+            }
+        }
+    }
+
     getUserChats = async () =>{
         try {
             const response = await axios.get(`${this.baseUrl}/`,{

@@ -10,6 +10,8 @@ import { deleteFileFromCloudinary, uploadFileOnCloudinary } from "../services/cl
 import { generateOTP } from "../services/generateOTP.js";
 import { sendEmail } from "../services/brevoMail.service.js";
 import { Chat } from "../models/chat.model.js";
+import { getIO } from "../sockets/socketInstance.js";
+import { socketEvents } from "../constants/socketEvents.js";
 
 
 const createSingleChat = asyncHandler(async (req, res) => {
@@ -57,6 +59,8 @@ const createGroupChat = asyncHandler(async (req, res) => {
         participants,
     } = req.body
 
+    console.log("Create Group Chat Request Body :: ", req.body)
+
     if(!groupName || groupName && groupName.trim() === ""){
         throw new ApiError(400,"GroupName is Required.")
     }
@@ -93,6 +97,14 @@ const createGroupChat = asyncHandler(async (req, res) => {
 
     if(!newGroup){
         throw new ApiError(500,"Server Error While Creating Group.")
+    }
+
+    const io = getIO();
+
+    if(io){
+        for( let user of newGroup.participants){
+            io.to(user.toString()).emit(socketEvents.GROUP_CREATED, newGroup)
+        }
     }
 
     return res
