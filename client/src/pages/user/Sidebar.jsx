@@ -219,6 +219,20 @@ function Sidebar({
           />
         )}
 
+        {activePanel === "createGroup" && (
+          <ChatList
+            togglePanel={setActivePanel}
+            query={query}
+            setQuery={setQuery}
+            users={users}
+            setShowSidebar={setShowSidebar}
+            groupsOnly={true}
+            paramChatId={paramChatId}
+            searchUsers={searchUsers}
+            createGroup={true}
+          />
+        )}
+
 
         {/* Settings */}
         {activePanel === "settings" &&

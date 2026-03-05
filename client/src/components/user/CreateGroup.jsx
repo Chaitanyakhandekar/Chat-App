@@ -13,7 +13,7 @@ function CreateGroup({
     
 
   return (
-       <div className="slide-in-panel flex flex-col h-full">
+       <div className="slide-in-panel flex flex-col items-center h-full border-1">
                             <div className="flex items-center justify-between px-5 pt-6 pb-4">
                                 <span className="text-[15px] font-bold tracking-tight">New Group</span>
                                 <button onClick={() => setActivePanel(null)} className="text-[#4a4e6a] hover:text-[#818cf8] transition-colors">
@@ -21,7 +21,7 @@ function CreateGroup({
                                 </button>
                             </div>
                             <div className="panel-divider" />
-                            <div className="px-4 flex flex-col gap-3 pb-4 flex-1 overflow-y-auto custom-scroll">
+                            <div className="px-4 flex flex-col gap-3 pb-4 flex-1 overflow-y-auto h-fit custom-scroll">
                                 <div>
                                     <label className="text-[10.5px] uppercase tracking-[1px] text-[#4a4e6a] font-semibold mb-1.5 block">Group Name</label>
                                     <input
@@ -41,6 +41,7 @@ function CreateGroup({
                                         />
                                     </div>
                                 </div>
+                               
                                 <div className="flex flex-col gap-1">
                                     {users?.slice(0, 8).map(chat => {
                                         const u = chat.participants[0]._id === user._id ? chat.participants[1] : chat.participants[0]
@@ -53,13 +54,15 @@ function CreateGroup({
                                         )
                                     })}
                                 </div>
-                                <button
-                                    className="w-full py-2.5 rounded-[12px] text-[13.5px] font-semibold text-white mt-1 transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
+                                
+                               
+                            </div>
+                             <button
+                                    className="w-[90%] py-2.5 rounded-[12px] text-[13.5px] font-semibold text-white mt-1 transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.98] mb-3"
                                     style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 14px rgba(99,102,241,0.35)' }}
                                 >
                                     Create Group
                                 </button>
-                            </div>
                         </div>
   )
 }
