@@ -181,6 +181,10 @@ function Home() {
 
     useEffect(() => {
         getAllUsers();
+        // Request online status after fetching users
+        if (user) {
+            socket.emit(socketEvents.GET_ONLINE_STATUS);
+        }
         console.log("Media Files: ", mediaFiles[currentChatId]);
 
         const container = chatContainerRef.current;
