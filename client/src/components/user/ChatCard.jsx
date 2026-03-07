@@ -50,12 +50,26 @@ function ChatCard({
             }
     }
 
-    const getConversationMessages = async () => {
+    const getConversationMessages = async (groupId=null) => {
         console.log("Getting Conversation Messages with User :: ", user.username);
         context.setCurrentChatUser(user);
-        const response = await messageApi.getConversation(user._id)
-        console.log(" Messages :: ", response.data.data)
-        setUserMessages(chatId, response.data.data)
+        let response;
+        if(groupId){
+            response = await messageApi.getGroupConversation(groupId)
+        }
+        else{
+             response = await messageApi.getConversation(user._id)
+        }
+        console.log(" Messages :: ", response?.data?.data)
+        setUserMessages(chatId, response?.data?.data)
+    }
+
+    const isThisGroupChat = () =>{
+        return chat?.isGroupChat || false;
+    }
+
+    const isSingleChat = () =>{
+        return !chat?.isGroupChat || false;
     }
 
     const isChatExists = () => {
@@ -66,6 +80,37 @@ function ChatCard({
             }
         })
         return isExists;
+    }
+
+    const handleChatCardClick = () => {
+          if (isThisGroupChat()) {
+                        setCurrentChatId(chatId);
+                        setIsGroupChat(chat.isGroupChat);
+                        if(chat.isGroupChat){
+                            setGroupChat(chat);
+                        }
+                       setCurrentPreviewFile(null)
+                        navigate(`/chat/${chat._id}`)
+                        getConversationMessages(chat._id);
+                        resetNewMessagesCount(chatId);
+                        setScrollToBottomInChat(true);
+                    }
+                    else if(isSingleChat()){
+                        setCurrentChatId(chatId);
+                        setIsGroupChat(chat.isGroupChat);
+                        if(chat.isGroupChat){
+                            setGroupChat(chat);
+                        }
+                       setCurrentPreviewFile(null)
+                        navigate(`/chat/${chat._id}`)
+                        getConversationMessages();
+                        resetNewMessagesCount(chatId);
+                        setScrollToBottomInChat(true);
+                    }
+
+                    else {
+                        createSingleChat();
+                    }
     }
 
     return (
@@ -84,22 +129,7 @@ function ChatCard({
             `}</style>
 
             <div
-                onClick={() => {
-                    if (isChatExists()) {
-                        setCurrentChatId(chatId);
-                        setIsGroupChat(chat.isGroupChat);
-                        if(chat.isGroupChat){
-                            setGroupChat(chat);
-                        }
-                       setCurrentPreviewFile(null)
-                        navigate(`/chat/${chat._id}`)
-                        getConversationMessages();
-                        resetNewMessagesCount(chatId);
-                        setScrollToBottomInChat(true);
-                    } else {
-                        createSingleChat();
-                    }
-                }}
+                onClick={handleChatCardClick}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer mb-0.5 transition-all duration-[180ms] hover:bg-white/[0.05] active:bg-[rgba(99,102,241,0.1)]"
                 style={{ fontFamily: "'Sora', sans-serif" }}
             >

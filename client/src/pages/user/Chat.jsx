@@ -549,7 +549,7 @@ function Home() {
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-[15px] font-semibold tracking-tight text-[#f1f2f7]">
-                                        {context.currentChatUser?.username || (isGroupChat ? groupChat?.groupName : "Unknown User")}
+                                        {(!isGroupChat && context.currentChatUser?.username) || (isGroupChat ? groupChat?.groupName : "Unknown User")}
                                     </span>
                                     {chatUsersInfo[currentChatId]?.typing ? (
                                         <span className="flex items-center gap-1 text-xs text-[#22d3a0] font-medium">
