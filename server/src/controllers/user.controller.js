@@ -907,7 +907,6 @@ const searchUsers = asyncHandler(async (req,res)=>{
 })
 
 
-
 export {
   registerUser,
   verifyUser,
