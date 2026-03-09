@@ -169,6 +169,8 @@ export const messageHandler = (io, socket) => {
     })
 
     socket.on(socketEvents.REACT_MESSAGE_SINGLE_CHAT , async(data)=>{
+
+        console.log("Message Reaction Data : ", data)
         
         if(!isValidObjectId(data.messageId)){
             socket.to(getUserSocket(socket.user._id)).emit(socketEvents.ERROR, {
@@ -203,6 +205,8 @@ export const messageHandler = (io, socket) => {
             }
         )
 
+        console.log("Reaction After Update : ", reaction)
+
         if(!reaction){
              socket.to(getUserSocket(socket.user._id)).emit(socketEvents.ERROR, {
                 type: "Message Reaction Error",
@@ -212,7 +216,10 @@ export const messageHandler = (io, socket) => {
             return 
         }
 
-        socket.to(getUserSocket(data.receiver)).emit(socketEvents.REACT_MESSAGE_SINGLE_CHAT, reaction)
+        const to = data.to === "sender" ? reaction.sender : reaction.receiver
+
+        console.log("Sending Reaction to : ", getUserSocket(to.toString()))
+        io.to(getUserSocket(to.toString())).emit(socketEvents.REACT_MESSAGE_SINGLE_CHAT, reaction)
 
     })
 }

@@ -5,6 +5,28 @@ class ChatApi{
         this.baseUrl = `${import.meta.env.VITE_ENV === "production" ? import.meta.env.VITE_BACKEND_URL_PROD : import.meta.env.VITE_BACKEND_URL}/api/chats`
     }
 
+    isChatExists = async (otherUserId) =>{
+        try {
+            const response = await axios.get(`${this.baseUrl}/exists/${otherUserId}`,{
+                withCredentials:true
+            });
+
+            console.log("Is Chat Exists Response :: ",response.data);
+
+            return {
+                success:response.data.success,
+                message:response.data.message,
+                data: response.data.data
+            }
+        } catch (error) {
+            return {
+                success:false,
+                message:error.message,
+                error: error
+            }
+        }
+    }
+
     createSingleChat = async (otherUserId) =>{
         try {
             const response = await axios.post(`${this.baseUrl}/single/${otherUserId}`,

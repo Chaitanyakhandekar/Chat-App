@@ -8,13 +8,13 @@ import { userAuthStore } from '../../store/userStore.js';
 import { useAssetsStore } from '../../store/useAssetsStore.js';
 import { useNavigate } from 'react-router-dom';
 
-const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount , setIsGroupChat, setGroupChat } = useChatStore.getState();
+const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount, setIsGroupChat, setGroupChat } = useChatStore.getState();
 
 function ChatCard({
     user = {
         name: "John Doe",
         avatar: "https://static.vecteezy.com/system/resources/previews/024/983/914/non_2x/simple-user-default-icon-free-png.png",
-        groupName:""
+        groupName: ""
     },
     searchMode = false,
     chatId = null,
@@ -31,7 +31,7 @@ function ChatCard({
 
     const context = useContext(authContext);
     const navigate = useNavigate()
-    const { userChats,setCurrentPreviewFile,addChat ,resetUserSearch} = useChatStore();
+    const { userChats, setCurrentPreviewFile, addChat, resetUserSearch } = useChatStore();
     const user1 = userAuthStore().user;
     const { scrollToBottomInChat, setScrollToBottomInChat } = useAssetsStore()
 
@@ -42,75 +42,75 @@ function ChatCard({
             setCurrentChatId(response.data._id)
             setCurrentPreviewFile(null)
             navigate(`/chat/${response.data._id}`)
-             getConversationMessages();
-             resetNewMessagesCount(response.data._id);
-             setScrollToBottomInChat(true);
-             setQuery("")
-             resetUserSearch();
-            }
+            getConversationMessages();
+            resetNewMessagesCount(response.data._id);
+            setScrollToBottomInChat(true);
+            setQuery("")
+            resetUserSearch();
+        }
     }
 
-    const getConversationMessages = async (groupId=null) => {
+    const getConversationMessages = async (groupId = null) => {
         console.log("Getting Conversation Messages with User :: ", user.username);
         context.setCurrentChatUser(user);
         let response;
-        if(groupId){
+        if (groupId) {
             response = await messageApi.getGroupConversation(groupId)
         }
-        else{
-             response = await messageApi.getConversation(user._id)
+        else {
+            response = await messageApi.getConversation(user._id)
         }
         console.log(" Messages :: ", response?.data?.data)
         setUserMessages(chatId, response?.data?.data)
     }
 
-    const isThisGroupChat = () =>{
+    const isThisGroupChat = () => {
+        console.log("isGroupChat : ", chat?.isGroupChat)
         return chat?.isGroupChat || false;
     }
 
-    const isSingleChat = () =>{
+    const isSingleChat = () => {
+        console.log("isSingleChat : ", !chat?.isGroupChat)
         return !chat?.isGroupChat || false;
     }
 
-    const isChatExists = () => {
+    const isChatExists = async () => {
         let isExists = false;
-        userChats.forEach((chat) => {
-            if (!chat.isGroupChat && (chat.participants[0]?._id === user._id || chat.participants[1]?._id === user._id)) {
-                isExists = true;
-            }
-        })
-        return isExists;
+        const response = await chatApi.isChatExists(chat?._id)
+        return response.success;
     }
 
-    const handleChatCardClick = () => {
-          if (isThisGroupChat()) {
-                        setCurrentChatId(chatId);
-                        setIsGroupChat(chat.isGroupChat);
-                        if(chat.isGroupChat){
-                            setGroupChat(chat);
-                        }
-                       setCurrentPreviewFile(null)
-                        navigate(`/chat/${chat._id}`)
-                        getConversationMessages(chat._id);
-                        resetNewMessagesCount(chatId);
-                        setScrollToBottomInChat(true);
-                    }
-                    else if(isSingleChat()){
-                        setCurrentChatId(chatId);
-                        setIsGroupChat(chat.isGroupChat);
-                        if(chat.isGroupChat){
-                            setGroupChat(chat);
-                        }
-                       setCurrentPreviewFile(null)
-                        navigate(`/chat/${chat._id}`)
-                        getConversationMessages();
-                        resetNewMessagesCount(chatId);
-                        setScrollToBottomInChat(true);
-                    }
-
-                    else {
-                        createSingleChat();
-                    }
+    const handleChatCardClick = async() => {
+        const chatExists = await isChatExists();
+        if (chatExists) {
+            if (isThisGroupChat()) {
+                setCurrentChatId(chatId);
+                setIsGroupChat(chat?.isGroupChat);
+                if (chat?.isGroupChat) {
+                    setGroupChat(chat);
+                }
+                setCurrentPreviewFile(null)
+                navigate(`/chat/${chat?._id}`)
+                getConversationMessages(chat?._id);
+                resetNewMessagesCount(chatId);
+                setScrollToBottomInChat(true);
+            }
+            else if (isSingleChat()) {
+                setCurrentChatId(chatId);
+                setIsGroupChat(chat?.isGroupChat);
+                if (chat?.isGroupChat) {
+                    setGroupChat(chat);
+                }
+                setCurrentPreviewFile(null)
+                navigate(`/chat/${chat?._id}`)
+                getConversationMessages();
+                resetNewMessagesCount(chatId);
+                setScrollToBottomInChat(true);
+            }
+        }
+        else {
+            createSingleChat();
+        }
     }
 
     return (
@@ -136,7 +136,7 @@ function ChatCard({
                 {/* Avatar */}
                 <div className="relative flex-shrink-0 w-11 h-11">
                     <img
-                        src={!chat.isGroupChat && user.avtar || ""}
+                        src={!chat?.isGroupChat && user.avtar || ""}
                         alt=""
                         className="w-11 h-11 rounded-full object-cover border-2 border-white/[0.07] block"
                     />
@@ -151,7 +151,7 @@ function ChatCard({
                 {/* Name + status */}
                 <div className="flex flex-col flex-1 min-w-0 gap-[2px]">
                     <span className="text-[13.5px] font-semibold text-[#f1f2f7] tracking-[-0.2px] truncate">
-                        {!chat.isGroupChat && user?.username || chat?.groupName }
+                        {!chat?.isGroupChat && user?.username || chat?.groupName}
                     </span>
                     {typing ? (
                         <span className="flex items-center gap-1 text-[11.5px] text-[#22d3a0] truncate">
@@ -164,7 +164,7 @@ function ChatCard({
                         </span>
                     ) : (
                         <span className="text-[11.5px] text-[#4a4e6a] truncate">
-                            {!chat.isGroupChat && online ? 'Online' : ''}
+                            {!chat?.isGroupChat && online ? 'Online' : ''}
                         </span>
                     )}
                 </div>

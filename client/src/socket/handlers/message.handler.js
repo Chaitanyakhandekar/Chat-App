@@ -68,8 +68,8 @@ export const messageHandler = (socket) => {
 
     socket.on(socketEvents.REACT_MESSAGE_SINGLE_CHAT, (reaction)=>{     // Listener for Updating Reactions on message
 
-        const { addMessage, replaceMessage,setUserMessages } = useChatStore.getState()
-
-        setUserMessages(reaction.chatId,reaction)
+        const { addMessage, replaceMessage,setUserMessages,setReaction } = useChatStore.getState()
+        console.log("Reaction Received from socket server:", reaction)
+        replaceMessage(reaction.chatId,reaction._id,reaction)
     })
 }
