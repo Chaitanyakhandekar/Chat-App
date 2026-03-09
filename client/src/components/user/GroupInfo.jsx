@@ -6,6 +6,8 @@ import {
     Image, FileText, Hash, Settings, Edit3
 } from 'lucide-react'
 import { useChatStore } from '../../store/useChatStore'
+import { useGroupChatStore } from '../../store/useGroupChatStore'
+import { useRef } from 'react'
 
 // ─── Mock data ─────────────────────────────────────────────────────────────
 const MOCK_MEMBERS = [
@@ -136,6 +138,7 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
     const [muted,  setMuted]  = useState(false)
     const [copied, setCopied] = useState(false)
     const isOwner = currentUserId === CURRENT_USER_ID
+    const {setGroupChat,groupChat} = useGroupChatStore();
 
     const copyLink = () => {
         navigator.clipboard.writeText(`https://chat.app/invite/${group._id}`)
@@ -164,7 +167,7 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
                 <div className="flex flex-col items-center gap-3 px-5 pt-5 pb-4">
                     <div className="relative">
                         <div className="w-20 h-20 rounded-2xl overflow-hidden border-[2.5px] border-indigo-500/[0.45] shadow-[0_0_28px_rgba(99,102,241,0.2)]">
-                            <img src={group.avatar} alt={group.name} className="w-full h-full object-cover" />
+                            <img src={groupChat?.groupPicture || group.name} alt={group.name} className="w-full h-full object-cover" />
                         </div>
                         {isOwner && (
                             <button
@@ -586,15 +589,25 @@ function MediaView({ group, setView }) {
 // EDIT GROUP VIEW
 // ═══════════════════════════════════════════════════════════════════════════
 function EditView({ group, setView }) {
-    const [name,     setName]   = useState(group.name)
-    const [desc,     setDesc]   = useState(group.description)
-    const [isPublic, setPublic] = useState(group.isPublic)
+    const {groupChat,setGroupChat} = useGroupChatStore();
+    const [name,     setName]   = useState(groupChat?.groupName || group.name)
+    const [desc,     setDesc]   = useState(groupChat?.description || group.description)
+    const [isPublic, setPublic] = useState(groupChat?.isPublic || group.isPublic)
     const [saved,    setSaved]  = useState(false)
+    const [file, setFile] = useState(null);
+    const fileRef = useRef(null)
 
     const handleSave = () => {
         // groupApi.updateGroup({ name, desc, isPublic })
+        if(file){
+            
+        }
         setSaved(true)
         setTimeout(() => setSaved(false), 2500)
+    }
+
+    const handleFileClick = () =>{
+        fileRef.current.click();
     }
 
     return (
@@ -607,9 +620,18 @@ function EditView({ group, setView }) {
                 <div className="flex flex-col items-center gap-2">
                     <div className="relative cursor-pointer group/avatar">
                         <div className="w-20 h-20 rounded-2xl overflow-hidden border-[2.5px] border-indigo-500/[0.45] shadow-[0_0_24px_rgba(99,102,241,0.2)] group-hover/avatar:opacity-70 transition-opacity">
-                            <img src={group.avatar} alt="" className="w-full h-full object-cover" />
+                            <img src={groupChat && !file ? groupChat?.groupPicture : groupChat && file ? URL.createObjectURL(file) : ""} alt="" className="w-full h-full object-cover" />
+                            <input
+                            ref={fileRef}
+                            onChange={(e)=>{
+                                setFile(e.target.files[0])
+                            }}
+                            className='hidden'
+                            type="file" />
                         </div>
-                        <div className="absolute inset-0 rounded-2xl flex items-center justify-center bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+                        <div
+                        onClick={handleFileClick}
+                        className="absolute inset-0 rounded-2xl flex items-center justify-center bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity">
                             <Camera size={18} color="#fff" />
                         </div>
                     </div>
@@ -639,7 +661,7 @@ function EditView({ group, setView }) {
                         />
                     </div>
 
-                    {/* Visibility toggle */}
+                    {/* Visibility toggle
                     <div className="flex items-center justify-between p-3 rounded-[11px] bg-white/[0.025] border border-white/[0.06]">
                         <div className="flex items-center gap-2.5">
                             <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-indigo-500/[0.15]">
@@ -651,7 +673,7 @@ function EditView({ group, setView }) {
                             </div>
                         </div>
                         <Toggle on={isPublic} toggle={() => setPublic(p => !p)} />
-                    </div>
+                    </div> */}
                 </div>
             </div>
 

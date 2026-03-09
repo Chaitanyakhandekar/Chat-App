@@ -32,9 +32,27 @@ const getGroupMembers = asyncHandler(async (req, res) => {
                 from: "users",
                 localField: "participants",
                 foreignField: "_id",
-                as: "participants"
+                as: "participants",
+                let:{ admins: "$admins" },
+                pipeline:[
+                    {
+                        $addFields:{
+                            isAdmin:{
+                                $cond:{
+                                    if:{
+                                        $in:["$_id", "$$admins"]
+                                    },
+                                    then:true,
+                                    else:false
+
+                                }
+                            }
+                        }
+                    }
+                ]
             }
-        }
+        },   
+       
     ])
 
     if (!groupMembers.length) {
