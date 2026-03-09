@@ -30,6 +30,11 @@ const chatSchema = new mongoose.Schema({
         ref: 'User',
     },
 
+    groupPicture:{
+        type:String,
+    
+    },
+
     groupDescription:{
         type:String,
     },

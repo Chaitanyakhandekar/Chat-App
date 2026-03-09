@@ -41,6 +41,7 @@ import ChatList from '../../components/user/ChatList.jsx'
 import GroupInfo from '../../components/user/GroupInfo.jsx'
 import { useNavigate, useParams } from 'react-router-dom'
 import Sidebar from './Sidebar.jsx'
+import { useGroupChatStore } from '../../store/useGroupChatStore.js'
 
 function Home() {
 
@@ -77,12 +78,13 @@ function Home() {
         setCurrentPreviewFile,
         currentPreviewFile,
         isGroupChat,
-        groupChat,
         isReplying,
         setIsReplying,
         messageBeingReplied,
         setMessageBeingReplied
     } = useChatStore()
+
+     const {setGroupChat,groupChat} = useGroupChatStore();
 
     const {
         scrollToBottomInChat,
@@ -538,7 +540,11 @@ function Home() {
                                 className="sticky top-0 z-10 flex items-center gap-3.5 h-16 px-6 border-b border-white/[0.06] bg-[rgba(14,16,24,0.85)] backdrop-blur-xl">
                                 <div className="relative w-10 h-10 flex-shrink-0">
                                     <img
-                                        src={context.currentChatUser.avtar}
+                                        src={
+                                            isGroupChat ? (groupChat?.groupPicture || context.currentChatUser.avtar):
+                                            !isGroupChat && context.currentChatUser?.avtar ? context.currentChatUser.avtar : `https://api.dicebear.com/7.x/shapes/svg?seed=${context.currentChatUser._id}&scale=90`
+                                        }
+                                      
                                         alt=""
                                         className="w-10 h-10 rounded-full object-cover border-2 border-white/[0.07]"
                                     />

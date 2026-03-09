@@ -7,8 +7,9 @@ import { chatApi } from '../../api/chat.api.js';
 import { userAuthStore } from '../../store/userStore.js';
 import { useAssetsStore } from '../../store/useAssetsStore.js';
 import { useNavigate } from 'react-router-dom';
+import { useGroupChatStore } from '../../store/useGroupChatStore.js';
 
-const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount, setIsGroupChat, setGroupChat } = useChatStore.getState();
+const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount, setIsGroupChat } = useChatStore.getState();
 
 function ChatCard({
     user = {
@@ -32,6 +33,7 @@ function ChatCard({
     const context = useContext(authContext);
     const navigate = useNavigate()
     const { userChats, setCurrentPreviewFile, addChat, resetUserSearch } = useChatStore();
+    const {setGroupChat,groupChat} = useGroupChatStore();
     const user1 = userAuthStore().user;
     const { scrollToBottomInChat, setScrollToBottomInChat } = useAssetsStore()
 
@@ -136,7 +138,10 @@ function ChatCard({
                 {/* Avatar */}
                 <div className="relative flex-shrink-0 w-11 h-11">
                     <img
-                        src={!chat?.isGroupChat && user.avtar || ""}
+                        src={
+                            chat?.isGroupChat ? chat?.groupPicture :
+                            !chat?.isGroupChat ? user?.avtar : "https://static.vecteezy.com/system/resources/previews/024/983/914/non_2x/simple-user-default-icon-free-png.png"
+                        }
                         alt=""
                         className="w-11 h-11 rounded-full object-cover border-2 border-white/[0.07] block"
                     />

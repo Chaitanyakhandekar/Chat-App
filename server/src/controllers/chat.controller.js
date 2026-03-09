@@ -92,7 +92,8 @@ const createGroupChat = asyncHandler(async (req, res) => {
         groupName,
         createdBy: req.user._id,
         isGroupChat: true,
-        admins: [req.user._id]
+        admins: [req.user._id],
+        groupPicture: `https://api.dicebear.com/7.x/shapes/svg?seed=${Date.now()}&scale=90`,
     }
 
     if (participants && participants.length > 0) {
