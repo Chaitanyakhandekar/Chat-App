@@ -8,6 +8,9 @@ import {
 import { useChatStore } from '../../store/useChatStore'
 import { useGroupChatStore } from '../../store/useGroupChatStore'
 import { useRef } from 'react'
+import { useEffect } from 'react'
+import { groupApi } from '../../api/group.api'
+import { useParams } from 'react-router-dom'
 
 // ─── Mock data ─────────────────────────────────────────────────────────────
 const MOCK_MEMBERS = [
@@ -120,6 +123,9 @@ const ActionRow = ({ onClick, iconBg, icon, label, sublabel, right, danger }) =>
 // ═══════════════════════════════════════════════════════════════════════════
 function GroupInfo({ setActivePanel = () => {}, group = MOCK_GROUP, currentUserId = CURRENT_USER_ID }) {
     const [view, setView] = useState('main')
+    // const groupId = useParams().id
+
+  
 
     return (
         <div className="flex flex-col h-full w-full bg-[#0e1018]">
@@ -347,11 +353,15 @@ function MembersView({ group, currentUserId, setView }) {
     const [search,       setSearch]       = useState('')
     const [openMenu,     setOpenMenu]     = useState(null)
     const [showAddModal, setShowAddModal] = useState(false)
+    const {currentGroupParticipants,setCurrentGroupParticipants,groupChat} = useGroupChatStore();
+    const {onlineStatus} = useChatStore();
 
     const isOwner     = currentUserId === CURRENT_USER_ID
     const currentRole = members.find(m => m._id === currentUserId)?.role || 'member'
     const canManage   = isOwner || currentRole === 'admin'
-    const filtered    = members.filter(m => m.username.toLowerCase().includes(search.toLowerCase()))
+    // const filtered    = currentGroupParticipants.filter(m => m.username.toLowerCase().includes(search.toLowerCase()))
+
+   
 
     const handleRemove      = (id) => { setMembers(p => p.filter(m => m._id !== id)); setOpenMenu(null) }
     const handleToggleAdmin = (id) => {
@@ -387,7 +397,7 @@ function MembersView({ group, currentUserId, setView }) {
 
             {/* List */}
             <div className="flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#1a1d28_transparent] px-3 pb-4 flex flex-col gap-0.5">
-                {filtered.map(member => {
+                {currentGroupParticipants.map(member => {
                     const isSelf   = member._id === currentUserId
                     const canAct   = canManage && !isSelf && member.role !== 'owner'
                     const menuOpen = openMenu === member._id
@@ -413,7 +423,7 @@ function MembersView({ group, currentUserId, setView }) {
                                     </span>
                                     <RoleBadge role={member.role} />
                                 </div>
-                                <span className="text-[11px] text-[#4a4e6a]">{member.online ? 'Online' : 'Offline'}</span>
+                                <span className="text-[11px] text-[#4a4e6a]">{onlineStatus[member._id] ? 'Online' : 'Offline'}</span>
                             </div>
 
                             {/* Context menu trigger */}
@@ -600,7 +610,7 @@ function EditView({ group, setView }) {
     const handleSave = () => {
         // groupApi.updateGroup({ name, desc, isPublic })
         if(file){
-            
+
         }
         setSaved(true)
         setTimeout(() => setSaved(false), 2500)

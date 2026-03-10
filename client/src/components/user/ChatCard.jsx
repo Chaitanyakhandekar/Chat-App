@@ -38,12 +38,12 @@ function ChatCard({
     const { scrollToBottomInChat, setScrollToBottomInChat } = useAssetsStore()
 
     const createSingleChat = async () => {
-        const response = await chatApi.createSingleChat(user._id);
+        const response = await chatApi.createSingleChat(user?._id);
         if (response.success) {
             addChat(response.data)
             setCurrentChatId(response.data._id)
             setCurrentPreviewFile(null)
-            navigate(`/chat/${response.data._id}`)
+            navigate(`/chat/${response.data?._id}`)
             getConversationMessages();
             resetNewMessagesCount(response.data._id);
             setScrollToBottomInChat(true);

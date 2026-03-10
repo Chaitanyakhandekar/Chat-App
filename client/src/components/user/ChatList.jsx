@@ -91,7 +91,7 @@ function ChatList({
                                         chatId={chat._id}
                                         typing={chatUsersInfo[chat._id]?.typing || false}
                                         online={
-                                            !chat.isGroupChat && onlineStatus[chat.participants[0]?._id === user?._id ? chat.participants[1]?._id : chat.participants[0]?._id] || false
+                                            !chat.isGroupChat && chat.participants[0]?._id === user?._id ? onlineStatus[chat.participants[1]?._id] : onlineStatus[chat.participants[0]?._id] || false
                                         }
                                         chat={chat}
                                         newMessages={chatUsersInfo[chat?._id].newMessages || 0}

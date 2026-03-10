@@ -289,6 +289,21 @@ export const useChatStore = create(
                 set({
                     reaction:null
                 })
+            },
+
+            usersInfo:{},
+
+            setUsersInfo:(users)=>{
+               set({
+                  usersInfo:users.reduce((acc,user)=>{
+                    acc[user._id]={
+                        online:false,
+                        typing:false,
+                    }
+
+                    return acc;
+                },{})
+               })
             }
         }),
         {name:"Chat Store"}

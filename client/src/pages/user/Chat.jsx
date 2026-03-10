@@ -261,7 +261,7 @@ function Home() {
             setGroupsOnly(true)
             break;
         case "groupInfo":
-            navigate(`/chat/${currentChatId}/group-info`)
+            navigate(`/chat/group-info/${currentChatId}`)
         }
     }, [activePanel])
 

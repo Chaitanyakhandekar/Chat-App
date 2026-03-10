@@ -46,7 +46,8 @@ const createSingleChat = asyncHandler(async (req, res) => {
     }
 
     const isChatAlreadyExists = await Chat.findOne({
-        participants: { $all: [userId, req.user._id] }
+        participants: { $all: [userId, req.user._id] },
+        isGroupChat: false
     })
 
     if (isChatAlreadyExists) {
@@ -223,13 +224,27 @@ const getUserChats = asyncHandler(async (req, res) => {
     )
 })
 
+const getChatById = asyncHandler(async (req, res) => {
+    const { chatId } = req.params
+    if (!isValidObjectId(chatId)) {
+        throw new ApiError(400, "Invalid ChatId.")
+    }
 
+    const chat = await Chat.findById(chatId)
 
+    if (!chat) {
+        throw new ApiError(404, "Chat not found.")
+    }
 
+    return res.status(200).json(
+        new ApiResponse(200, chat, "Chat Fetched Successfully.")
+    )
+})
 
 export {
     createGroupChat,
     createSingleChat,
     getUserChats,
-    isChatExists
+    isChatExists,
+    getChatById
 }

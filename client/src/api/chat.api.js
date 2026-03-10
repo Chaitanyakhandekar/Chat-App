@@ -36,7 +36,7 @@ class ChatApi{
                 }
             );
 
-            console.log("Create Single Chat Response :: ",response.data.data);
+            console.log("Create Single Chat Response :: ",response.data);
 
             return {
                 success:true,
@@ -97,6 +97,28 @@ class ChatApi{
                 error: error
             }
         }
+    }
+
+    getChatById = async (chatId) =>{
+        try {
+            const response = await axios.get(`${this.baseUrl}/${chatId}`,{
+                withCredentials:true
+            });
+
+            console.log("Get Chat By Id Response :: ",response.data.data);
+
+            return {
+                success:true,
+                message:response.data.message,
+                data: response.data.data
+            }
+        } catch (error) {
+            return {
+                success:false,
+                message:error.message,
+                error: error
+            }
+            }
     }
 
 

@@ -42,7 +42,7 @@ function App() {
     <Route path='/login' element={<ProtectedRouteAuth><Login /></ProtectedRouteAuth>}/>
     <Route path='/home' element={<ProtectedRoute><Home /></ProtectedRoute>}/>
     <Route path='/chat/:id' element={<ProtectedRoute><Chat /></ProtectedRoute>}/>
-    <Route path='/chat/:id/group-info' element={<ProtectedRoute><GroupInfoMain /></ProtectedRoute>}/>
+    <Route path='/chat/group-info/:id' element={<ProtectedRoute><GroupInfoMain /></ProtectedRoute>}/>
 
    </Routes>
   )

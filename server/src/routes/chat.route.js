@@ -4,7 +4,8 @@ import {
 createSingleChat,
 getUserChats,
 createGroupChat,
-isChatExists
+isChatExists,
+getChatById
 } from "../controllers/chat.controller.js";
 
 const router = Router();
@@ -15,4 +16,5 @@ router.route("/single/:userId").post(userAuth, createSingleChat)
 router.route("/group").post(userAuth, createGroupChat)
 router.route("/").get(userAuth, getUserChats)
 router.route("/exists/:chatId").get(userAuth, isChatExists)
+router.route("/:chatId").get(userAuth, getChatById)
 export default router;  
