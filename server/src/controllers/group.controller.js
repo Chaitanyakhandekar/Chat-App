@@ -12,6 +12,7 @@ import { sendEmail } from "../services/brevoMail.service.js";
 import { Chat } from "../models/chat.model.js";
 import { getIO } from "../sockets/socketInstance.js";
 import { socketEvents } from "../constants/socketEvents.js";
+import { validateAtleastOneField } from "../utils/validateAtleastOneField.js";
 
 
 const getGroupMembers = asyncHandler(async (req, res) => {
@@ -70,6 +71,93 @@ const getGroupMembers = asyncHandler(async (req, res) => {
         )
 })
 
+
+const updateGroupChat = asyncHandler(async (req,res)=>{
+    const { id } = req.params;
+    const {groupName, groupDescription} = req.body;
+
+    if(!isValidObjectId(id)){
+        throw new ApiError(400, "Invalid GroupId")
+    }
+
+    if(!validateAtleastOneField([groupName, groupDescription])){
+        throw new ApiError(400, "At least one field is required")
+    }
+
+    let data = {}
+
+    if(groupName){
+        data.groupName = groupName
+    }
+    if(groupDescription){
+        data.groupDescription = groupDescription
+    }
+
+    const updatedGroup = await Chat.findByIdAndUpdate(
+        id,
+        {
+            $set:data
+        },
+        {
+            new:true
+        }
+    )
+
+    if(!updatedGroup){
+        throw new ApiError(500, "Server Error While Updating Group Details.")
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, updatedGroup, "Group Details Updated Successfully.")
+    )
+
+})
+
+const uploadGroupPicture = asyncHandler(async (req,res)=>{
+    const { id } = req.params;
+
+    if(!isValidObjectId(id)){
+        throw new ApiError(400, "Invalid GroupId")
+    }
+
+    if(!req.file){
+        throw new ApiError(400, "Group Picture is required.")
+    }
+
+    console.log("File Path :: ",req.file)
+
+    const uploadRes = await uploadFileOnCloudinary(req.file.path);
+
+    // console.log("Cloudinary Upload Response :: ", uploadRes)
+
+    if(!uploadRes){
+        throw new ApiError(500, "Error While Uploading Group Picture.")
+    }
+
+    const group = await Chat.findByIdAndUpdate(
+        id,
+        {
+            $set:{
+                groupPicture: uploadRes.secure_url
+            }
+        },
+        {
+            new:true
+        }
+    )
+    
+    if(!group){
+        throw new ApiError(500, "Server Error While Updating Group Picture.")
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, group, "Group Picture Uploaded Successfully.")
+    )
+})
+
+
 export {
-    getGroupMembers
+    getGroupMembers,
+    updateGroupChat,
+    uploadGroupPicture
 }

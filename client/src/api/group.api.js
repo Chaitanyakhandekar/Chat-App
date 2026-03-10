@@ -24,6 +24,50 @@ class GroupApi {
             };
         }
     }
+
+    updateGroupChat = async (groupId, groupName, groupDescription) =>{
+        try {
+            const response = await axios.put(`${this.baseUrl}/update/${groupId}`, {
+                groupName,
+                groupDescription
+            }, {
+                withCredentials:true
+            });
+            console.log("Update Group Chat Response :: ",response.data);
+            return {
+                success:true,
+                message:response.data.message,
+                data: response.data.data
+            }
+        } catch (error) {
+            return {
+                success:false,
+                message:error.message,
+            };
+        }
+    }
+
+    uploadGroupPicture = async (groupId, formData) => {
+        try {
+            const response = await axios.post(`${this.baseUrl}/upload-picture/${groupId}`, formData, {
+                withCredentials:true,
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
+            });
+            console.log("Upload Group Picture Response :: ",response);
+            return {
+                success:true,
+                message:response.data.message,
+                data: response.data.data
+            }
+        } catch (error) {
+            return {
+                success:false,
+                message:error.message,
+            };
+        }
+    }
 }
 
 export const groupApi = new GroupApi();

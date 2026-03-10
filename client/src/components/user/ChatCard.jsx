@@ -145,7 +145,7 @@ function ChatCard({
                         alt=""
                         className="w-11 h-11 rounded-full object-cover border-2 border-white/[0.07] block"
                     />
-                    {online && (
+                    {!chat.isGroupChat && online && (
                         <div
                             className="absolute bottom-[1px] right-[1px] w-2.5 h-2.5 rounded-full bg-[#22d3a0] border-2 border-[#0e1018]"
                             style={{ boxShadow: '0 0 6px #22d3a0' }}

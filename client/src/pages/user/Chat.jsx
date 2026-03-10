@@ -548,7 +548,7 @@ function Home() {
                                         alt=""
                                         className="w-10 h-10 rounded-full object-cover border-2 border-white/[0.07]"
                                     />
-                                    {onlineStatus[context.currentChatUser._id] && (
+                                    { !isGroupChat && onlineStatus[context.currentChatUser._id] && (
                                         <div className="online-pulse absolute bottom-[1px] right-[1px] w-2.5 h-2.5 rounded-full bg-[#22d3a0] border-2 border-[#0c0e16]"
                                             style={{ boxShadow: '0 0 8px #22d3a0' }} />
                                     )}
