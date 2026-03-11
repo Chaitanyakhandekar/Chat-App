@@ -91,9 +91,28 @@ export const useChatStore = create(
                 ))
             },
 
+            tempChat:{},
+
+            setTempChat:(chat)=>{
+                set({
+                    tempChat:chat
+                })
+            },
+
+            shiftChatAtFirstPosition:(chatId)=>{
+                set((state)=>{
+                    let chats = state.userChats
+                    let chat = state.userChats.filter(c=> c._id === chatId)
+                    chats.pop(chat)
+                    return {
+                        userChats:chats.unshift(chat)
+                    }
+                })
+            },
+
             updateLastMessage:(chatId,message)=>{
                 set((state)=>({
-                    userChats: state.userChats.map((chat)=>{
+                    userChats: state.userChats?.map((chat)=>{
                         if(chat._id === chatId){
                             return {
                                 ...chat,
@@ -102,7 +121,8 @@ export const useChatStore = create(
                         }
                         return chat
                     })
-                }))
+                }
+            ))
             },
 
             userSearch:[],

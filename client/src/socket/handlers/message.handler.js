@@ -8,7 +8,7 @@ export const messageHandler = (socket) => {
     socket.on(socketEvents.NEW_MESSAGE, (data) => {       // Listener for receiving a new message from the socket server
         // console.log("New Message Received from socket server:",data);
 
-        const { addMessage, incrementNewMessagesCount ,updateLastMessage} = useChatStore.getState();
+        const { addMessage, incrementNewMessagesCount ,updateLastMessage,shiftChatAtFirstPosition} = useChatStore.getState();
         // const { setScrollToBottomInChat, scrollToBottomInChat } = useAssetsStore().getState();
 
         if (data.sender !== userAuthStore.getState().user._id) {
@@ -23,8 +23,8 @@ export const messageHandler = (socket) => {
             // setScrollToBottomInChat(true)
 
         }
-
         updateLastMessage(data?.chatId,data)
+        
 
     })
 
@@ -64,6 +64,7 @@ export const messageHandler = (socket) => {
         const { setTypingStatus } = useChatStore.getState();
         setTypingStatus(data.chatId, data.isTyping)
     })
+
 
     socket.on(socketEvents.MESSAGE_SEEN_SINGLE_CHAT, (payload) => {       // Listener for Updating Seen Status of Message
         console.log("message seen status : ", payload.status)
