@@ -149,6 +149,18 @@ const getUserChats = asyncHandler(async (req, res) => {
             }
         },
         {
+            $addFields: {
+                sortTime: {
+                    $ifNull: ["$lastMessage.createdAt", "$createdAt"]
+                }
+            }
+        },
+        {
+            $sort:{
+              sortTime:-1
+            }
+        },
+        {
             $lookup: {
                 from: "users",
                 localField: "participants",
