@@ -24,6 +24,7 @@ export const messageHandler = (socket) => {
 
         }
         updateLastMessage(data?.chatId,data)
+        shiftChatAtFirstPosition(data?.chatId)
         
 
     })

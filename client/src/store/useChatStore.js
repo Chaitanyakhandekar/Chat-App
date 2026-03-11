@@ -101,12 +101,13 @@ export const useChatStore = create(
 
             shiftChatAtFirstPosition:(chatId)=>{
                 set((state)=>{
-                    let chats = state.userChats
-                    let chat = state.userChats.filter(c=> c._id === chatId)
-                    chats.pop(chat)
-                    return {
-                        userChats:chats.unshift(chat)
-                    }
+                    let chat = state.userChats.find(c=> c._id === chatId)
+                    let chats = state.userChats.filter(c => c._id !== chatId)
+                
+                return {
+                    userChats:[chat,...chats]
+                }  
+                    
                 })
             },
 
