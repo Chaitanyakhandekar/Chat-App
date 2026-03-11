@@ -125,7 +125,7 @@ function EmojiBar({ show, isSent, onPick }) {
 }
 
 /* ─── Reaction chips ─── */
-function ReactionChips({ reactions, isSent }) {
+function ReactionChips({ reactions=[], isSent , msg }) {
     if (!reactions || reactions.length === 0) return null
     const grouped = reactions.reduce((acc, r) => {
         acc[r.emoji] = (acc[r.emoji] || 0) + 1
@@ -134,11 +134,12 @@ function ReactionChips({ reactions, isSent }) {
     // console.log("Grouped Reactions: ", grouped)
     return (
         <div className={`flex flex-wrap gap-1 mt-0.5 ${isSent ? 'justify-end' : 'justify-start'}`}>
-            {Object.entries(grouped).map(([emoji, count]) => (
+            {reactions && reactions.length > 0 && Object.entries(grouped).map(([emoji, count], index) => (
                 <span key={emoji} className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] border border-white/[0.1] bg-[#1a1d2e] text-[#c4c6e7] shadow-sm">
-                    {emoji} {count > 1 && <span className="text-[10px] text-[#818cf8]">{count}</span>}
+                    {emoji || msg.reactions[0]?.emoji} {count > 1 && <span className="text-[10px] text-[#818cf8]">{count}</span>}
                 </span>
             ))}
+
         </div>
     )
 }
@@ -326,6 +327,11 @@ function Message({ msg, key, onReply }) {
     const hasText = msg?.message && msg.message.trim() !== ""
     const hasReply = !!msg?.reply
 
+    /* ── Sync reactions from updated message ── */
+    useEffect(() => {
+        setReactions(msg?.reactions || [])
+    }, [msg?.reactions])
+
     /* ── Intersection observer (seen) ── */
     useEffect(() => {
         if (msg.sender === user._id) return
@@ -422,7 +428,8 @@ function Message({ msg, key, onReply }) {
         socket.emit(socketEvents.REACT_MESSAGE_SINGLE_CHAT, {
             messageId: msg._id,
             chatId: msg.chatId,
-            emoji
+            emoji,
+            to:msg.sender === user._id ? "receiver" : "sender"
         })
 
         resetReaction()
@@ -546,7 +553,7 @@ function Message({ msg, key, onReply }) {
                             </div>
                         </div>
 
-                        <ReactionChips reactions={reactions} isSent={isSent} />
+                        <ReactionChips reactions={reactions} isSent={isSent} msg={msg} />
                     </div>
                 </div>
 

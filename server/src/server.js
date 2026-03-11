@@ -35,6 +35,9 @@ import userRouter from "./routes/user.route.js"
 import messageRouter from "./routes/message.route.js"
 import chatRouter from "./routes/chat.route.js"
 import pingRouter from "./routes/ping.route.js"
+import groupRoutes from "./routes/group.route.js"
+
+app.use("/api/groups",groupRoutes)
 
 app.use("/api/users",userRouter)
 app.use("/api/messages",messageRouter)

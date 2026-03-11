@@ -38,14 +38,13 @@ export const onlineStatusAfterLogin = async(io,socket)=>{
 
     socket.on(socketEvents.GET_ONLINE_STATUS, async()=>{
         let userChatPartners;
-        
         try {
             userChatPartners = JSON.parse(await redis.get(`chat-participants-${socket.user._id}`))      // Checking In Redis cache if chat partners of user are already cached
         } catch (error) {
             console.log("Redis Error :: ", error.message)
         }
         
-        if(!userChatPartners){      // if not cached then get from database and cache it
+        if(!userChatPartners || userChatPartners.length === 0){      // if not cached then get from database and cache it
             userChatPartners = await getUserChatPartners(socket.user._id)   // getting all chat partners of user to notify them about online status
             await redis.set(`chat-participants-${socket.user._id}`,JSON.stringify(userChatPartners))
         }

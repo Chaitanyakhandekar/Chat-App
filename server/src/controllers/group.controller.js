@@ -1,0 +1,163 @@
+import mongoose, { isValidObjectId } from "mongoose";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError, ApiResponse } from "../utils/apiUtils.js";
+import { User } from "../models/user.model.js";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+import { sendVerificationToken } from "../services/sendVerificationToken.js";
+import { generateTokens } from "../services/generateTokens.js";
+import { deleteFileFromCloudinary, uploadFileOnCloudinary } from "../services/cloudinary.service.js";
+import { generateOTP } from "../services/generateOTP.js";
+import { sendEmail } from "../services/brevoMail.service.js";
+import { Chat } from "../models/chat.model.js";
+import { getIO } from "../sockets/socketInstance.js";
+import { socketEvents } from "../constants/socketEvents.js";
+import { validateAtleastOneField } from "../utils/validateAtleastOneField.js";
+
+
+const getGroupMembers = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+        throw new ApiError(400, "Invalid GroupId")
+    }
+
+    const groupMembers = await Chat.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(id)
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "participants",
+                foreignField: "_id",
+                as: "participants",
+                let:{ admins: "$admins" },
+                pipeline:[
+                    {
+                        $addFields:{
+                            isAdmin:{
+                                $cond:{
+                                    if:{
+                                        $in:["$_id", "$$admins"]
+                                    },
+                                    then:true,
+                                    else:false
+
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        },   
+       
+    ])
+
+    if (!groupMembers.length) {
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, [req.user._id], "No Members Yet.")
+            )
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, groupMembers[0].participants, "Group Members Fetched Successfully.")
+        )
+})
+
+
+const updateGroupChat = asyncHandler(async (req,res)=>{
+    const { id } = req.params;
+    const {groupName, groupDescription} = req.body;
+
+    if(!isValidObjectId(id)){
+        throw new ApiError(400, "Invalid GroupId")
+    }
+
+    if(!validateAtleastOneField([groupName, groupDescription])){
+        throw new ApiError(400, "At least one field is required")
+    }
+
+    let data = {}
+
+    if(groupName){
+        data.groupName = groupName
+    }
+    if(groupDescription){
+        data.groupDescription = groupDescription
+    }
+
+    const updatedGroup = await Chat.findByIdAndUpdate(
+        id,
+        {
+            $set:data
+        },
+        {
+            new:true
+        }
+    )
+
+    if(!updatedGroup){
+        throw new ApiError(500, "Server Error While Updating Group Details.")
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, updatedGroup, "Group Details Updated Successfully.")
+    )
+
+})
+
+const uploadGroupPicture = asyncHandler(async (req,res)=>{
+    const { id } = req.params;
+
+    if(!isValidObjectId(id)){
+        throw new ApiError(400, "Invalid GroupId")
+    }
+
+    if(!req.file){
+        throw new ApiError(400, "Group Picture is required.")
+    }
+
+    console.log("File Path :: ",req.file)
+
+    const uploadRes = await uploadFileOnCloudinary(req.file.path);
+
+    // console.log("Cloudinary Upload Response :: ", uploadRes)
+
+    if(!uploadRes){
+        throw new ApiError(500, "Error While Uploading Group Picture.")
+    }
+
+    const group = await Chat.findByIdAndUpdate(
+        id,
+        {
+            $set:{
+                groupPicture: uploadRes.secure_url
+            }
+        },
+        {
+            new:true
+        }
+    )
+    
+    if(!group){
+        throw new ApiError(500, "Server Error While Updating Group Picture.")
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, group, "Group Picture Uploaded Successfully.")
+    )
+})
+
+
+export {
+    getGroupMembers,
+    updateGroupChat,
+    uploadGroupPicture
+}

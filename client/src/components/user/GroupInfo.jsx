@@ -6,6 +6,11 @@ import {
     Image, FileText, Hash, Settings, Edit3
 } from 'lucide-react'
 import { useChatStore } from '../../store/useChatStore'
+import { useGroupChatStore } from '../../store/useGroupChatStore'
+import { useRef } from 'react'
+import { useEffect } from 'react'
+import { groupApi } from '../../api/group.api'
+import { useParams } from 'react-router-dom'
 
 // ─── Mock data ─────────────────────────────────────────────────────────────
 const MOCK_MEMBERS = [
@@ -118,6 +123,9 @@ const ActionRow = ({ onClick, iconBg, icon, label, sublabel, right, danger }) =>
 // ═══════════════════════════════════════════════════════════════════════════
 function GroupInfo({ setActivePanel = () => {}, group = MOCK_GROUP, currentUserId = CURRENT_USER_ID }) {
     const [view, setView] = useState('main')
+    // const groupId = useParams().id
+
+  
 
     return (
         <div className="flex flex-col h-full w-full bg-[#0e1018]">
@@ -136,6 +144,7 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
     const [muted,  setMuted]  = useState(false)
     const [copied, setCopied] = useState(false)
     const isOwner = currentUserId === CURRENT_USER_ID
+    const {setGroupChat,groupChat} = useGroupChatStore();
 
     const copyLink = () => {
         navigator.clipboard.writeText(`https://chat.app/invite/${group._id}`)
@@ -164,7 +173,7 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
                 <div className="flex flex-col items-center gap-3 px-5 pt-5 pb-4">
                     <div className="relative">
                         <div className="w-20 h-20 rounded-2xl overflow-hidden border-[2.5px] border-indigo-500/[0.45] shadow-[0_0_28px_rgba(99,102,241,0.2)]">
-                            <img src={group.avatar} alt={group.name} className="w-full h-full object-cover" />
+                            <img src={groupChat?.groupPicture || group.name} alt={group.name} className="w-full h-full object-cover" />
                         </div>
                         {isOwner && (
                             <button
@@ -344,11 +353,15 @@ function MembersView({ group, currentUserId, setView }) {
     const [search,       setSearch]       = useState('')
     const [openMenu,     setOpenMenu]     = useState(null)
     const [showAddModal, setShowAddModal] = useState(false)
+    const {currentGroupParticipants,setCurrentGroupParticipants,groupChat} = useGroupChatStore();
+    const {onlineStatus} = useChatStore();
 
     const isOwner     = currentUserId === CURRENT_USER_ID
     const currentRole = members.find(m => m._id === currentUserId)?.role || 'member'
     const canManage   = isOwner || currentRole === 'admin'
-    const filtered    = members.filter(m => m.username.toLowerCase().includes(search.toLowerCase()))
+    // const filtered    = currentGroupParticipants.filter(m => m.username.toLowerCase().includes(search.toLowerCase()))
+
+   
 
     const handleRemove      = (id) => { setMembers(p => p.filter(m => m._id !== id)); setOpenMenu(null) }
     const handleToggleAdmin = (id) => {
@@ -384,7 +397,7 @@ function MembersView({ group, currentUserId, setView }) {
 
             {/* List */}
             <div className="flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#1a1d28_transparent] px-3 pb-4 flex flex-col gap-0.5">
-                {filtered.map(member => {
+                {currentGroupParticipants?.map(member => {
                     const isSelf   = member._id === currentUserId
                     const canAct   = canManage && !isSelf && member.role !== 'owner'
                     const menuOpen = openMenu === member._id
@@ -397,7 +410,7 @@ function MembersView({ group, currentUserId, setView }) {
                             {/* Avatar */}
                             <div className="relative flex-shrink-0">
                                 <img src={member.avtar} alt="" className="w-9 h-9 rounded-full object-cover border border-white/[0.07]" />
-                                {member.online && (
+                                { onlineStatus[member._id] && (
                                     <div className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#22d3a0] border-2 border-[#0e1018]" />
                                 )}
                             </div>
@@ -408,9 +421,13 @@ function MembersView({ group, currentUserId, setView }) {
                                     <span className="text-[13px] font-semibold text-[#f1f2f7] truncate">
                                         {member.username}{isSelf ? ' (you)' : ''}
                                     </span>
-                                    <RoleBadge role={member.role} />
+                                    <RoleBadge role={
+                                        member._id === group.ownerId ? 'owner' :
+                                        member.isAdmin ? 'admin' :
+                                        null
+                                    } />
                                 </div>
-                                <span className="text-[11px] text-[#4a4e6a]">{member.online ? 'Online' : 'Offline'}</span>
+                                <span className="text-[11px] text-[#4a4e6a]">{onlineStatus[member._id] ? 'Online' : 'Offline'}</span>
                             </div>
 
                             {/* Context menu trigger */}
@@ -433,7 +450,7 @@ function MembersView({ group, currentUserId, setView }) {
                                                 className="flex items-center gap-2.5 px-3 py-2.5 text-left text-[12.5px] text-[#c4c6d8] font-medium hover:bg-white/[0.05] transition-colors"
                                                 onClick={e => { e.stopPropagation(); handleToggleAdmin(member._id) }}
                                             >
-                                                {member.role === 'admin'
+                                                {member.isAdmin
                                                     ? <><UserMinus size={13} color="#818cf8" /> Remove Admin</>
                                                     : <><Shield    size={13} color="#818cf8" /> Make Admin</>}
                                             </button>
@@ -586,15 +603,29 @@ function MediaView({ group, setView }) {
 // EDIT GROUP VIEW
 // ═══════════════════════════════════════════════════════════════════════════
 function EditView({ group, setView }) {
-    const [name,     setName]   = useState(group.name)
-    const [desc,     setDesc]   = useState(group.description)
-    const [isPublic, setPublic] = useState(group.isPublic)
+    const {groupChat,setGroupChat} = useGroupChatStore();
+    const [name,     setName]   = useState(groupChat?.groupName || group.name)
+    const [desc,     setDesc]   = useState(groupChat?.groupDescription || group.groupDescription)
+    const [isPublic, setPublic] = useState(groupChat?.isPublic || group.isPublic)
     const [saved,    setSaved]  = useState(false)
+    const [file, setFile] = useState(null);
+    const fileRef = useRef(null)
 
-    const handleSave = () => {
+    const handleSave = async () => {
         // groupApi.updateGroup({ name, desc, isPublic })
+        if(file){
+            const formData = new FormData();
+            formData.append("groupPicture", file);
+            const uploadRes = await groupApi.uploadGroupPicture(groupChat._id, formData);
+            setGroupChat({...groupChat, groupPicture: uploadRes.data.groupPicture})
+        }
+        const response = await groupApi.updateGroupChat(groupChat._id, name, desc);
         setSaved(true)
         setTimeout(() => setSaved(false), 2500)
+    }
+
+    const handleFileClick = () =>{
+        fileRef.current.click();
     }
 
     return (
@@ -607,9 +638,18 @@ function EditView({ group, setView }) {
                 <div className="flex flex-col items-center gap-2">
                     <div className="relative cursor-pointer group/avatar">
                         <div className="w-20 h-20 rounded-2xl overflow-hidden border-[2.5px] border-indigo-500/[0.45] shadow-[0_0_24px_rgba(99,102,241,0.2)] group-hover/avatar:opacity-70 transition-opacity">
-                            <img src={group.avatar} alt="" className="w-full h-full object-cover" />
+                            <img src={groupChat && !file ? groupChat?.groupPicture : groupChat && file ? URL.createObjectURL(file) : ""} alt="" className="w-full h-full object-cover" />
+                            <input
+                            ref={fileRef}
+                            onChange={(e)=>{
+                                setFile(e.target.files[0])
+                            }}
+                            className='hidden'
+                            type="file" />
                         </div>
-                        <div className="absolute inset-0 rounded-2xl flex items-center justify-center bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+                        <div
+                        onClick={handleFileClick}
+                        className="absolute inset-0 rounded-2xl flex items-center justify-center bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity">
                             <Camera size={18} color="#fff" />
                         </div>
                     </div>
@@ -639,7 +679,7 @@ function EditView({ group, setView }) {
                         />
                     </div>
 
-                    {/* Visibility toggle */}
+                    {/* Visibility toggle
                     <div className="flex items-center justify-between p-3 rounded-[11px] bg-white/[0.025] border border-white/[0.06]">
                         <div className="flex items-center gap-2.5">
                             <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-indigo-500/[0.15]">
@@ -651,7 +691,7 @@ function EditView({ group, setView }) {
                             </div>
                         </div>
                         <Toggle on={isPublic} toggle={() => setPublic(p => !p)} />
-                    </div>
+                    </div> */}
                 </div>
             </div>
 

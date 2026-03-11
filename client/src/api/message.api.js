@@ -61,6 +61,18 @@ class MessageApi{
         }
     }
 
+    getGroupConversation = async (groupId) =>{
+        try {
+            return {}
+        } catch (error) {
+            return{
+                success:false,
+                message:error.message,
+                error:error
+            }
+        }
+    }
+
 }
 
 export const messageApi = new MessageApi()

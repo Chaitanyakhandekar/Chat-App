@@ -183,6 +183,7 @@ function Home() {
         getAllUsers();
         // Request online status after fetching users
         if (user) {
+            console.log("Emitting GET_ONLINE_STATUS for user:", user._id);
             socket.emit(socketEvents.GET_ONLINE_STATUS);
         }
         console.log("Media Files: ", mediaFiles[currentChatId]);

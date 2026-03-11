@@ -36,6 +36,7 @@ export const messageHandler = (io, socket) => {
             chatId: newChat?._id || data.chatId
         })
 
+
         if (!newMessage) {   // error while saving message to database means message sending failure
             socket.emit(socketEvents.ERROR, {
                 type: "Message Sending Error",
@@ -52,6 +53,21 @@ export const messageHandler = (io, socket) => {
                 sentAt: newMessage.createdAt,
                 tempId: data.tempId
             })
+
+             if(!newChat && data.chatId){
+
+            const updateChat = await Chat.findByIdAndUpdate(
+            data?.chatId,
+            {
+                $set:{
+                    lastMessage:newMessage,
+                    
+                }
+            }
+        )
+
+        }
+
         }
     })
 
@@ -169,6 +185,8 @@ export const messageHandler = (io, socket) => {
     })
 
     socket.on(socketEvents.REACT_MESSAGE_SINGLE_CHAT , async(data)=>{
+
+        console.log("Message Reaction Data : ", data)
         
         if(!isValidObjectId(data.messageId)){
             socket.to(getUserSocket(socket.user._id)).emit(socketEvents.ERROR, {
@@ -203,6 +221,8 @@ export const messageHandler = (io, socket) => {
             }
         )
 
+        console.log("Reaction After Update : ", reaction)
+
         if(!reaction){
              socket.to(getUserSocket(socket.user._id)).emit(socketEvents.ERROR, {
                 type: "Message Reaction Error",
@@ -212,7 +232,10 @@ export const messageHandler = (io, socket) => {
             return 
         }
 
-        socket.to(getUserSocket(data.receiver)).emit(socketEvents.REACT_MESSAGE_SINGLE_CHAT, reaction)
+        const to = data.to === "sender" ? reaction.sender : reaction.receiver
+
+        console.log("Sending Reaction to : ", getUserSocket(to.toString()))
+        io.to(getUserSocket(to.toString())).emit(socketEvents.REACT_MESSAGE_SINGLE_CHAT, reaction)
 
     })
 }

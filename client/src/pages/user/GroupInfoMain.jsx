@@ -29,6 +29,7 @@ import { chatApi } from '../../api/chat.api.js'
 import { userAuthStore } from '../../store/userStore.js'
 import { socketEvents } from '../../constants/socketEvents.js'
 import { useAssetsStore } from '../../store/useAssetsStore.js'
+import { useGroupChatStore } from '../../store/useGroupChatStore.js'
 import FileUpload from '../../components/message/FileUpload.jsx'
 import MediaPreview from '../../components/message/MediaPreview.jsx'
 import SingleFilePreview from '../../components/message/SingleFilePreview.jsx'
@@ -39,6 +40,7 @@ import ChatList from '../../components/user/ChatList.jsx'
 import GroupInfo from '../../components/user/GroupInfo.jsx'
 import { useNavigate, useParams } from 'react-router-dom'
 import Sidebar from './Sidebar.jsx'
+import { groupApi } from '../../api/group.api.js'
 
 function GroupInfoMain() {
 
@@ -84,6 +86,10 @@ function GroupInfoMain() {
         setScrollToBottomInChat
     } = useAssetsStore()
 
+    const {
+        setCurrentGroupParticipants
+    } = useGroupChatStore()
+
     const typingTimeoutRef = useRef(null);
     const paramChatId = useParams().id
     const isTypingRef = useRef(false);
@@ -94,6 +100,8 @@ function GroupInfoMain() {
     const [showSidebar, setShowSidebar] = useState(true)
     const [groupsOnly, setGroupsOnly] = useState(false)
     const navigate = useNavigate()
+    const groupId = useParams().id;
+    const [group , setGroup] = useState(null)
 
     // Total unread count for notification badge
     const totalUnread = Object.values(chatUsersInfo).reduce((sum, c) => sum + (c?.newMessages || 0), 0)
@@ -184,8 +192,26 @@ function GroupInfoMain() {
         container.scrollTop = container.scrollHeight;
     };
 
+     const getMembers = async () => {
+       const res = await groupApi.getGroupMembers(groupId);
+       if(res.success){
+        setCurrentGroupParticipants(res.data);
+       }
+    }
+
+    const getChat = async () => {
+        const res = await chatApi.getChatById(groupId);
+        if(res.success){
+            setGroup(res.data)
+        }
+    }
+
+  
+
     useEffect(() => {
         getAllUsers();
+        getChat();
+        getMembers();
         console.log("Media Files: ", mediaFiles[currentChatId]);
 
         const container = chatContainerRef.current;
@@ -226,7 +252,7 @@ function GroupInfoMain() {
             break;
         
         case "groupInfo":
-            navigate(`/chat/${currentChatId}/group-info`)
+            navigate(`/chat/group-info/${currentChatId}`)
         }
 
     }, [activePanel])
@@ -443,6 +469,7 @@ function GroupInfoMain() {
                     setShowSidebar={setShowSidebar}
                     chatUsersInfo={chatUsersInfo}
                     totalUnread={totalUnread}
+                    groupChat={group}
                     user={user}
                      /> : 
 

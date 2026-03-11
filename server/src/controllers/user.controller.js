@@ -38,7 +38,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
     username: username.trim().toLowerCase()
   })
 
-  if(usernameExists){
+  if (usernameExists) {
     throw new ApiError(400, `Username '${username}' is already taken. Please choose a different username.`)
   }
 
@@ -46,7 +46,8 @@ const registerUser = asyncHandler(async (req, res, next) => {
     username,
     name,
     email,
-    password
+    password,
+    avtar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`
   })
 
   if (!newUser) {
@@ -56,7 +57,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
 
   req.newUser = newUser;
   console.log("New user created:", newUser);
- 
+
 
   return res.status(201).json(
     new ApiResponse(201, "User Registered Successfully.")
@@ -83,7 +84,7 @@ const loginUser = asyncHandler(async (req, res) => {
     return res
       .status(200)
       .json(
-        new ApiResponse(400, [], "Acoount not found!",false)
+        new ApiResponse(400, [], "Acoount not found!", false)
       )
   }
 
@@ -99,10 +100,10 @@ const loginUser = asyncHandler(async (req, res) => {
 
   if (!isCorrect) {
     return res.status(200).json(
-      new ApiResponse(400,[], "Invalid Credentials",false)
+      new ApiResponse(400, [], "Invalid Credentials", false)
     )
     //
-   
+
   }
 
   // if (!user.isVerified) {
@@ -133,10 +134,10 @@ const loginUser = asyncHandler(async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     })
     .json(
-      new ApiResponse(200,{
+      new ApiResponse(200, {
         _id: user._id,
         username: user.username,
-      } ,"Login Successful")
+      }, "Login Successful")
     )
 })
 
@@ -178,34 +179,34 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 })
 
-const sendOTP = asyncHandler(async (req,res)=>{
-  const {email} = req.body;
+const sendOTP = asyncHandler(async (req, res) => {
+  const { email } = req.body;
 
-  if(!email || (email && email.trim() === "")){
-    throw new ApiError(400,"Email is required to send OTP")
+  if (!email || (email && email.trim() === "")) {
+    throw new ApiError(400, "Email is required to send OTP")
   }
 
   const otp = generateOTP();
 
-  if(!otp){
-    throw new ApiError(500,"OTP Generation Failed")
+  if (!otp) {
+    throw new ApiError(500, "OTP Generation Failed")
   }
 
   const user = await User.updateOne(
     { email },
     {
-      $set:{
+      $set: {
         resetPasswordOTP: otp,
-        resetPasswordOTPExpiry: Date.now() + 10*60*1000 //10 minutes
+        resetPasswordOTPExpiry: Date.now() + 10 * 60 * 1000 //10 minutes
       }
     },
     {
-      new:true
+      new: true
     }
   )
 
-  if(!user){
-    throw new ApiError(500,"MongoDB Server Error While Saving OTP")
+  if (!user) {
+    throw new ApiError(500, "MongoDB Server Error While Saving OTP")
   }
 
   const emailResponse = await sendEmail(
@@ -223,11 +224,11 @@ const sendOTP = asyncHandler(async (req,res)=>{
   return res
     .status(200)
     .json(
-      new ApiResponse(200,"OTP Sent Successfully to Email")
+      new ApiResponse(200, "OTP Sent Successfully to Email")
     )
 
-  
-  })
+
+})
 
 const resendEmailVerification = asyncHandler(async (req, res) => {
   const { email } = req.body;
@@ -242,7 +243,7 @@ const resendEmailVerification = asyncHandler(async (req, res) => {
 
   req.newUser = user;
 
-   const response =  await sendVerificationToken( req, res);
+  const response = await sendVerificationToken(req, res);
 
 })
 
@@ -731,26 +732,26 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 
   console.log("Update Profile Request Body =", req.body);
 
-  if((!name || (name && name.trim() === "")) && (!username || (username && username.trim() === "") ) && (!bio || (bio && bio.trim() === ""))){
-    throw new ApiError(400,"Atleast 1 Filed is Required for Update.")
+  if ((!name || (name && name.trim() === "")) && (!username || (username && username.trim() === "")) && (!bio || (bio && bio.trim() === ""))) {
+    throw new ApiError(400, "Atleast 1 Filed is Required for Update.")
   }
 
   const updateFileds = {}
 
-  if(name){
-    if(name.trim() !== ""){
+  if (name) {
+    if (name.trim() !== "") {
       updateFileds.name = name
     }
   }
 
-  if(username){
-    if(username.trim() !== ""){
+  if (username) {
+    if (username.trim() !== "") {
       updateFileds.username = username
     }
   }
 
-  if(bio){
-    if(bio.trim() !== ""){
+  if (bio) {
+    if (bio.trim() !== "") {
       updateFileds.bio = bio
     }
   }
@@ -777,48 +778,48 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 
 })
 
-const resetPassword = asyncHandler(async (req,res)=>{
-  const {email,otp,newPassword} = req.body;
+const resetPassword = asyncHandler(async (req, res) => {
+  const { email, otp, newPassword } = req.body;
 
-  console.log("Reset Password Request Body =",req.body);
+  console.log("Reset Password Request Body =", req.body);
 
-  if(!email || (email && email.trim() === "")){
-    throw new ApiError(400,"Email is required")
+  if (!email || (email && email.trim() === "")) {
+    throw new ApiError(400, "Email is required")
   }
 
-  if(!otp || (otp && otp.trim()=== "") || (otp && otp.trim().length !== 6)){
-    throw new ApiError(400,"Valid OTP is required")
+  if (!otp || (otp && otp.trim() === "") || (otp && otp.trim().length !== 6)) {
+    throw new ApiError(400, "Valid OTP is required")
   }
 
-  if(!newPassword || (newPassword && newPassword.trim() === "")){
-    throw new ApiError(400,"New Password is required")
+  if (!newPassword || (newPassword && newPassword.trim() === "")) {
+    throw new ApiError(400, "New Password is required")
   }
 
   const user = await User.findOne({
     email
   })
 
-  console.log("User for Password Reset = ",user)
-  
-  if(!user){
-    throw new ApiError(404,"User with given email not found")
+  console.log("User for Password Reset = ", user)
+
+  if (!user) {
+    throw new ApiError(404, "User with given email not found")
   }
 
-  if(!user.resetPasswordOTP || !user.resetPasswordOTPExpiry){
-    throw new ApiError(400,"Please request for OTP to reset password")
+  if (!user.resetPasswordOTP || !user.resetPasswordOTPExpiry) {
+    throw new ApiError(400, "Please request for OTP to reset password")
   }
 
-   if(Date.now() > user.resetPasswordOTPExpiry){
-      throw new ApiError(400,"OTP Expired. Please request for new OTP")
-    }
-
-  if(otp.trim() !== user.resetPasswordOTP.trim()){
-    throw new ApiError(400,"Invalid OTP")
+  if (Date.now() > user.resetPasswordOTPExpiry) {
+    throw new ApiError(400, "OTP Expired. Please request for new OTP")
   }
 
-  if(otp.trim() === user.resetPasswordOTP.trim()){
-    if(Date.now() > user.resetPasswordOTPExpiry){
-      throw new ApiError(400,"OTP Expired. Please request for new OTP")
+  if (otp.trim() !== user.resetPasswordOTP.trim()) {
+    throw new ApiError(400, "Invalid OTP")
+  }
+
+  if (otp.trim() === user.resetPasswordOTP.trim()) {
+    if (Date.now() > user.resetPasswordOTPExpiry) {
+      throw new ApiError(400, "OTP Expired. Please request for new OTP")
     }
 
     const { accessToken, refreshToken } = generateTokens(user);
@@ -828,84 +829,85 @@ const resetPassword = asyncHandler(async (req,res)=>{
     user.resetPasswordOTPExpiry = undefined;
     user.refreshToken = refreshToken;
 
-    await user.save({validateBeforeSave:false})
+    await user.save({ validateBeforeSave: false })
 
     return res
       .status(200)
       .json(
-        new ApiResponse(200,"Password Reset Successful")
+        new ApiResponse(200, "Password Reset Successful")
       )
-     
+
   }
 
 })
 
-const getAllUsers = asyncHandler(async(req,res)=>{
+const getAllUsers = asyncHandler(async (req, res) => {
   const users = await User.find().select("-password -refreshToken");
 
-  let users1 = users.filter(user=>user._id.toString()!==req.user._id.toString())
+  let users1 = users.filter(user => user._id.toString() !== req.user._id.toString())
 
   // console.log("All Users Fetched :",users);
   // console.log("loged in user:",req.user._id);
 
 
   return res.status(200).json(
-    new ApiResponse(200,users1,"All Users Fetched Successfully.")
+    new ApiResponse(200, users1, "All Users Fetched Successfully.")
   )
 })
 
 
-const authMe = asyncHandler(async (req,res)=>{
+const authMe = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id).select("-password -refreshToken");
 
-  if(!user){
-    throw new ApiError(404,"User Not Found") 
+  if (!user) {
+    throw new ApiError(404, "User Not Found")
   }
 
   return res
     .status(200)
     .json(
-      new ApiResponse(200,user,"User Fetched Successfully.")
+      new ApiResponse(200, user, "User Fetched Successfully.")
     )
 })
 
-const searchUsers = asyncHandler(async (req,res)=>{
-  const {query} = req.query;
+const searchUsers = asyncHandler(async (req, res) => {
+  const { query } = req.query;
 
   // console.log("Search Query :",query);
 
-  if(!query || query && query.trim() === ""){
-    throw new ApiError(400,"Search Query is Required.")
+  if (!query || query && query.trim() === "") {
+    throw new ApiError(400, "Search Query is Required.")
   }
 
   const users = await User.find(
     {
-      $and:[
-      {  _id:{$ne:req.user._id}},
-      {$or:[
-        { username: { $regex: query, $options: "i" } },
-        { name: { $regex: query, $options: "i" } },
-        { email: { $regex: query, $options: "i" } }
-      ]}
+      $and: [
+        { _id: { $ne: req.user._id } },
+        {
+          $or: [
+            { username: { $regex: query, $options: "i" } },
+            { name: { $regex: query, $options: "i" } },
+            { email: { $regex: query, $options: "i" } }
+          ]
+        }
       ]
     }
   ).select("-password -refreshToken");
 
-  if(!users.length){
+  if (!users.length) {
     return res
       .status(200)
       .json(
-        new ApiResponse(200,[],"No Users Found Matching the Query.")
+        new ApiResponse(200, [], "No Users Found Matching the Query.")
       )
   }
   return res
     .status(200)
     .json(
-      new ApiResponse(200,users,"Users Fetched Successfully.")
+      new ApiResponse(200, users, "Users Fetched Successfully.")
     )
 
 })
-
 
 
 export {

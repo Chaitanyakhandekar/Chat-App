@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError, ApiResponse } from "../utils/apiUtils.js";
 import { User } from "../models/user.model.js";
@@ -14,6 +14,29 @@ import { getIO } from "../sockets/socketInstance.js";
 import { socketEvents } from "../constants/socketEvents.js";
 
 
+const isChatExists = asyncHandler(async (req, res) => {
+    const { chatId } = req.params
+
+    if (!isValidObjectId(chatId)) {
+        throw new ApiError(400, "Invalid ChatId for New Chat.")
+    }
+
+    const isChatAlreadyExists = await Chat.findOne({
+        _id: chatId,
+        participants: { $in: [req.user._id] }
+    })
+
+    console.log("Is Chat Already Exists :: ", isChatAlreadyExists);
+
+    return res.status(200).json(
+        new ApiResponse(200, {
+            isChatExists: isChatAlreadyExists ? true : false,
+            chat: isChatAlreadyExists
+        }, `Chat ${isChatAlreadyExists ? "Exists" : "Does Not Exists"} Between These Users.`)
+    )
+})
+
+
 const createSingleChat = asyncHandler(async (req, res) => {
     const { userId } = req.params
 
@@ -23,7 +46,8 @@ const createSingleChat = asyncHandler(async (req, res) => {
     }
 
     const isChatAlreadyExists = await Chat.findOne({
-        participants: { $all: [userId, req.user._id] }
+        participants: { $all: [userId, req.user._id] },
+        isGroupChat: false
     })
 
     if (isChatAlreadyExists) {
@@ -45,7 +69,7 @@ const createSingleChat = asyncHandler(async (req, res) => {
 
     console.log("New Single Chat Created : ", newChat);
 
-    
+
 
     return res.status(201).json(
         new ApiResponse(201, newChat, "New Single Chat Created Successfully.")
@@ -61,48 +85,49 @@ const createGroupChat = asyncHandler(async (req, res) => {
 
     console.log("Create Group Chat Request Body :: ", req.body)
 
-    if(!groupName || groupName && groupName.trim() === ""){
-        throw new ApiError(400,"GroupName is Required.")
+    if (!groupName || groupName && groupName.trim() === "") {
+        throw new ApiError(400, "GroupName is Required.")
     }
 
-   let groupData = {
+    let groupData = {
         groupName,
-        createdBy:req.user._id,
-        isGroupChat:true,
-        admins:[req.user._id]
+        createdBy: req.user._id,
+        isGroupChat: true,
+        admins: [req.user._id],
+        groupPicture: `https://api.dicebear.com/7.x/shapes/svg?seed=${Date.now()}&scale=90`,
     }
 
-    if(participants && participants.length > 0){
+    if (participants && participants.length > 0) {
         let validParticipants = new Array()
 
-        Array.from(participants).forEach((user)=>{
-            if(mongoose.Types.ObjectId.isValid(user)){
+        Array.from(participants).forEach((user) => {
+            if (mongoose.Types.ObjectId.isValid(user)) {
                 validParticipants.push(new mongoose.Types.ObjectId(user))
             }
         })
 
-        if(validParticipants.length > 0){
+        if (validParticipants.length > 0) {
             groupData.participants = validParticipants
         }
     }
 
-    if(!groupData.participants || groupData.participants.length === 0){
+    if (!groupData.participants || groupData.participants.length === 0) {
         groupData.participants = [req.user._id]
     }
-    else{
+    else {
         groupData.participants.push(req.user._id)
     }
 
     const newGroup = await Chat.create(groupData)
 
-    if(!newGroup){
-        throw new ApiError(500,"Server Error While Creating Group.")
+    if (!newGroup) {
+        throw new ApiError(500, "Server Error While Creating Group.")
     }
 
     const io = getIO();
 
-    if(io){
-        for( let user of newGroup.participants){
+    if (io) {
+        for (let user of newGroup.participants) {
             io.to(user.toString()).emit(socketEvents.GROUP_CREATED, newGroup)
         }
     }
@@ -110,7 +135,7 @@ const createGroupChat = asyncHandler(async (req, res) => {
     return res
         .status(201)
         .json(
-            new ApiResponse(201,newGroup,"New Group Created")
+            new ApiResponse(201, newGroup, "New Group Created")
         )
 
 
@@ -121,6 +146,18 @@ const getUserChats = asyncHandler(async (req, res) => {
         {
             $match: {
                 participants: { $in: [req.user._id] }
+            }
+        },
+        {
+            $addFields: {
+                sortTime: {
+                    $ifNull: ["$lastMessage.createdAt", "$createdAt"]
+                }
+            }
+        },
+        {
+            $sort:{
+              sortTime:-1
             }
         },
         {
@@ -144,46 +181,46 @@ const getUserChats = asyncHandler(async (req, res) => {
             $lookup: {
                 from: "messages",
 
-                let:{
-                    chatId:"$_id",
+                let: {
+                    chatId: "$_id",
                     userId: new mongoose.Types.ObjectId(req.user._id)
                 },
 
-                pipeline:[
+                pipeline: [
                     {
-                       $match:{
-                            $expr:{
-                                $and:[
-                                    {$eq:["$chatId" , "$$chatId"]},
-                                    {$eq:["$receiver" , "$$userId"]},
-                                    {$eq:["$status" , "sent"]}
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$chatId", "$$chatId"] },
+                                    { $eq: ["$receiver", "$$userId"] },
+                                    { $eq: ["$status", "sent"] }
                                 ]
                             }
-                       },
-                      
+                        },
+
                     },
-                     {
-                        $count:"unreadCount"
+                    {
+                        $count: "unreadCount"
                     }
                 ],
                 as: "unreadData"
             }
         },
         {
-            $addFields:{
-                unreadMessagesCount:{
-                    $ifNull:[
-                        {$arrayElemAt:["$unreadData.unreadCount" , 0]},
+            $addFields: {
+                unreadMessagesCount: {
+                    $ifNull: [
+                        { $arrayElemAt: ["$unreadData.unreadCount", 0] },
                         0
                     ]
                 }
             }
         },
-       
+
         {
             $project: {
                 messages: 0,
-                unreadData:0
+                unreadData: 0
             }
         }
     ])
@@ -199,11 +236,27 @@ const getUserChats = asyncHandler(async (req, res) => {
     )
 })
 
+const getChatById = asyncHandler(async (req, res) => {
+    const { chatId } = req.params
+    if (!isValidObjectId(chatId)) {
+        throw new ApiError(400, "Invalid ChatId.")
+    }
 
+    const chat = await Chat.findById(chatId)
 
+    if (!chat) {
+        throw new ApiError(404, "Chat not found.")
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, chat, "Chat Fetched Successfully.")
+    )
+})
 
 export {
     createGroupChat,
     createSingleChat,
-    getUserChats
+    getUserChats,
+    isChatExists,
+    getChatById
 }
