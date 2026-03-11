@@ -155,8 +155,11 @@ function ChatCard({
 
                 {/* Name + status */}
                 <div className="flex flex-col flex-1 min-w-0 gap-[2px]">
-                    <span className="text-[13.5px] font-semibold text-[#f1f2f7] tracking-[-0.2px] truncate">
-                        {!chat?.isGroupChat && user?.username || chat?.groupName}
+                    <span className=" tracking-[-0.2px] truncate flex justify-between">
+                        <div className="text-[13.5px] font-semibold text-[#f1f2f7] truncate">
+                            {!chat?.isGroupChat &&  user?.username || chat?.groupName}
+                        </div>
+                        <p className="text-[0.6rem]">12:30 pm</p>
                     </span>
                     {typing ? (
                         <span className="flex items-center gap-1 text-[11.5px] text-[#22d3a0] truncate">
@@ -168,10 +171,11 @@ function ChatCard({
                             typing
                         </span>
                     ) : (
-                        <span className="text-[11.5px] text-[#4a4e6a] truncate">
-                            {!chat?.isGroupChat && online ? 'Online' : ''}
+                        <span className="text-[11.5px] text-gray-400 truncate">
+                            {!chat?.isGroupChat  ? 'hey i am chaitanya and i saw you in mall and i dont know why i fell in love with' : ''}
                         </span>
                     )}
+                    
                 </div>
 
                 {/* Time + unread badge */}
