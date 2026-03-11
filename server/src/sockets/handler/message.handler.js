@@ -36,6 +36,7 @@ export const messageHandler = (io, socket) => {
             chatId: newChat?._id || data.chatId
         })
 
+
         if (!newMessage) {   // error while saving message to database means message sending failure
             socket.emit(socketEvents.ERROR, {
                 type: "Message Sending Error",
@@ -52,6 +53,21 @@ export const messageHandler = (io, socket) => {
                 sentAt: newMessage.createdAt,
                 tempId: data.tempId
             })
+
+             if(!newChat && data.chatId){
+
+            const updateChat = await Chat.findByIdAndUpdate(
+            data?.chatId,
+            {
+                $set:{
+                    lastMessage:newMessage,
+                    
+                }
+            }
+        )
+
+        }
+
         }
     })
 

@@ -8,7 +8,7 @@ export const messageHandler = (socket) => {
     socket.on(socketEvents.NEW_MESSAGE, (data) => {       // Listener for receiving a new message from the socket server
         // console.log("New Message Received from socket server:",data);
 
-        const { addMessage, incrementNewMessagesCount } = useChatStore.getState();
+        const { addMessage, incrementNewMessagesCount ,updateLastMessage} = useChatStore.getState();
         // const { setScrollToBottomInChat, scrollToBottomInChat } = useAssetsStore().getState();
 
         if (data.sender !== userAuthStore.getState().user._id) {
@@ -23,12 +23,15 @@ export const messageHandler = (socket) => {
             // setScrollToBottomInChat(true)
 
         }
+
+        updateLastMessage(data?.chatId,data)
+
     })
 
     socket.on(socketEvents.NEW_MESSAGE_REPLY, (data) => {       // Listener for receiving a new message Reply from the socket server
         console.log("New Message Received from socket server:",data);
 
-        const { addMessage, incrementNewMessagesCount } = useChatStore.getState();
+        const { addMessage, incrementNewMessagesCount,updateLastMessage } = useChatStore.getState();
         // const { setScrollToBottomInChat, scrollToBottomInChat } = useAssetsStore().getState();
 
         if (data.sender !== userAuthStore.getState().user._id) {
@@ -43,14 +46,17 @@ export const messageHandler = (socket) => {
             // setScrollToBottomInChat(true)
 
         }
+
+        updateLastMessage(data?.chatId, data?.lastMessage)
     })
 
     socket.on(socketEvents.MESSAGE_SENT_SINGLE_CHAT, (payload) => {      // Listener for Confirming Chat Sent or not
 
         console.log("Message Sent Status Received from socket server:", payload);
-        const { addMessage, replaceMessage,setUserMessages } = useChatStore.getState()
+        const { addMessage, replaceMessage,setUserMessages,updateLastMessage } = useChatStore.getState()
 
         replaceMessage(payload.chatId, payload.tempId, payload.message)
+        updateLastMessage(payload?.chatId,payload?.message)
     })
 
     socket.on(socketEvents.TYPING, (data) => {     // Listener for receiving typing status updates from the socket server

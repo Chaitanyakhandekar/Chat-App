@@ -91,6 +91,20 @@ export const useChatStore = create(
                 ))
             },
 
+            updateLastMessage:(chatId,message)=>{
+                set((state)=>({
+                    userChats: state.userChats.map((chat)=>{
+                        if(chat._id === chatId){
+                            return {
+                                ...chat,
+                                lastMessage:message
+                            }
+                        }
+                        return chat
+                    })
+                }))
+            },
+
             userSearch:[],
 
             setUserSearch:(users)=>{

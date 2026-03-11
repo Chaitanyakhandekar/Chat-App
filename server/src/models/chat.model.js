@@ -45,9 +45,15 @@ const chatSchema = new mongoose.Schema({
     },
 
     lastMessage:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Message"
+        type: Object,
+        
+    },
+
+    lastMessageTime:{
+        type:String,
+       
     }
+    
 }, { timestamps: true });
 
 export const Chat = mongoose.model("Chat", chatSchema);

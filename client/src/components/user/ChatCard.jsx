@@ -8,6 +8,7 @@ import { userAuthStore } from '../../store/userStore.js';
 import { useAssetsStore } from '../../store/useAssetsStore.js';
 import { useNavigate } from 'react-router-dom';
 import { useGroupChatStore } from '../../store/useGroupChatStore.js';
+import { getTime } from '../../services/getTime.js';
 
 const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount, setIsGroupChat } = useChatStore.getState();
 
@@ -32,7 +33,7 @@ function ChatCard({
 
     const context = useContext(authContext);
     const navigate = useNavigate()
-    const { userChats, setCurrentPreviewFile, addChat, resetUserSearch } = useChatStore();
+    const { userChats, setCurrentPreviewFile, addChat, resetUserSearch, userMessages } = useChatStore();
     const {setGroupChat,groupChat} = useGroupChatStore();
     const user1 = userAuthStore().user;
     const { scrollToBottomInChat, setScrollToBottomInChat } = useAssetsStore()
@@ -159,7 +160,9 @@ function ChatCard({
                         <div className="text-[13.5px] font-semibold text-[#f1f2f7] truncate">
                             {!chat?.isGroupChat &&  user?.username || chat?.groupName}
                         </div>
-                        <p className="text-[0.6rem]">12:30 pm</p>
+                        <p className="text-[0.6rem]">{
+                                chat.lastMessage ? getTime(chat.lastMessage.createdAt) : ""
+                            }</p>
                     </span>
                     {typing ? (
                         <span className="flex items-center gap-1 text-[11.5px] text-[#22d3a0] truncate">
@@ -171,15 +174,18 @@ function ChatCard({
                             typing
                         </span>
                     ) : (
-                        <span className="text-[11.5px] text-gray-400 truncate">
-                            {!chat?.isGroupChat  ? 'hey i am chaitanya and i saw you in mall and i dont know why i fell in love with' : ''}
+                        <span className={`text-[11.5px] text-gray-400 truncate ${newMessages > 0 ? "text-purple-300" : ""}`}>
+                            {
+                                !chat?.isGroupChat && newMessages <=0 && chat.lastMessage ? chat.lastMessage.message : 
+                                !chat?.isGroupChat && newMessages > 0 && `${newMessages <= 9 ? newMessages : "9+"} new messages` 
+                            }
                         </span>
                     )}
                     
                 </div>
 
                 {/* Time + unread badge */}
-                {newMessages > 0 && (
+                {/* {newMessages > 0 && (
                     <div className="flex flex-col items-end gap-[5px] flex-shrink-0">
                         {time && (
                             <span className="chat-card-time text-[10.5px] text-[#4a4e6a] tracking-[-0.3px]">
@@ -193,7 +199,7 @@ function ChatCard({
                             {newMessages}
                         </div>
                     </div>
-                )}
+                )} */}
             </div>
         </>
     )
