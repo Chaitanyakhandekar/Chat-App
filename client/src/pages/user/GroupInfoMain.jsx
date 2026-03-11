@@ -521,6 +521,25 @@ function GroupInfoMain() {
                                         </span>
                                     )}
                                 </div>
+
+                                <div className="flex text-white">
+                                    <p>user1,</p>
+                                    <p>user1,</p>
+                                    <p>user1,</p>
+                                    <p>user1,</p>
+                                    <p>user1,</p>
+                                    <p>user1,</p>
+                                    <p>user1,</p>
+                                    <p>user1,</p>
+                                    <p>user1,</p>
+                                    <p>user1,</p>
+                                    <p>user1,</p>
+                                    <p>user1,</p>
+                                    <p>user1,</p>
+                                    <p>user1,</p>
+                                    <p>user1,</p>
+                                    <p>user1,</p>
+                                </div>
                             </nav>
 
                             {isMedia ? (

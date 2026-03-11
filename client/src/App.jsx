@@ -13,14 +13,17 @@ import ProtectedRouteAuth from './components/guards/ProtectedRouteAuth.jsx'
 import Chat from "./pages/user/Chat.jsx"
 import GroupInfo from './components/user/GroupInfo.jsx'
 import GroupInfoMain from './pages/user/GroupInfoMain.jsx'
+import { socket } from './socket/socket.js'
+import { socketEvents } from './constants/socketEvents.js'
 
 function App() {
 
   const context = useContext(authContext);
   const setUser = userAuthStore().setUser
+  let user;
 
   const authMe = async ()=>{
-    const user = await userApi.authMe();
+     user = await userApi.authMe();
     if(user.success){
       context.setUser(user.data)
       // console.log("User Set in Context : ",user.data);
@@ -32,6 +35,10 @@ function App() {
 
   useEffect(()=>{
     authMe();
+     if (user) {
+                console.log("Emitting GET_ONLINE_STATUS for user:", user._id);
+                socket.emit(socketEvents.GET_ONLINE_STATUS);
+      }
   },[])
 
   return (
