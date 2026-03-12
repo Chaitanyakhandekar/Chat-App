@@ -5,7 +5,7 @@ import { redis } from "../../redis/config.js";
 
 export const onlineStatusAfterLogin = async(io,socket)=>{
 
-    socket.on(socketEvents.USER_LOGGED_IN , async({})=>{
+    socket.on(socketEvents.USER_LOGGED_IN , async()=>{
          addUserSocket(socket.user?._id.toString(),socket.id)  // maping socket.id with user id in memory
         
             let userChatPartners;

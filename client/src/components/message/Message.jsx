@@ -255,7 +255,7 @@ function DeleteModal({ show, onClose, onDeleteForMe, onDeleteForEveryone }) {
 function MessageInfoModal({ show, onClose, msg }) {
     if (!show) return null
     return (
-        <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm px-4 pb-6 sm:pb-0"
+        <div className={`fixed inset-0 z-[1000] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm px-4 pb-6 sm:pb-0`}
             style={{ animation: 'fadeIn 0.15s ease' }}>
             <div className="w-full max-w-sm rounded-[20px] bg-[#1a1d2e] border border-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden"
                 style={{ animation: 'slideUp 0.2s cubic-bezier(0.16,1,0.3,1)' }}>
@@ -438,6 +438,17 @@ function Message({ msg, key, onReply }) {
     const hoverTimer = useRef(null)
     const handleMouseEnter = () => { hoverTimer.current = setTimeout(() => setShowEmojiBar(true), 400) }
     const handleMouseLeave = () => { clearTimeout(hoverTimer.current); setShowEmojiBar(false) }
+
+    // Handle indicator messages
+    if (msg?.isIndicator) {
+        return (
+            <div className="flex justify-center my-3">
+                <div className="text-[12px] text-gray-400 bg-gray-700/40 px-3 py-1 rounded-full">
+                    {msg.message}
+                </div>
+            </div>
+        )
+    }
 
     return (
         <>

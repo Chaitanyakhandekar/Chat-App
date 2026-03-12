@@ -11,7 +11,7 @@ import { generateOTP } from "../services/generateOTP.js";
 import { sendEmail } from "../services/brevoMail.service.js";
 import { Message } from "../models/message.model.js";
 import { validObjectId } from "../utils/isValidObjectId.js";
-import { assertRequiredFields } from "../utils/assertRequiredFields.js";
+import { assertRequiredFields } from "../utils/fields validations/assertRequiredFields.js";
 
 
 const getConversation = asyncHandler(async (req,res)=>{
@@ -34,6 +34,38 @@ const getConversation = asyncHandler(async (req,res)=>{
                 receiver:id
             }
         ]
+      }
+    )
+
+    if(!messages?.length){
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200,[],"No Messages Found in this Conversation.")
+            )
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200,messages,"Messages Fetch Successfully.")
+        )
+    
+})
+
+const getGroupConversation = asyncHandler(async (req,res)=>{
+    const id = req?.user?._id || null
+    const groupId = req?.params?.id || null
+
+    if(!groupId){
+        throw new ApiError(400,"Other User Id is Required.")
+    }
+
+    const messages = await Message.find(
+      {
+        
+        chatId:groupId
+        
       }
     )
 
@@ -113,5 +145,6 @@ const replyToMessage = asyncHandler(async (req,res)=>{
 
 export {
     getConversation,
-    uploadImage
+    uploadImage,
+    getGroupConversation
 }
