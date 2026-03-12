@@ -9,6 +9,7 @@ import { useAssetsStore } from '../../store/useAssetsStore.js';
 import { useNavigate } from 'react-router-dom';
 import { useGroupChatStore } from '../../store/useGroupChatStore.js';
 import { getTime } from '../../services/getTime.js';
+import { groupApi } from '../../api/group.api.js';
 
 const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount, setIsGroupChat } = useChatStore.getState();
 
@@ -58,7 +59,7 @@ function ChatCard({
         context.setCurrentChatUser(user);
         let response;
         if (groupId) {
-            response = await messageApi.getGroupConversation(groupId)
+            response = await groupApi.getConversation(groupId)
         }
         else {
             response = await messageApi.getConversation(user._id)

@@ -12,6 +12,7 @@ import { sendEmail } from "../services/brevoMail.service.js";
 import { Chat } from "../models/chat.model.js";
 import { getIO } from "../sockets/socketInstance.js";
 import { socketEvents } from "../constants/socketEvents.js";
+import { Message } from "../models/message.model.js";
 
 
 const isChatExists = asyncHandler(async (req, res) => {
@@ -120,9 +121,20 @@ const createGroupChat = asyncHandler(async (req, res) => {
 
     const newGroup = await Chat.create(groupData)
 
+    
     if (!newGroup) {
         throw new ApiError(500, "Server Error While Creating Group.")
     }
+    
+    const newIndicator = await Message.create({
+        chatId:newGroup._id,
+        message:`${req.user.username} create this group`,
+        isIndicator:true,
+        sender:req.user._id
+    })
+    
+    console.log("New Group Created :::::::::::::::::::::: ",newGroup )
+    console.log("New Indicator Message :: ",newIndicator)
 
     const io = getIO();
 

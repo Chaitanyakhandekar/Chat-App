@@ -1,5 +1,5 @@
 
-import { ApiError } from "./apiUtils.js";
+import { ApiError } from "../apiUtils.js";
 
 
  

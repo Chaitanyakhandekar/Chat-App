@@ -68,6 +68,31 @@ class GroupApi {
             };
         }
     }
+
+    getConversation = async (groupId) =>{
+        try {
+            console.log("Messages in Conversation :: ")
+            const response = await axios.get(`${this.baseUrl}/convo/${groupId}`,
+                {
+                    withCredentials:true
+                }
+            )
+
+            console.log("Messages in Conversation :: ")
+
+            return {
+                success:true,
+                message:"",
+                data:response.data || []
+            }
+        } catch (error) {
+            return {
+                success:false,
+                message:error.message,
+                error:error
+            }
+        }
+    }
 }
 
 export const groupApi = new GroupApi();

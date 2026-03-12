@@ -12,7 +12,7 @@ import { sendEmail } from "../services/brevoMail.service.js";
 import { Chat } from "../models/chat.model.js";
 import { getIO } from "../sockets/socketInstance.js";
 import { socketEvents } from "../constants/socketEvents.js";
-import { validateAtleastOneField } from "../utils/validateAtleastOneField.js";
+import { validateAtleastOneField } from "../utils/fields validations/validateAtleastOneField.js";
 
 
 const getGroupMembers = asyncHandler(async (req, res) => {
