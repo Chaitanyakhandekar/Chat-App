@@ -9,11 +9,12 @@ import { isChatExists } from "../../utils/document existance check/chat.js"
 import { isUserExists } from "../../utils/document existance check/user.js"
 import { redis } from "../../redis/config.js"
 import { getGroupMembers } from "../utils/getGroupMembers.js"
+import { adminPermission } from "../middleware/adminPermission.middleware.js"
 
 
 export const groupHandler =  (io,socket) =>{
 
-    socket.on(socketEvents.ADD_MEMBER_IN_GROUP, async ({groupId,userId})=>{
+    socket.on(socketEvents.ADD_MEMBER_IN_GROUP, adminPermission , async ({groupId,userId})=>{   // Admin Protected 
 
         const groupChat = await isChatExists(groupId)
         const newMember = await isUserExists(userId)

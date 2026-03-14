@@ -486,12 +486,15 @@ function MembersView({ group, currentUserId, setView }) {
 // ─── Add Member Modal ──────────────────────────────────────────────────────
 function AddMemberModal({ onClose, onAdd }) {
     const [q, setQ] = useState('')
+    const {currentGroupParticipants,setCurrentGroupParticipants,groupChat} = useGroupChatStore();
+    const users = useChatStore(state => state.userChats)
+    const setUsers = useChatStore(state => state.setUserChats)
     const SUGGESTIONS = [
         { _id: '99',  username: 'kai_design', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=kai'  },
         { _id: '100', username: 'nina.rx',    avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=nina' },
         { _id: '101', username: 'theo_dev',   avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=theo' },
     ]
-    const results = SUGGESTIONS.filter(u => u.username.includes(q))
+    const results = currentGroupParticipants.filter(u => u.username.includes(q))
 
     return (
         <div className="absolute inset-0 z-50 flex flex-col bg-[#0a0b0f]/95 backdrop-blur-xl overflow-hidden">

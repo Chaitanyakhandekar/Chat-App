@@ -265,10 +265,59 @@ const getChatById = asyncHandler(async (req, res) => {
     )
 })
 
+const getUserChatUsers = asyncHandler(async (req,res)=>{
+    const users = await Chat.aggregate([
+        {
+            $match:{
+              participants:new mongoose.Types.ObjectId(req.user._id)
+            }
+        },
+        {
+            $lookup:{
+                from:"users",
+                localField:"participants",
+                foreignField:"_id",
+                as:"users",
+                pipeline:[
+                    {
+                        $project:{
+                            username:1,
+                            name:1,
+                            avtar:1,
+                        }
+                    },
+                   
+                ]
+            }
+        },
+        {
+            $unwind:"$users"
+        },
+        {
+            $replaceRoot:{
+                newRoot:"$users"
+            }
+        }
+        
+       
+    ])
+
+    if(!users){
+        throw new ApiError(400,"no users")
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200,users,"Fetched Users Successfully.")
+        )
+})
+
 export {
     createGroupChat,
     createSingleChat,
     getUserChats,
     isChatExists,
-    getChatById
+    getChatById,
+    getUserChatUsers
 }
