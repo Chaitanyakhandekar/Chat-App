@@ -24,7 +24,7 @@ const isChatExists = asyncHandler(async (req, res) => {
 
     const isChatAlreadyExists = await Chat.findOne({
         _id: chatId,
-        participants: { $in: [req.user._id] }
+        participants: { $in: [userId] }
     })
 
     console.log("Is Chat Already Exists :: ", isChatAlreadyExists);
@@ -47,7 +47,7 @@ const createSingleChat = asyncHandler(async (req, res) => {
     }
 
     const isChatAlreadyExists = await Chat.findOne({
-        participants: { $all: [userId, req.user._id] },
+        participants: { $all: [userId, userId] },
         isGroupChat: false
     })
 
@@ -58,7 +58,7 @@ const createSingleChat = asyncHandler(async (req, res) => {
     const newSingleChat = await Chat.create({
         participants: [
             userId,
-            req.user._id
+            userId
         ]
     })
 
@@ -92,9 +92,9 @@ const createGroupChat = asyncHandler(async (req, res) => {
 
     let groupData = {
         groupName,
-        createdBy: req.user._id,
+        createdBy: userId,
         isGroupChat: true,
-        admins: [req.user._id],
+        admins: [userId],
         groupPicture: `https://api.dicebear.com/7.x/shapes/svg?seed=${Date.now()}&scale=90`,
     }
 
@@ -113,10 +113,10 @@ const createGroupChat = asyncHandler(async (req, res) => {
     }
 
     if (!groupData.participants || groupData.participants.length === 0) {
-        groupData.participants = [req.user._id]
+        groupData.participants = [userId]
     }
     else {
-        groupData.participants.push(req.user._id)
+        groupData.participants.push(userId)
     }
 
     const newGroup = await Chat.create(groupData)
@@ -130,7 +130,7 @@ const createGroupChat = asyncHandler(async (req, res) => {
         chatId:newGroup._id,
         message:`${req.user.username} create this group`,
         isIndicator:true,
-        sender:req.user._id
+        sender:userId
     })
     
     console.log("New Group Created :::::::::::::::::::::: ",newGroup )
@@ -157,7 +157,7 @@ const getUserChats = asyncHandler(async (req, res) => {
     const userChats = await Chat.aggregate([
         {
             $match: {
-                participants: { $in: [req.user._id] }
+                participants: { $in: [userId] }
             }
         },
         {
@@ -195,7 +195,7 @@ const getUserChats = asyncHandler(async (req, res) => {
 
                 let: {
                     chatId: "$_id",
-                    userId: new mongoose.Types.ObjectId(req.user._id)
+                    userId: new mongoose.Types.ObjectId(userId)
                 },
 
                 pipeline: [
@@ -269,7 +269,7 @@ const getUserChatUsers = asyncHandler(async (req,res)=>{
     const users = await Chat.aggregate([
         {
             $match:{
-              participants:new mongoose.Types.ObjectId(req.user._id),
+              participants:new mongoose.Types.ObjectId(userId),
               isGroupChat:false
             }
         },
@@ -297,7 +297,7 @@ const getUserChatUsers = asyncHandler(async (req,res)=>{
         {
             $match:{
                 "users._id":{
-                    $ne:new mongoose.Types.ObjectId(req.user._id)
+                    $ne:new mongoose.Types.ObjectId(userId)
                 }
             }
         }
@@ -321,11 +321,66 @@ const getUserChatUsers = asyncHandler(async (req,res)=>{
         )
 })
 
+const getUserChatUsersServer = async (userId)=>{
+    const users = await Chat.aggregate([
+        {
+            $match:{
+              participants:new mongoose.Types.ObjectId(userId),
+              isGroupChat:false
+            }
+        },
+        {
+            $lookup:{
+                from:"users",
+                localField:"participants",
+                foreignField:"_id",
+                as:"users",
+                pipeline:[
+                    {
+                        $project:{
+                            username:1,
+                            name:1,
+                            avtar:1,
+                        }
+                    },
+                   
+                ]
+            }
+        },
+        {
+            $unwind:"$users"
+        },
+        {
+            $match:{
+                "users._id":{
+                    $ne:new mongoose.Types.ObjectId(userId)
+                }
+            }
+        }
+        ,
+        {
+            $replaceRoot:{
+                newRoot:"$users"
+            }
+        }     
+       
+    ])
+
+    if(!users){
+       return []
+    }
+
+    return users
+
+
+}
+
 export {
     createGroupChat,
     createSingleChat,
     getUserChats,
     isChatExists,
     getChatById,
-    getUserChatUsers
+    getUserChatUsers,
+    getUserChatUsersServer
 }

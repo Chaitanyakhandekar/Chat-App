@@ -12,6 +12,7 @@ import { useEffect } from 'react'
 import { groupApi } from '../../api/group.api'
 import { useParams } from 'react-router-dom'
 import { userAuthStore } from '../../store/userStore'
+import { chatApi } from '../../api/chat.api'
 
 // ─── Mock data ─────────────────────────────────────────────────────────────
 const MOCK_MEMBERS = [
@@ -487,14 +488,25 @@ function MembersView({ group, currentUserId, setView }) {
 function AddMemberModal({ onClose, onAdd }) {
     const [q, setQ] = useState('')
     const {currentGroupParticipants,setCurrentGroupParticipants,groupChat} = useGroupChatStore();
-    const users = useChatStore(state => state.userChats)
-    const setUsers = useChatStore(state => state.setUserChats)
+    const [users,setUsers] = useState([])
     const SUGGESTIONS = [
         { _id: '99',  username: 'kai_design', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=kai'  },
         { _id: '100', username: 'nina.rx',    avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=nina' },
         { _id: '101', username: 'theo_dev',   avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=theo' },
     ]
-    const results = currentGroupParticipants.filter(u => u.username.includes(q))
+    const [results,setResults] = useState([])
+
+    const getUsers = async ()=>{
+        const users = await chatApi.getUserChatUsers()
+        if(users.success){
+            setResults(users.data)
+            
+        }
+    }
+
+    useEffect(()=>{
+        getUsers()
+    },[])
 
     return (
         <div className="absolute inset-0 z-50 flex flex-col bg-[#0a0b0f]/95 backdrop-blur-xl overflow-hidden">

@@ -13,6 +13,8 @@ import { Chat } from "../models/chat.model.js";
 import { getIO } from "../sockets/socketInstance.js";
 import { socketEvents } from "../constants/socketEvents.js";
 import { validateAtleastOneField } from "../utils/fields validations/validateAtleastOneField.js";
+import { isChatExists } from "../utils/document existance check/chat.js";
+import { getUserChatUsers, getUserChatUsersServer } from "./chat.controller.js";
 
 
 const getGroupMembers = asyncHandler(async (req, res) => {
@@ -155,9 +157,83 @@ const uploadGroupPicture = asyncHandler(async (req,res)=>{
     )
 })
 
+const getNonGroupMembers = asyncHandler(async (req,res)=>{
+
+    const groupId = req.params.id
+
+    const group = await isChatExists(groupId)
+
+    if(!group){
+        throw new ApiError(400,"Invalid GroupId.")
+    }
+
+    const arr = await getUserChatUsersServer(req.user._id)
+
+
+    console.log("Array ::::: ",arr)
+
+    const users = await Chat.aggregate([
+        {
+            $match:{
+             _id:new mongoose.Types.ObjectId(groupId)
+            }
+        },
+        {
+            $lookup:{
+                from:"users",
+                localField:"participants",
+                foreignField:"_id",
+                as:"users",
+                pipeline:[
+                    {
+                        $project:{
+                            username:1,
+                            name:1,
+                            avtar:1,
+                        }
+                    },
+                   
+                ]
+            }
+        },
+        {
+            $unwind:"$users"
+        },
+        {
+            $match:{
+                "users._id":{$nin:arr}
+            }
+        },
+        // {
+        //     $match:{
+        //         "users._id":{
+        //             $ne:new mongoose.Types.ObjectId(req.user._id)
+        //         }
+        //     }
+        // }
+        // ,
+        {
+            $replaceRoot:{
+                newRoot:"$users"
+            }
+        }     
+       
+    ])
+
+    if(!users){
+        throw new ApiError(400,"no users")
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200,users,"Fetched Users Successfully.")
+        )
+})
 
 export {
     getGroupMembers,
     updateGroupChat,
-    uploadGroupPicture
+    uploadGroupPicture,
+    getNonGroupMembers
 }

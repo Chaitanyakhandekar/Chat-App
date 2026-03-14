@@ -122,6 +122,28 @@ class ChatApi{
     }
 
 
+    getUserChatUsers = async ()=>{
+        try {
+            const response = await axios.get(`${this.baseUrl}/user`,{
+                withCredentials:true
+            })
+
+            console.log("Chat Users :: ",response.data)
+
+            return {
+                success:true,
+                data:response.data.data,
+                message:"User Chat Users Fetched Successfully."
+            }
+        } catch (error) {
+            return {
+                success:false,
+                message:error.message,
+                error:error
+            }
+        }
+    }
+
 }
 
 export const chatApi = new ChatApi()
