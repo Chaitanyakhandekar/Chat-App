@@ -26,8 +26,6 @@ export const groupHandler =  (io,socket) =>{
             return
         }
 
-        // const participants = groupChat.participants
-
         const isAlreadyInGroup = groupChat.participants.some(p => p.toString() === userId.toString())
 
         if(isAlreadyInGroup){
