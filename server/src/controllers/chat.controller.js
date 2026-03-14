@@ -269,7 +269,8 @@ const getUserChatUsers = asyncHandler(async (req,res)=>{
     const users = await Chat.aggregate([
         {
             $match:{
-              participants:new mongoose.Types.ObjectId(req.user._id)
+              participants:new mongoose.Types.ObjectId(req.user._id),
+              isGroupChat:false
             }
         },
         {
@@ -294,11 +295,18 @@ const getUserChatUsers = asyncHandler(async (req,res)=>{
             $unwind:"$users"
         },
         {
+            $match:{
+                "users._id":{
+                    $ne:new mongoose.Types.ObjectId(req.user._id)
+                }
+            }
+        }
+        ,
+        {
             $replaceRoot:{
                 newRoot:"$users"
             }
-        }
-        
+        }     
        
     ])
 
