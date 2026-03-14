@@ -11,6 +11,7 @@ import { useRef } from 'react'
 import { useEffect } from 'react'
 import { groupApi } from '../../api/group.api'
 import { useParams } from 'react-router-dom'
+import { userAuthStore } from '../../store/userStore'
 
 // ─── Mock data ─────────────────────────────────────────────────────────────
 const MOCK_MEMBERS = [
@@ -354,6 +355,7 @@ function MembersView({ group, currentUserId, setView }) {
     const [openMenu,     setOpenMenu]     = useState(null)
     const [showAddModal, setShowAddModal] = useState(false)
     const {currentGroupParticipants,setCurrentGroupParticipants,groupChat} = useGroupChatStore();
+    const {user} = userAuthStore()
     const {onlineStatus} = useChatStore();
 
     const isOwner     = currentUserId === CURRENT_USER_ID
@@ -419,7 +421,7 @@ function MembersView({ group, currentUserId, setView }) {
                             <div className="flex flex-col min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                     <span className="text-[13px] font-semibold text-[#f1f2f7] truncate">
-                                        {member.username}{isSelf ? ' (you)' : ''}
+                                        {member._id === user._id ? "you" : member.username}
                                     </span>
                                     <RoleBadge role={
                                         member._id === group.ownerId ? 'owner' :
