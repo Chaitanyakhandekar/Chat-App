@@ -24,7 +24,7 @@ const isChatExists = asyncHandler(async (req, res) => {
 
     const isChatAlreadyExists = await Chat.findOne({
         _id: chatId,
-        participants: { $in: [userId] }
+        participants: { $in: [req.user._id] }
     })
 
     console.log("Is Chat Already Exists :: ", isChatAlreadyExists);
@@ -92,9 +92,9 @@ const createGroupChat = asyncHandler(async (req, res) => {
 
     let groupData = {
         groupName,
-        createdBy: userId,
+        createdBy: req.user._id,
         isGroupChat: true,
-        admins: [userId],
+        admins: [req.user._id],
         groupPicture: `https://api.dicebear.com/7.x/shapes/svg?seed=${Date.now()}&scale=90`,
     }
 
@@ -113,10 +113,10 @@ const createGroupChat = asyncHandler(async (req, res) => {
     }
 
     if (!groupData.participants || groupData.participants.length === 0) {
-        groupData.participants = [userId]
+        groupData.participants = [req.user._id]
     }
     else {
-        groupData.participants.push(userId)
+        groupData.participants.push(req.user._id)
     }
 
     const newGroup = await Chat.create(groupData)
@@ -130,7 +130,7 @@ const createGroupChat = asyncHandler(async (req, res) => {
         chatId:newGroup._id,
         message:`${req.user.username} create this group`,
         isIndicator:true,
-        sender:userId
+        sender:req.user._id
     })
     
     console.log("New Group Created :::::::::::::::::::::: ",newGroup )
@@ -157,7 +157,7 @@ const getUserChats = asyncHandler(async (req, res) => {
     const userChats = await Chat.aggregate([
         {
             $match: {
-                participants: { $in: [userId] }
+                participants: { $in: [req.user._id] }
             }
         },
         {
@@ -195,7 +195,7 @@ const getUserChats = asyncHandler(async (req, res) => {
 
                 let: {
                     chatId: "$_id",
-                    userId: new mongoose.Types.ObjectId(userId)
+                    userId: new mongoose.Types.ObjectId(req.user._id)
                 },
 
                 pipeline: [
@@ -269,7 +269,7 @@ const getUserChatUsers = asyncHandler(async (req,res)=>{
     const users = await Chat.aggregate([
         {
             $match:{
-              participants:new mongoose.Types.ObjectId(userId),
+              participants:new mongoose.Types.ObjectId(req.user._id),
               isGroupChat:false
             }
         },
@@ -297,7 +297,7 @@ const getUserChatUsers = asyncHandler(async (req,res)=>{
         {
             $match:{
                 "users._id":{
-                    $ne:new mongoose.Types.ObjectId(userId)
+                    $ne:new mongoose.Types.ObjectId(req.user._id)
                 }
             }
         }

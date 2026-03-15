@@ -15,6 +15,7 @@ import { socketEvents } from "../constants/socketEvents.js";
 import { validateAtleastOneField } from "../utils/fields validations/validateAtleastOneField.js";
 import { isChatExists } from "../utils/document existance check/chat.js";
 import { getUserChatUsers, getUserChatUsersServer } from "./chat.controller.js";
+import { getUniqueMembers } from "../utils/getUniqueMembers.js";
 
 
 const getGroupMembers = asyncHandler(async (req, res) => {
@@ -168,59 +169,26 @@ const getNonGroupMembers = asyncHandler(async (req,res)=>{
     }
 
     const arr = await getUserChatUsersServer(req.user._id)
+    const chatUsers = arr.map(a => a._id)
 
 
-    console.log("Array ::::: ",arr)
+    // console.log("Array ::::: ",arr)
+    // console.log("Array ::::: ",chatUsers)
 
-    const users = await Chat.aggregate([
+    const users1 = getUniqueMembers(chatUsers,group.participants.filter(u=>u.toString() !== req.user._id.toString()))
+    let u = users1.map(u1 => new mongoose.Types.ObjectId(u1))
+
+    const users = await User.aggregate([
         {
             $match:{
-             _id:new mongoose.Types.ObjectId(groupId)
+                _id:{
+                    $in:u
+                }
             }
-        },
-        {
-            $lookup:{
-                from:"users",
-                localField:"participants",
-                foreignField:"_id",
-                as:"users",
-                pipeline:[
-                    {
-                        $project:{
-                            username:1,
-                            name:1,
-                            avtar:1,
-                        }
-                    },
-                   
-                ]
-            }
-        },
-        {
-            $unwind:"$users"
-        },
-        {
-            $match:{
-                "users._id":{$nin:arr}
-            }
-        },
-        // {
-        //     $match:{
-        //         "users._id":{
-        //             $ne:new mongoose.Types.ObjectId(req.user._id)
-        //         }
-        //     }
-        // }
-        // ,
-        {
-            $replaceRoot:{
-                newRoot:"$users"
-            }
-        }     
-       
+        }
     ])
 
-    if(!users){
+    if(!users.length){
         throw new ApiError(400,"no users")
     }
 

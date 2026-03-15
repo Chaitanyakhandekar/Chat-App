@@ -7,6 +7,17 @@ cloudinary.config({
     api_secret:process.env.CLOUDINARY_API_SECRET
 })
 
+
+
+/**
+ * @description utility function for cloudinary file upload service 
+ * 
+ * @param {String} localFilePath
+ * @param {String} resourceType - default (auto)
+ * 
+ * @returns response Object {uploadInfo , success:true/false}
+ */
+
 const uploadFileOnCloudinary = async function(localFilePath , resourceType="auto"){
     try {
         if(!localFilePath) return null
