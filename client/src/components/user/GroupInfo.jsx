@@ -478,6 +478,7 @@ function MembersView({ group, currentUserId, setView }) {
                 <AddMemberModal
                     onClose={() => setShowAddModal(false)}
                     onAdd={u => { setMembers(p => [...p, { ...u, role: 'member', online: false }]); setShowAddModal(false) }}
+                    group={group}
                 />
             )}
         </div>
@@ -485,7 +486,7 @@ function MembersView({ group, currentUserId, setView }) {
 }
 
 // ─── Add Member Modal ──────────────────────────────────────────────────────
-function AddMemberModal({ onClose, onAdd }) {
+function AddMemberModal({ onClose, onAdd,group }) {
     const [q, setQ] = useState('')
     const {currentGroupParticipants,setCurrentGroupParticipants,groupChat} = useGroupChatStore();
     const [users,setUsers] = useState([])
@@ -497,7 +498,7 @@ function AddMemberModal({ onClose, onAdd }) {
     const [results,setResults] = useState([])
 
     const getUsers = async ()=>{
-        const users = await chatApi.getUserChatUsers()
+        const users = await groupApi.getUserChatUsersExceptGroupMembers(groupChat._id)
         if(users.success){
             setResults(users.data)
             
@@ -523,7 +524,7 @@ function AddMemberModal({ onClose, onAdd }) {
             </div>
 
             <div className="flex-1 overflow-y-auto px-3">
-                {results.map(u => (
+                {results?.map(u => (
                     <div key={u._id} className="flex items-center gap-[10px] px-3 py-[9px] rounded-[11px] hover:bg-white/[0.04] transition-colors">
                         <img src={u.avtar} alt="" className="w-9 h-9 rounded-full object-cover border border-white/[0.07]" />
                         <span className="text-[13px] font-semibold text-[#f1f2f7] flex-1">{u.username}</span>
