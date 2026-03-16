@@ -27,7 +27,7 @@ const isChatExists = asyncHandler(async (req, res) => {
         participants: { $in: [req.user._id] }
     })
 
-    console.log("Is Chat Already Exists :: ", isChatAlreadyExists);
+    // console.log("Is Chat Already Exists :: ", isChatAlreadyExists);
 
     return res.status(200).json(
         new ApiResponse(200, {
@@ -374,6 +374,10 @@ const getUserChatUsersServer = async (userId)=>{
 
 
 }
+
+const addMemberToGroup = asyncHandler(async (req,res)=>{
+    
+})
 
 export {
     createGroupChat,

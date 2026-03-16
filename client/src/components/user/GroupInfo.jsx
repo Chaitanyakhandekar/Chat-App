@@ -13,6 +13,8 @@ import { groupApi } from '../../api/group.api'
 import { useParams } from 'react-router-dom'
 import { userAuthStore } from '../../store/userStore'
 import { chatApi } from '../../api/chat.api'
+import { socket } from '../../socket/socket'
+import { socketEvents } from '../../constants/socketEvents'
 
 // ─── Mock data ─────────────────────────────────────────────────────────────
 const MOCK_MEMBERS = [
@@ -505,9 +507,21 @@ function AddMemberModal({ onClose, onAdd,group }) {
         }
     }
 
+    const handleAddMember =  (userId)=>{
+        console.log("Emitting Add Memeber :: ",userId)
+        const payload = {
+            groupId:groupChat._id,
+            userId
+        }
+        socket.emit(socketEvents.ADD_MEMBER_IN_GROUP , payload)
+        return
+    }
+
     useEffect(()=>{
         getUsers()
     },[])
+
+
 
     return (
         <div className="absolute inset-0 z-50 flex flex-col bg-[#0a0b0f]/95 backdrop-blur-xl overflow-hidden">
@@ -529,7 +543,7 @@ function AddMemberModal({ onClose, onAdd,group }) {
                         <img src={u.avtar} alt="" className="w-9 h-9 rounded-full object-cover border border-white/[0.07]" />
                         <span className="text-[13px] font-semibold text-[#f1f2f7] flex-1">{u.username}</span>
                         <button
-                            onClick={() => onAdd(u)}
+                            onClick={() => {handleAddMember(u._id)}}
                             className="px-2.5 py-1 rounded-[8px] text-[11.5px] font-semibold bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-[0_3px_10px_rgba(99,102,241,0.35)] hover:opacity-85 transition-opacity"
                         >
                             Add

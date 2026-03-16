@@ -1,7 +1,8 @@
-import { socketEvents } from "../../constants/socketEvents"
-import { Chat } from "../../models/chat.model"
+import { socketEvents } from "../../constants/socketEvents.js"
+import { isChatExists } from "../../utils/document existance check/chat.js"
+import { Chat } from "../../models/chat.model.js"
 
-export const adminPermission = async(socket,next)=>{
+export const adminPermission = async(socket)=>{
    const groupId = socket?.groupId
 
    if(!groupId){
@@ -11,12 +12,19 @@ export const adminPermission = async(socket,next)=>{
     })
    }else{
 
-    const group = await Chat.findById(groupId)
+    const group = await isChatExists(groupId)
 
+    if(!group){
+        console.log("Not Exists")
+    }
+
+    
     if(group?.isGroupChat)
-        if(group.admins.some(a => a.toString() === socket.user._id.toString())){
+        console.log("Checking ::::::::::::::::::::::::::::::::::::",group.admins , " user ",socket?.user?._id)
+        if(group.admins.some(a => a.toString() === socket?.user?._id.toString())){
+            console.log("Checking ::::::::::::::::::::::::::::::::::::")
             socket.group = group
-            next()
+           
         }
     }
 }

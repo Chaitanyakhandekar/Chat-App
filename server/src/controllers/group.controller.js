@@ -16,6 +16,7 @@ import { validateAtleastOneField } from "../utils/fields validations/validateAtl
 import { isChatExists } from "../utils/document existance check/chat.js";
 import { getUserChatUsers, getUserChatUsersServer } from "./chat.controller.js";
 import { getUniqueMembers } from "../utils/getUniqueMembers.js";
+import { addMembertoGroupService } from "../services/group.service.js";
 
 
 const getGroupMembers = asyncHandler(async (req, res) => {
@@ -199,9 +200,33 @@ const getNonGroupMembers = asyncHandler(async (req,res)=>{
         )
 })
 
+const addMemberToGroup = asyncHandler(async (req,res)=>{
+
+    const {groupId,memberId} = req.body
+    
+    const { newIndicator, groupMenbers} = await addMembertoGroupService( groupId, req.user, memberId )
+
+    if(!groupMenbers || !newIndicator){
+        throw new ApiError(500,"Error While Adding Member to Group.")
+    }
+
+    const io = getIO()
+
+    for(let member of groupMenbers){
+        io.to(member._id.toString()).emit(socketEvents.NEW_MESSAGE , newIndicator)
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200,newIndicator,"Member Added To Group Successfully.")
+        )
+})
+
 export {
     getGroupMembers,
     updateGroupChat,
     uploadGroupPicture,
-    getNonGroupMembers
+    getNonGroupMembers,
+    addMemberToGroup
 }

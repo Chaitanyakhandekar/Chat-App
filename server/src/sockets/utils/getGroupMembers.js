@@ -8,19 +8,22 @@ export const getGroupMembers = async (groupId) =>{
 
     try {
         groupMembers = await redis.get(`group-members-${groupId}`)
+        console.log("Group Members  :::::::::: ",groupMembers )
     } catch (error) {
         console.log(error)
     }
-
+    
     if(groupMembers){
-       return groupMembers 
+        return groupMembers 
     }
-
-    const group = Chat.findById(groupId)
-
+    
+    const group = await Chat.findById(groupId)
+    
     groupMembers = group.participants
 
-    await redis.set(`group-members-${groupId}`, groupMembers)
+    console.log("Group Members  :::::::::: ",groupMembers )
+    
+    // await redis.set(`group-members-${groupId}`, groupMembers)
 
     return groupMembers
 }

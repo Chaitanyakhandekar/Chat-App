@@ -7,5 +7,7 @@ export const isChatExists = async (chatId)=>{
     return null;
    }
 
-   return await Chat.findById(chatId)
+   const a = await Chat.findById(chatId)
+   console.log("Chat : ",a)
+   return a
 }

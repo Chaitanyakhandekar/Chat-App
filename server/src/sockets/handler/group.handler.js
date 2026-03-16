@@ -14,54 +14,56 @@ import { adminPermission } from "../middleware/adminPermission.middleware.js"
 
 export const groupHandler =  (io,socket) =>{
 
-    socket.on(socketEvents.ADD_MEMBER_IN_GROUP, adminPermission , async ({groupId,userId})=>{   // Admin Protected 
+    // socket.on(socketEvents.ADD_MEMBER_IN_GROUP, adminPermission(socket) , async ({groupId,userId})=>{   // Admin Protected 
 
-        const groupChat = await isChatExists(groupId)
-        const newMember = await isUserExists(userId)
+    //     console.log("Executed:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+    //     const groupChat = await isChatExists(groupId)
+    //     const newMember = await isUserExists(userId)
 
-        if(!groupChat || !newMember){
-            socket.to(socket.user._id).emit(socketEvents.ERROR, {
-                  type: "Adding Member Error",
-                  message: "Error While Adding Member In Group."
-            })
-            return
-        }
+    //     if(!groupChat || !newMember){
+    //         socket.to(socket.user._id).emit(socketEvents.ERROR, {
+    //               type: "Adding Member Error",
+    //               message: "Error While Adding Member In Group."
+    //         })
+    //         return
+    //     }
 
-        const isAlreadyInGroup = groupChat.participants.some(p => p.toString() === userId.toString())
 
-        if(isAlreadyInGroup){
-            socket.to(socket.user._id).emit(socketEvents.ERROR, {
-                 type: "Adding Member Error",
-                 message: "Member Already In Group."
-            })
-            return
-        }
+    //     const isAlreadyInGroup = groupChat.participants.some(p => p.toString() === userId.toString())
 
-        const newIndicator = Message.create({
-            chatId:groupId,
-            sender:socket.user._id,
-            message:`${socket.user.username} added ${newMember.username}`,
-            isIndicator:true
-        })
+    //     if(isAlreadyInGroup){
+    //         socket.to(socket.user._id).emit(socketEvents.ERROR, {
+    //              type: "Adding Member Error",
+    //              message: "Member Already In Group."
+    //         })
+    //         return
+    //     }
 
-        groupChat.participants.push(new mongoose.Types.ObjectId(userId))
+    //     const newIndicator = Message.create({
+    //         chatId:groupId,
+    //         sender:socket.user._id,
+    //         message:`${socket.user.username} added ${newMember.username}`,
+    //         isIndicator:true
+    //     })
 
-        await groupChat.save()
+    //     groupChat.participants.push(new mongoose.Types.ObjectId(userId))
 
-        const groupMenbers = await getGroupMembers(groupId)
+    //     await groupChat.save()
 
-        if(!groupMenbers || !getGroupMembers.length){
-            socket.to(socket.user._id).emit(socketEvents.ERROR, {
-                 type: "Adding Member Error",
-                 message: "Error While Adding Member In Group."
-            })
-            return
-        }
+    //     const groupMenbers = await getGroupMembers(groupId)
 
-        for(let member of groupMenbers){
-            socket.to(member._id.toString()).emit(socketEvents.NEW_MESSAGE , newIndicator)
-        }
+    //     if(!groupMenbers || !getGroupMembers.length){
+    //         socket.to(socket.user._id).emit(socketEvents.ERROR, {
+    //              type: "Adding Member Error",
+    //              message: "Error While Adding Member In Group."
+    //         })
+    //         return
+    //     }
 
-    })
+    //     for(let member of groupMenbers){
+    //         socket.to(member._id.toString()).emit(socketEvents.NEW_MESSAGE , newIndicator)
+    //     }
+
+    // })
 
 }
