@@ -118,6 +118,36 @@ class GroupApi {
             }
         }
     }
+
+    addMemberToGroup = async (groupId,memberId)=>{
+          try {
+
+            // console.log("GroupId :: ",groupId)
+
+            const response = await axios.post(`${this.baseUrl}/add-member`,
+                {
+                    groupId,
+                    memberId
+                },
+                {
+                withCredentials:true
+                })
+
+            console.log(response.data)
+
+            return {
+                success:true,
+                data:response.data.data,
+                message:"Member Added to Group Successfully"
+            }
+        } catch (error) {
+            return {
+                success:false,
+                message:error.message,
+                error:error
+            }
+        }
+    }
 }
 
 export const groupApi = new GroupApi();

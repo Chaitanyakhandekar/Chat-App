@@ -46,7 +46,8 @@ export const addMembertoGroupService = async (groupId,user,memberId)=>{   // Adm
 
         return {
             newIndicator, 
-            groupMenbers
+            groupMenbers,
+            newMember
         }
 
        

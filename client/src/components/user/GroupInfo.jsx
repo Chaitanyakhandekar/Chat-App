@@ -15,6 +15,7 @@ import { userAuthStore } from '../../store/userStore'
 import { chatApi } from '../../api/chat.api'
 import { socket } from '../../socket/socket'
 import { socketEvents } from '../../constants/socketEvents'
+import Swal from "sweetalert2"
 
 // ─── Mock data ─────────────────────────────────────────────────────────────
 const MOCK_MEMBERS = [
@@ -404,7 +405,7 @@ function MembersView({ group, currentUserId, setView }) {
             <div className="flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#1a1d28_transparent] px-3 pb-4 flex flex-col gap-0.5">
                 {currentGroupParticipants?.map(member => {
                     const isSelf   = member._id === currentUserId
-                    const canAct   = canManage && !isSelf && member.role !== 'owner'
+                    const canAct   = canManage && !isSelf && member?.role !== 'owner' || ""
                     const menuOpen = openMenu === member._id
 
                     return (
@@ -479,7 +480,7 @@ function MembersView({ group, currentUserId, setView }) {
             {showAddModal && (
                 <AddMemberModal
                     onClose={() => setShowAddModal(false)}
-                    onAdd={u => { setMembers(p => [...p, { ...u, role: 'member', online: false }]); setShowAddModal(false) }}
+                    onAdd={ ()=>setShowAddModal(false) }
                     group={group}
                 />
             )}
@@ -507,14 +508,22 @@ function AddMemberModal({ onClose, onAdd,group }) {
         }
     }
 
-    const handleAddMember =  (userId)=>{
+    const handleAddMember =  async(userId,username)=>{
         console.log("Emitting Add Memeber :: ",userId)
         const payload = {
             groupId:groupChat._id,
             userId
         }
-        socket.emit(socketEvents.ADD_MEMBER_IN_GROUP , payload)
-        return
+        const res = await groupApi.addMemberToGroup(groupChat._id,userId)
+        if(res.success){
+            onAdd()
+            Swal.fire({
+                icon: "success",
+                title: `User Added to Group`,
+                html: `<b>${username}</b> has been added to <b>${group.name}</b>.`,
+                confirmButtonText: "OK",
+            });
+        }
     }
 
     useEffect(()=>{
@@ -543,7 +552,7 @@ function AddMemberModal({ onClose, onAdd,group }) {
                         <img src={u.avtar} alt="" className="w-9 h-9 rounded-full object-cover border border-white/[0.07]" />
                         <span className="text-[13px] font-semibold text-[#f1f2f7] flex-1">{u.username}</span>
                         <button
-                            onClick={() => {handleAddMember(u._id)}}
+                            onClick={() => {handleAddMember(u._id,u.username)}}
                             className="px-2.5 py-1 rounded-[8px] text-[11.5px] font-semibold bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-[0_3px_10px_rgba(99,102,241,0.35)] hover:opacity-85 transition-opacity"
                         >
                             Add

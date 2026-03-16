@@ -49,6 +49,11 @@ export const useGroupChatStore = create(
                     currentGroupParticipants:participants
                 })
             },
+            addCurrentGroupParticipant:(participant)=>{
+                set((state)=>({
+                    currentGroupParticipants:[...state.currentGroupParticipants,participant]
+                }))
+            },
 
             
         

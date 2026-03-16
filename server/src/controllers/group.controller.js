@@ -204,7 +204,7 @@ const addMemberToGroup = asyncHandler(async (req,res)=>{
 
     const {groupId,memberId} = req.body
     
-    const { newIndicator, groupMenbers} = await addMembertoGroupService( groupId, req.user, memberId )
+    const { newIndicator, groupMenbers,newMember} = await addMembertoGroupService( groupId, req.user, memberId )
 
     if(!groupMenbers || !newIndicator){
         throw new ApiError(500,"Error While Adding Member to Group.")
@@ -214,6 +214,7 @@ const addMemberToGroup = asyncHandler(async (req,res)=>{
 
     for(let member of groupMenbers){
         io.to(member._id.toString()).emit(socketEvents.NEW_MESSAGE , newIndicator)
+        io.to(member._id.toString()).emit(socketEvents.ADD_MEMBER_IN_GROUP , newMember )
     }
 
     return res
