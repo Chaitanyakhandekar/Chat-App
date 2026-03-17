@@ -147,7 +147,7 @@ function ChatCard({
                         alt=""
                         className="w-11 h-11 rounded-full object-cover border-2 border-white/[0.07] block"
                     />
-                    {!chat.isGroupChat && online && (
+                    {!chat?.isGroupChat && online && (
                         <div
                             className="absolute bottom-[1px] right-[1px] w-2.5 h-2.5 rounded-full bg-[#22d3a0] border-2 border-[#0e1018]"
                             style={{ boxShadow: '0 0 6px #22d3a0' }}
@@ -162,7 +162,7 @@ function ChatCard({
                             {!chat?.isGroupChat &&  user?.username || chat?.groupName}
                         </div>
                         <p className="text-[0.6rem]">{
-                                chat.lastMessage ? getTime(chat.lastMessage.createdAt) : ""
+                                chat?.lastMessage ? getTime(chat?.lastMessage.createdAt) : ""
                             }</p>
                     </span>
                     {typing ? (
@@ -177,7 +177,7 @@ function ChatCard({
                     ) : (
                         <span className={`text-[11.5px] text-gray-400 truncate ${newMessages > 0 ? "text-purple-300" : ""}`}>
                             {
-                                !chat?.isGroupChat && newMessages <=0 && chat.lastMessage ? chat.lastMessage.message : 
+                                !chat?.isGroupChat && newMessages <=0 && chat?.lastMessage ? chat?.lastMessage.message : 
                                 !chat?.isGroupChat && newMessages > 0 && `${newMessages <= 9 ? newMessages : "9+"} new messages` 
                             }
                         </span>
