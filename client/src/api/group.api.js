@@ -148,6 +148,66 @@ class GroupApi {
             }
         }
     }
+
+    markMemberAsAdmin = async (groupId,memberId)=>{
+          try {
+
+            // console.log("GroupId :: ",groupId)
+
+            const response = await axios.post(`${this.baseUrl}/mark-admin`,
+                {
+                    groupId,
+                    memberId
+                },
+                {
+                withCredentials:true
+                })
+
+            console.log(response.data)
+
+            return {
+                success:true,
+                data:response.data.data,
+                message:"Member Marked as Group Admin."
+            }
+        } catch (error) {
+            return {
+                success:false,
+                message:error.message,
+                error:error
+            }
+        }
+    }
+
+    unmarkMemberAsAdmin = async (groupId,memberId)=>{
+          try {
+
+            // console.log("GroupId :: ",groupId)
+
+            const response = await axios.post(`${this.baseUrl}/unmark-admin`,
+                {
+                    groupId,
+                    memberId
+                },
+                {
+                withCredentials:true
+                })
+
+            console.log(response.data)
+
+            return {
+                success:true,
+                data:response.data.data,
+                message:"Member Unmarked as Group Admin."
+            }
+        } catch (error) {
+            return {
+                success:false,
+                message:error.message,
+                error:error
+            }
+        }
+    }
 }
 
 export const groupApi = new GroupApi();

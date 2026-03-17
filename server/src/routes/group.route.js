@@ -5,7 +5,9 @@ import {
      updateGroupChat,
      uploadGroupPicture,
     getNonGroupMembers,
-    addMemberToGroup
+    addMemberToGroup,
+    markMemberAsAdmin,
+    unmarkMemberAsAdmin
 
  } from "../controllers/group.controller.js";
  import {getGroupConversation} from "../controllers/message.controller.js"
@@ -15,6 +17,8 @@ import { adminPermission } from "../middlewares/adminPermission.middleware.js";
 const router = Router();
 
 router.route("/add-member").post(userAuth,adminPermission,addMemberToGroup)
+router.route("/mark-admin").post(userAuth,adminPermission,markMemberAsAdmin)
+router.route("/unmark-admin").post(userAuth,adminPermission,unmarkMemberAsAdmin)
 router.route("/convo/:id").get(userAuth,getGroupConversation)
 router.route("/non-group-members/:id").get(userAuth,getNonGroupMembers)
 router.route("/upload-picture/:id").post(userAuth, upload.single("groupPicture"), uploadGroupPicture)

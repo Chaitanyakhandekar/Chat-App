@@ -20,4 +20,6 @@ export const socketEvents = {
     GET_ONLINE_STATUS:"get_online_status",
     GROUP_CREATED:"group_created",
     ADD_MEMBER_IN_GROUP:"add_member_in_group",
+     MARK_MEMBER_AS_ADMIN:  "mark_member_as_admin",
+    UNMARK_MEMBER_AS_ADMIN:"unmark_member_as_admin"
 };

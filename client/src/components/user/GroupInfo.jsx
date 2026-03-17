@@ -370,8 +370,15 @@ function MembersView({ group, currentUserId, setView }) {
    
 
     const handleRemove      = (id) => { setMembers(p => p.filter(m => m._id !== id)); setOpenMenu(null) }
-    const handleToggleAdmin = (id) => {
-        setMembers(p => p.map(m => m._id === id ? { ...m, role: m.role === 'admin' ? 'member' : 'admin' } : m))
+
+    const handleToggleAdmin = async(member) => {
+
+        if(member.isAdmin){
+            const res = await groupApi.unmarkMemberAsAdmin(groupChat._id,member._id)
+        }
+        else{
+            const res = await groupApi.markMemberAsAdmin(groupChat._id,member._id)
+        }
         setOpenMenu(null)
     }
 
@@ -454,7 +461,7 @@ function MembersView({ group, currentUserId, setView }) {
                                         <div className="absolute right-0 top-8 z-50 rounded-xl overflow-hidden flex flex-col bg-[#1a1d28] border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.5)] min-w-[156px]">
                                             <button
                                                 className="flex items-center gap-2.5 px-3 py-2.5 text-left text-[12.5px] text-[#c4c6d8] font-medium hover:bg-white/[0.05] transition-colors"
-                                                onClick={e => { e.stopPropagation(); handleToggleAdmin(member._id) }}
+                                                onClick={e => { e.stopPropagation(); handleToggleAdmin(member) }}
                                             >
                                                 {member.isAdmin
                                                     ? <><UserMinus size={13} color="#818cf8" /> Remove Admin</>
