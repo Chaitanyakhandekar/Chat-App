@@ -370,8 +370,9 @@ function MembersView({ group, currentUserId, setView }) {
    
 
     const handleRemove      = (id) => { setMembers(p => p.filter(m => m._id !== id)); setOpenMenu(null) }
-    const handleToggleAdmin = (id) => {
-        setMembers(p => p.map(m => m._id === id ? { ...m, role: m.role === 'admin' ? 'member' : 'admin' } : m))
+
+    const handleToggleAdmin = async(id) => {
+        const res = await groupApi.markMemberAsAdmin(groupChat._id,id)
         setOpenMenu(null)
     }
 

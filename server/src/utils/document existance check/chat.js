@@ -1,13 +1,18 @@
 import { isValidObjectId } from "mongoose"
 import { Chat } from "../../models/chat.model.js"
+import { ApiError } from "../apiUtils.js";
 
 export const isChatExists = async (chatId)=>{
     
    if(!isValidObjectId(chatId)){
-    return null;
+       throw new ApiError(400,"Invalid chatId")
    }
 
-   const a = await Chat.findById(chatId)
-   console.log("Chat : ",a)
-   return a
+   const chat = await Chat.findById(chatId)
+
+   if(!chat){
+      throw new ApiError(404,"Chat not Found.")
+   }
+   
+   return chat
 }

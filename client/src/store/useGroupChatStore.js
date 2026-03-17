@@ -55,7 +55,16 @@ export const useGroupChatStore = create(
                 }))
             },
 
-            
+            toogleAdminStatusOfGroupParticipants:(userId,value)=>{
+                set((state)=>({
+                    currentGroupParticipants:state.currentGroupParticipants.map((user)=>{
+                        if(user._id === userId){
+                            return {...user,isAdmin:value}
+                        }
+                        return user
+                    })
+                }))
+            }
         
         })
     )

@@ -16,7 +16,7 @@ import { validateAtleastOneField } from "../utils/fields validations/validateAtl
 import { isChatExists } from "../utils/document existance check/chat.js";
 import { getUserChatUsers, getUserChatUsersServer } from "./chat.controller.js";
 import { getUniqueMembers } from "../utils/getUniqueMembers.js";
-import { addMembertoGroupService } from "../services/group.service.js";
+import { addMembertoGroupService, markMemberAsAdminService } from "../services/group.service.js";
 
 
 const getGroupMembers = asyncHandler(async (req, res) => {
@@ -200,6 +200,12 @@ const getNonGroupMembers = asyncHandler(async (req,res)=>{
         )
 })
 
+
+/**
+ * @description Adds member in group.
+ * @method POST
+ * @access Admin Only
+ */
 const addMemberToGroup = asyncHandler(async (req,res)=>{
 
     const {groupId,memberId} = req.body
@@ -224,10 +230,43 @@ const addMemberToGroup = asyncHandler(async (req,res)=>{
         )
 })
 
+
+/**
+ * @description Marks member as group admin
+ * @method POST
+ * @access Admin Only
+ */
+const markMemberAsAdmin = asyncHandler(async (req,res)=>{
+
+    const {groupId,memberId} = req.body
+
+    const {group,newIndicator,groupMenbers} = await markMemberAsAdminService(groupId,memberId)
+
+    const io = getIO()
+
+    if(newIndicator){
+        for(let member of groupMenbers){
+            io.to(member._id.toString()).emit(socketEvents.NEW_MESSAGE,newIndicator)
+            io.to(member._id.toString()).emit(socketEvents.MARK_MEMBER_AS_ADMIN,{memberId})
+        }
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200,{
+                memberId,
+                message:"User Marked as Admin"
+            },"Member Marked As Admin.")
+        )
+    
+})
+
 export {
     getGroupMembers,
     updateGroupChat,
     uploadGroupPicture,
     getNonGroupMembers,
-    addMemberToGroup
+    addMemberToGroup,
+    markMemberAsAdmin
 }
