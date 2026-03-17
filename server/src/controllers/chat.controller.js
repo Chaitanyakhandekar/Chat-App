@@ -27,7 +27,7 @@ const isChatExists = asyncHandler(async (req, res) => {
         participants: { $in: [req.user._id] }
     })
 
-    console.log("Is Chat Already Exists :: ", isChatAlreadyExists);
+    // console.log("Is Chat Already Exists :: ", isChatAlreadyExists);
 
     return res.status(200).json(
         new ApiResponse(200, {
@@ -47,7 +47,7 @@ const createSingleChat = asyncHandler(async (req, res) => {
     }
 
     const isChatAlreadyExists = await Chat.findOne({
-        participants: { $all: [userId, req.user._id] },
+        participants: { $all: [userId, userId] },
         isGroupChat: false
     })
 
@@ -58,7 +58,7 @@ const createSingleChat = asyncHandler(async (req, res) => {
     const newSingleChat = await Chat.create({
         participants: [
             userId,
-            req.user._id
+            userId
         ]
     })
 
@@ -265,10 +265,126 @@ const getChatById = asyncHandler(async (req, res) => {
     )
 })
 
+const getUserChatUsers = asyncHandler(async (req,res)=>{
+    const users = await Chat.aggregate([
+        {
+            $match:{
+              participants:new mongoose.Types.ObjectId(req.user._id),
+              isGroupChat:false
+            }
+        },
+        {
+            $lookup:{
+                from:"users",
+                localField:"participants",
+                foreignField:"_id",
+                as:"users",
+                pipeline:[
+                    {
+                        $project:{
+                            username:1,
+                            name:1,
+                            avtar:1,
+                        }
+                    },
+                   
+                ]
+            }
+        },
+        {
+            $unwind:"$users"
+        },
+        {
+            $match:{
+                "users._id":{
+                    $ne:new mongoose.Types.ObjectId(req.user._id)
+                }
+            }
+        }
+        ,
+        {
+            $replaceRoot:{
+                newRoot:"$users"
+            }
+        }     
+       
+    ])
+
+    if(!users){
+        throw new ApiError(400,"no users")
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200,users,"Fetched Users Successfully.")
+        )
+})
+
+const getUserChatUsersServer = async (userId)=>{
+    const users = await Chat.aggregate([
+        {
+            $match:{
+              participants:new mongoose.Types.ObjectId(userId),
+              isGroupChat:false
+            }
+        },
+        {
+            $lookup:{
+                from:"users",
+                localField:"participants",
+                foreignField:"_id",
+                as:"users",
+                pipeline:[
+                    {
+                        $project:{
+                            username:1,
+                            name:1,
+                            avtar:1,
+                        }
+                    },
+                   
+                ]
+            }
+        },
+        {
+            $unwind:"$users"
+        },
+        {
+            $match:{
+                "users._id":{
+                    $ne:new mongoose.Types.ObjectId(userId)
+                }
+            }
+        }
+        ,
+        {
+            $replaceRoot:{
+                newRoot:"$users"
+            }
+        }     
+       
+    ])
+
+    if(!users){
+       return []
+    }
+
+    return users
+
+
+}
+
+const addMemberToGroup = asyncHandler(async (req,res)=>{
+    
+})
+
 export {
     createGroupChat,
     createSingleChat,
     getUserChats,
     isChatExists,
-    getChatById
+    getChatById,
+    getUserChatUsers,
+    getUserChatUsersServer
 }

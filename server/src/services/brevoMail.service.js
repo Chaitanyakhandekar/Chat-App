@@ -4,6 +4,13 @@ const defaultClient = SibApiV3Sdk.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
 apiKey.apiKey = process.env.BREVO_API_KEY; // from Render env var
 
+
+/**
+ * @description Custom Utility Function for Sending Mail Using Brevo Mail Sevice
+ * @param {String} to - Receiver
+ * @param {String} subject - Subject of Email
+ * @param {String} html - Html content
+ */
 const sendEmail = async (to,subject,html) => {
   
   const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();

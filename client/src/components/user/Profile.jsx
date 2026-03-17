@@ -6,6 +6,8 @@ import {
 } from 'lucide-react'
 import { userApi } from '../../api/user.api'
 import { useNavigate } from 'react-router-dom'
+import { socket } from '../../socket/socket'
+import { socketEvents } from '../../constants/socketEvents'
 
 function Profile({ setActivePanel = () => {} }) {
 
@@ -137,6 +139,7 @@ function MainView({ user, setActivePanel, setView }) {
         console.log("Logout Response:", response);
         if(response.success){
             logout();
+            socket.disconnect()
             navigate('/login');
 
         } else {

@@ -7,6 +7,7 @@ import { messageHandler } from "./handlers/message.handler";
 import { onlineStatusHandler } from "./handlers/onlineStatus.handler";
 import { errorHandler } from "./handlers/error.handler";
 import { chatHandler } from "./handlers/chat.handler";
+import { groupHandler } from "./handlers/group.handler";
 
 
 
@@ -25,6 +26,8 @@ export const initializeSocketListeners = () =>{
     messageHandler(socket)      //  Handler for Message Events
     
     onlineStatusHandler(socket)   // Handler for Online Status Events
+
+    groupHandler(socket)    // Handler for Group Events
 
     chatHandler(socket)  // Handler for Chat Events
 

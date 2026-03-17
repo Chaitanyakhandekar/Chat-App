@@ -13,6 +13,10 @@ import { Chat } from "../models/chat.model.js";
 import { getIO } from "../sockets/socketInstance.js";
 import { socketEvents } from "../constants/socketEvents.js";
 import { validateAtleastOneField } from "../utils/fields validations/validateAtleastOneField.js";
+import { isChatExists } from "../utils/document existance check/chat.js";
+import { getUserChatUsers, getUserChatUsersServer } from "./chat.controller.js";
+import { getUniqueMembers } from "../utils/getUniqueMembers.js";
+import { addMembertoGroupService } from "../services/group.service.js";
 
 
 const getGroupMembers = asyncHandler(async (req, res) => {
@@ -155,9 +159,75 @@ const uploadGroupPicture = asyncHandler(async (req,res)=>{
     )
 })
 
+const getNonGroupMembers = asyncHandler(async (req,res)=>{
+
+    const groupId = req.params.id
+
+    const group = await isChatExists(groupId)
+
+    if(!group){
+        throw new ApiError(400,"Invalid GroupId.")
+    }
+
+    const arr = await getUserChatUsersServer(req.user._id)
+    const chatUsers = arr.map(a => a._id)
+
+
+    // console.log("Array ::::: ",arr)
+    // console.log("Array ::::: ",chatUsers)
+
+    const users1 = getUniqueMembers(chatUsers,group.participants.filter(u=>u.toString() !== req.user._id.toString()))
+    let u = users1.map(u1 => new mongoose.Types.ObjectId(u1))
+
+    const users = await User.aggregate([
+        {
+            $match:{
+                _id:{
+                    $in:u
+                }
+            }
+        }
+    ])
+
+    if(!users.length){
+        throw new ApiError(400,"no users")
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200,users,"Fetched Users Successfully.")
+        )
+})
+
+const addMemberToGroup = asyncHandler(async (req,res)=>{
+
+    const {groupId,memberId} = req.body
+    
+    const { newIndicator, groupMenbers,newMember} = await addMembertoGroupService( groupId, req.user, memberId )
+
+    if(!groupMenbers || !newIndicator){
+        throw new ApiError(500,"Error While Adding Member to Group.")
+    }
+
+    const io = getIO()
+
+    for(let member of groupMenbers){
+        io.to(member._id.toString()).emit(socketEvents.NEW_MESSAGE , newIndicator)
+        io.to(member._id.toString()).emit(socketEvents.ADD_MEMBER_IN_GROUP , newMember )
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200,newIndicator,"Member Added To Group Successfully.")
+        )
+})
 
 export {
     getGroupMembers,
     updateGroupChat,
-    uploadGroupPicture
+    uploadGroupPicture,
+    getNonGroupMembers,
+    addMemberToGroup
 }

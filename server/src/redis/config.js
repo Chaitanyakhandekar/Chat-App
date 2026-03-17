@@ -6,5 +6,5 @@ export const redis = new Redis({
   password: process.env.REDIS_PASSWORD
 });
 
-await redis.set("check", "working");
-console.log(await redis.get("check"));
+// await redis.set("check", "working");
+// console.log(await redis.get("check"));

@@ -11,6 +11,11 @@ import { useRef } from 'react'
 import { useEffect } from 'react'
 import { groupApi } from '../../api/group.api'
 import { useParams } from 'react-router-dom'
+import { userAuthStore } from '../../store/userStore'
+import { chatApi } from '../../api/chat.api'
+import { socket } from '../../socket/socket'
+import { socketEvents } from '../../constants/socketEvents'
+import Swal from "sweetalert2"
 
 // ─── Mock data ─────────────────────────────────────────────────────────────
 const MOCK_MEMBERS = [
@@ -354,6 +359,7 @@ function MembersView({ group, currentUserId, setView }) {
     const [openMenu,     setOpenMenu]     = useState(null)
     const [showAddModal, setShowAddModal] = useState(false)
     const {currentGroupParticipants,setCurrentGroupParticipants,groupChat} = useGroupChatStore();
+    const {user} = userAuthStore()
     const {onlineStatus} = useChatStore();
 
     const isOwner     = currentUserId === CURRENT_USER_ID
@@ -399,7 +405,7 @@ function MembersView({ group, currentUserId, setView }) {
             <div className="flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#1a1d28_transparent] px-3 pb-4 flex flex-col gap-0.5">
                 {currentGroupParticipants?.map(member => {
                     const isSelf   = member._id === currentUserId
-                    const canAct   = canManage && !isSelf && member.role !== 'owner'
+                    const canAct   = canManage && !isSelf && member?.role !== 'owner' || ""
                     const menuOpen = openMenu === member._id
 
                     return (
@@ -419,7 +425,7 @@ function MembersView({ group, currentUserId, setView }) {
                             <div className="flex flex-col min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                     <span className="text-[13px] font-semibold text-[#f1f2f7] truncate">
-                                        {member.username}{isSelf ? ' (you)' : ''}
+                                        {member._id === user._id ? "you" : member.username}
                                     </span>
                                     <RoleBadge role={
                                         member._id === group.ownerId ? 'owner' :
@@ -474,7 +480,8 @@ function MembersView({ group, currentUserId, setView }) {
             {showAddModal && (
                 <AddMemberModal
                     onClose={() => setShowAddModal(false)}
-                    onAdd={u => { setMembers(p => [...p, { ...u, role: 'member', online: false }]); setShowAddModal(false) }}
+                    onAdd={ ()=>setShowAddModal(false) }
+                    group={group}
                 />
             )}
         </div>
@@ -482,14 +489,48 @@ function MembersView({ group, currentUserId, setView }) {
 }
 
 // ─── Add Member Modal ──────────────────────────────────────────────────────
-function AddMemberModal({ onClose, onAdd }) {
+function AddMemberModal({ onClose, onAdd,group }) {
     const [q, setQ] = useState('')
+    const {currentGroupParticipants,setCurrentGroupParticipants,groupChat} = useGroupChatStore();
+    const [users,setUsers] = useState([])
     const SUGGESTIONS = [
         { _id: '99',  username: 'kai_design', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=kai'  },
         { _id: '100', username: 'nina.rx',    avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=nina' },
         { _id: '101', username: 'theo_dev',   avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=theo' },
     ]
-    const results = SUGGESTIONS.filter(u => u.username.includes(q))
+    const [results,setResults] = useState([])
+
+    const getUsers = async ()=>{
+        const users = await groupApi.getUserChatUsersExceptGroupMembers(groupChat._id)
+        if(users.success){
+            setResults(users.data)
+            
+        }
+    }
+
+    const handleAddMember =  async(userId,username)=>{
+        console.log("Emitting Add Memeber :: ",userId)
+        const payload = {
+            groupId:groupChat._id,
+            userId
+        }
+        const res = await groupApi.addMemberToGroup(groupChat._id,userId)
+        if(res.success){
+            onAdd()
+            Swal.fire({
+                icon: "success",
+                title: `User Added to Group`,
+                html: `<b>${username}</b> has been added to <b>${group.name}</b>.`,
+                confirmButtonText: "OK",
+            });
+        }
+    }
+
+    useEffect(()=>{
+        getUsers()
+    },[])
+
+
 
     return (
         <div className="absolute inset-0 z-50 flex flex-col bg-[#0a0b0f]/95 backdrop-blur-xl overflow-hidden">
@@ -506,12 +547,12 @@ function AddMemberModal({ onClose, onAdd }) {
             </div>
 
             <div className="flex-1 overflow-y-auto px-3">
-                {results.map(u => (
+                {results?.map(u => (
                     <div key={u._id} className="flex items-center gap-[10px] px-3 py-[9px] rounded-[11px] hover:bg-white/[0.04] transition-colors">
                         <img src={u.avtar} alt="" className="w-9 h-9 rounded-full object-cover border border-white/[0.07]" />
                         <span className="text-[13px] font-semibold text-[#f1f2f7] flex-1">{u.username}</span>
                         <button
-                            onClick={() => onAdd(u)}
+                            onClick={() => {handleAddMember(u._id,u.username)}}
                             className="px-2.5 py-1 rounded-[8px] text-[11.5px] font-semibold bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-[0_3px_10px_rgba(99,102,241,0.35)] hover:opacity-85 transition-opacity"
                         >
                             Add
