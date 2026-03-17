@@ -93,8 +93,41 @@ const markMemberAsAdminService = async (groupId,memberId)=>{       // Admin Prot
 
 }
 
+/**
+ * @description un-mark member as admin of group.
+ * @return updated {group,indicator,groupMenbers}.
+ * @access Private (Admin Only)
+ * @param {ObjectId} groupId 
+ * @param {ObjectId} memberId 
+ */
+const unmarkMemberAsAdminService = async (groupId,memberId)=>{       // Admin Protected
+
+    const group = await isChatExists(groupId)
+    const member = await isUserExists(memberId)
+
+    group.admins = group.admins.filter(member => member.toString() !== memberId.toString())
+
+    await group.save()
+
+    const newIndicator = await Message.create({
+        chatId:groupId,
+        isIndicator:true,
+        message: `${member.username} is no longer an admin.`
+    })
+
+    const groupMenbers = await getGroupMembers(groupId)
+
+    return {
+        group,
+        newIndicator,
+        groupMenbers:groupMenbers?.length > 0 ? groupMenbers : []
+    };
+
+}
+
 
 export {
     addMembertoGroupService,
-    markMemberAsAdminService
+    markMemberAsAdminService,
+    unmarkMemberAsAdminService
 }

@@ -16,7 +16,7 @@ import { validateAtleastOneField } from "../utils/fields validations/validateAtl
 import { isChatExists } from "../utils/document existance check/chat.js";
 import { getUserChatUsers, getUserChatUsersServer } from "./chat.controller.js";
 import { getUniqueMembers } from "../utils/getUniqueMembers.js";
-import { addMembertoGroupService, markMemberAsAdminService } from "../services/group.service.js";
+import { addMembertoGroupService, markMemberAsAdminService,unmarkMemberAsAdminService } from "../services/group.service.js";
 
 
 const getGroupMembers = asyncHandler(async (req, res) => {
@@ -262,11 +262,44 @@ const markMemberAsAdmin = asyncHandler(async (req,res)=>{
     
 })
 
+
+/**
+ * @description Un-Marks member as group admin
+ * @method POST
+ * @access Admin Only
+ */
+const unmarkMemberAsAdmin = asyncHandler(async (req,res)=>{
+
+    const {groupId,memberId} = req.body
+
+    const {group,newIndicator,groupMenbers} = await unmarkMemberAsAdminService(groupId,memberId)
+
+    const io = getIO()
+
+    if(newIndicator){
+        for(let member of groupMenbers){
+            io.to(member._id.toString()).emit(socketEvents.NEW_MESSAGE,newIndicator)
+            io.to(member._id.toString()).emit(socketEvents.UNMARK_MEMBER_AS_ADMIN,{memberId})
+        }
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200,{
+                memberId,
+                message:"User Unmarked as Admin"
+            },"Member Unmarked As Admin.")
+        )
+    
+})
+
 export {
     getGroupMembers,
     updateGroupChat,
     uploadGroupPicture,
     getNonGroupMembers,
     addMemberToGroup,
-    markMemberAsAdmin
+    markMemberAsAdmin,
+    unmarkMemberAsAdmin
 }
