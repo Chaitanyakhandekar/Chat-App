@@ -40,7 +40,7 @@ function ChatCard({
     const { scrollToBottomInChat, setScrollToBottomInChat } = useAssetsStore()
 
     const createSingleChat = async () => {
-        const response = await chatApi.createSingleChat(user?._id);
+        const response = await chatApi.createSingleChat(user._id);
         if (response.success) {
             addChat(response.data)
             setCurrentChatId(response.data._id)
@@ -81,12 +81,15 @@ function ChatCard({
     const isChatExists = async () => {
         let isExists = false;
         const response = await chatApi.isChatExists(chat?._id)
+        console.log("isChatExists response :::  ",response)
         return response.success;
     }
 
     const handleChatCardClick = async() => {
         const chatExists = await isChatExists();
         if (chatExists) {
+            // console.log("Chat Exists :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            // console.log("Chat Exists :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             if (isThisGroupChat()) {
                 setCurrentChatId(chatId);
                 setIsGroupChat(chat?.isGroupChat);
@@ -113,6 +116,7 @@ function ChatCard({
             }
         }
         else {
+            console.log("Creating Single Chat:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             createSingleChat();
         }
     }
