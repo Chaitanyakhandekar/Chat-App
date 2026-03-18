@@ -84,7 +84,7 @@ function Home() {
         setMessageBeingReplied
     } = useChatStore()
 
-     const {setGroupChat,groupChat} = useGroupChatStore();
+     const {setGroupChat,groupChat,currentGroupParticipants,setCurrentGroupParticipants} = useGroupChatStore();
 
     const {
         scrollToBottomInChat,
@@ -573,12 +573,7 @@ function Home() {
                                     )}
                                 </div>
 
-                                   <div className="flex text-white  truncate text-[0.8rem] text-gray-400">
-                                    <p>user1 ,</p>
-                                    <p>user2 ,</p>
-                                    <p>user3 ,</p>
-                                   
-                                </div>
+                                
                             </nav>
 
                             {isMedia ? (

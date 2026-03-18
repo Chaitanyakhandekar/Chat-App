@@ -87,7 +87,8 @@ function GroupInfoMain() {
     } = useAssetsStore()
 
     const {
-        setCurrentGroupParticipants
+        setCurrentGroupParticipants,
+        currentGroupParticipants
     } = useGroupChatStore()
 
     const typingTimeoutRef = useRef(null);
@@ -520,25 +521,6 @@ function GroupInfoMain() {
                                             {onlineStatus[context.currentChatUser._id] ? 'Online' : 'Offline'}
                                         </span>
                                     )}
-                                </div>
-
-                                <div className="flex text-white">
-                                    <p>user1,</p>
-                                    <p>user1,</p>
-                                    <p>user1,</p>
-                                    <p>user1,</p>
-                                    <p>user1,</p>
-                                    <p>user1,</p>
-                                    <p>user1,</p>
-                                    <p>user1,</p>
-                                    <p>user1,</p>
-                                    <p>user1,</p>
-                                    <p>user1,</p>
-                                    <p>user1,</p>
-                                    <p>user1,</p>
-                                    <p>user1,</p>
-                                    <p>user1,</p>
-                                    <p>user1,</p>
                                 </div>
                             </nav>
 
