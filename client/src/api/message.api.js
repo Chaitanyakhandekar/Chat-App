@@ -61,9 +61,20 @@ class MessageApi{
         }
     }
 
-    getGroupConversation = async (groupId) =>{
+    deleteForMe = async (messageId) =>{
         try {
-            return {}
+            const response = await axios.delete(`${this.baseUrl}/for-me/${messageId}`,
+                {
+                    withCredentials:true
+                }
+            )
+             console.log("Delete for me response :: ",response.data)
+
+            return {
+                success:true,
+                data:response.data.data,
+                message:"Message deleted for me successfully."
+            }
         } catch (error) {
             return{
                 success:false,

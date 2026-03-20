@@ -12,6 +12,10 @@ import { sendEmail } from "../services/brevoMail.service.js";
 import { Message } from "../models/message.model.js";
 import { validObjectId } from "../utils/isValidObjectId.js";
 import { assertRequiredFields } from "../utils/fields validations/assertRequiredFields.js";
+import { deleteForMeService } from "../services/message.service.js";
+import { getIO } from "../sockets/socketInstance.js";
+import { socketEvents } from "../constants/socketEvents.js";
+
 
 
 const getConversation = asyncHandler(async (req,res)=>{
@@ -143,8 +147,31 @@ const replyToMessage = asyncHandler(async (req,res)=>{
 
 })
 
+/**
+ * @description Controller for delete message for me.
+ * @access single chat (owner)
+ *         group chat (every member)
+ * @method GET
+ */
+const deleteMessage = asyncHandler(async (req,res)=>{
+
+    const messageId = req.params.id
+    const userId = req.user._id
+
+    const message = await deleteForMeService(messageId,userId)
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200,message,"Message Deleted For User Successfully.")
+        )
+
+    
+})
+
 export {
     getConversation,
     uploadImage,
-    getGroupConversation
+    getGroupConversation,
+    deleteMessage
 }

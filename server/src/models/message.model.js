@@ -71,6 +71,13 @@ const messageSchema = new mongoose.Schema({
         default: false
     },
 
+    deletedFor:[
+        {
+            type:mongoose.Types.ObjectId,
+            ref:"User"
+        }
+    ],
+
     status: {
         type: String,
         enum: ["sent", "delivered", "seen"],
