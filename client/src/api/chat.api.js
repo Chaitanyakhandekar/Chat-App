@@ -83,8 +83,11 @@ class ChatApi {
                 withCredentials: true
             });
 
-            console.log("Is Chat Exists Response :: ", response.data.data);
+            console.log("Is Chat Exists Response :: ", response.data.success);
 
+            if(!response.data.success){
+                throw new Error("Chat Doesnt Exists.")
+            }
             return {
                 success: true,
                 message: response.data.message,

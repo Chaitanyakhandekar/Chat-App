@@ -47,7 +47,7 @@ const createSingleChat = asyncHandler(async (req, res) => {
     }
 
     const isChatAlreadyExists = await Chat.findOne({
-        participants: { $all: [userId, userId] },
+        participants: { $all: [userId, req.user._id] },
         isGroupChat: false
     })
 
@@ -58,7 +58,7 @@ const createSingleChat = asyncHandler(async (req, res) => {
     const newSingleChat = await Chat.create({
         participants: [
             userId,
-            userId
+            req.user._id
         ]
     })
 
@@ -375,9 +375,6 @@ const getUserChatUsersServer = async (userId)=>{
 
 }
 
-const addMemberToGroup = asyncHandler(async (req,res)=>{
-    
-})
 
 export {
     createGroupChat,
