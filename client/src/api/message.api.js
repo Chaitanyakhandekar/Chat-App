@@ -83,6 +83,29 @@ class MessageApi{
             }
         }
     }
+    
+    deleteForEveryone = async (messageId) =>{
+        try {
+            const response = await axios.delete(`${this.baseUrl}/for-everyone/${messageId}`,
+                {
+                    withCredentials:true
+                }
+            )
+             console.log("Delete for Everyone response :: ",response.data)
+
+            return {
+                success:true,
+                data:response.data.data,
+                message:"Message deleted for everyone successfully."
+            }
+        } catch (error) {
+            return{
+                success:false,
+                message:error.message,
+                error:error
+            }
+        }
+    }
 
 }
 

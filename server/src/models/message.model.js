@@ -71,6 +71,11 @@ const messageSchema = new mongoose.Schema({
         default: false
     },
 
+    deleteForEveryone:{
+        type:Boolean,
+        default:false
+    },
+
     deletedFor:[
         {
             type:mongoose.Types.ObjectId,

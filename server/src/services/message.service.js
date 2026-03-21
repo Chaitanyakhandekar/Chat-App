@@ -19,6 +19,23 @@ const deleteForMeService = async(messageId,userId)=>{
     return message
 }
 
+/**
+ * @description Service for Delete message for everyone
+ * @param {ObjectId} messageId 
+ * @returns updated Message Object
+ */
+const deleteForEveryoneService = async(messageId)=>{
+    
+    const message = await isMessageExists(messageId)
+
+    message.deleteForEveryone = true
+
+    await message.save()
+
+    return message
+}
+
 export {
-    deleteForMeService
+    deleteForMeService,
+    deleteForEveryoneService
 }

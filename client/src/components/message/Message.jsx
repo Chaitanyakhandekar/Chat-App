@@ -418,13 +418,12 @@ function Message({ msg, key, onReply }) {
         setShowDeleteModal(false)
     }
 
-    const handleDeleteForEveryone = () => {
-        socket.emit(socketEvents.DELETE_MESSAGE || 'delete_message', {
-            messageId: msg._id,
-            chatId: msg.chatId,
-            deleteFor: 'everyone'
-        })
-        removeMessage && removeMessage(msg.chatId, msg._id)
+    const handleDeleteForEveryone = async() => {
+        const res = await messageApi.deleteForEveryone(msg._id)
+        if(res.success){
+            console.log("Delete aaaaaaaaaaaaaaaaaaaa :: ",msg.chatId,msg._id)
+            removeMessage(msg.chatId,msg._id)
+        }
         setShowDeleteModal(false)
     }
 
