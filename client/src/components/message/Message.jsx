@@ -21,6 +21,7 @@ import { socketEvents } from '../../constants/socketEvents'
 import { useChatStore } from '../../store/useChatStore'
 import { href } from 'react-router-dom'
 import { isThisLink } from '../../services/isThisLink'
+import { messageApi } from '../../api/message.api'
 
 const QUICK_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏']
 
@@ -407,8 +408,13 @@ function Message({ msg, key, onReply }) {
         }
     }
 
-    const handleDeleteForMe = () => {
-        removeMessage && removeMessage(msg.chatId, msg._id)
+    const handleDeleteForMe = async() => {
+        // removeMessage && removeMessage(msg.chatId, msg._id)
+        const res = await messageApi.deleteForMe(msg._id)
+        if(res.success){
+            console.log("Delete aaaaaaaaaaaaaaaaaaaa :: ",msg.chatId,msg._id)
+            removeMessage(msg.chatId,msg._id)
+        }
         setShowDeleteModal(false)
     }
 

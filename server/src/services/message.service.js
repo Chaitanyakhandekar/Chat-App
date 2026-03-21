@@ -1,4 +1,3 @@
-import ConversationsMessage from "sib-api-v3-sdk/src/model/ConversationsMessage"
 import { isMessageExists } from "../utils/document existance check/message.js"
 import { isUserExists } from "../utils/document existance check/user.js"
 

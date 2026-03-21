@@ -37,7 +37,10 @@ const getConversation = asyncHandler(async (req,res)=>{
                 sender:otherUserId,
                 receiver:id
             }
-        ]
+        ],
+        deletedFor:{
+            $nin:req.user._id
+        }
       }
     )
 
