@@ -6,10 +6,10 @@ const notificationSchema = new Schema({
         type: mongoose.Types.ObjectId,
         ref: "User"
     },
-    receiver: {
+    receivers: [{
         type: mongoose.Types.ObjectId,
         ref: "User"
-    },
+    }],
     entity: {
         type: mongoose.Types.ObjectId
     },
