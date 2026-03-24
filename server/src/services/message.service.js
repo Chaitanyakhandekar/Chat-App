@@ -1,5 +1,35 @@
+import { Message } from "../models/message.model.js"
+import { isChatExists } from "../utils/document existance check/chat.js"
 import { isMessageExists } from "../utils/document existance check/message.js"
 import { isUserExists } from "../utils/document existance check/user.js"
+
+/**
+ * @description Service for getting Last chat message
+ * @access User
+ * @param {ObjectId} chatId 
+ * @returns Message
+ */
+const getLastChatMessage = async (chatId) => {
+
+    const chat = await isChatExists(chatId)
+
+    const messages = await Message.aggregate([
+        {
+            $match: {
+                chatId: chatId,
+                deleteForEveryone:{
+                    $ne:true
+                }
+            }
+        },
+        {
+            $sort:{createdAt:-1}
+        }
+    ])
+
+    return messages[0]
+
+}
 
 /**
  * @description Service for delete message for me
@@ -37,5 +67,6 @@ const deleteForEveryoneService = async(messageId)=>{
 
 export {
     deleteForMeService,
-    deleteForEveryoneService
+    deleteForEveryoneService,
+    getLastChatMessage
 }
