@@ -19,6 +19,9 @@ import { userAuthStore } from '../../store/userStore'
 import { socket } from '../../socket/socket'
 import { socketEvents } from '../../constants/socketEvents'
 import { useChatStore } from '../../store/useChatStore'
+import { href } from 'react-router-dom'
+import { isThisLink } from '../../services/isThisLink'
+import { messageApi } from '../../api/message.api'
 
 const QUICK_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏']
 
@@ -326,6 +329,7 @@ function Message({ msg, key, onReply }) {
     const hasImage = msg?.attachments?.length > 0
     const hasText = msg?.message && msg.message.trim() !== ""
     const hasReply = !!msg?.reply
+    const [isLink,setIsLink] = useState(false)
 
     /* ── Sync reactions from updated message ── */
     useEffect(() => {
@@ -358,9 +362,11 @@ function Message({ msg, key, onReply }) {
     useEffect(() => {
         if (showMenu) setShowEmojiBar(false)
     }, [showMenu])
-    // useEffect(() => {
-    //     console.log("Replying to message: ", msg.reply)
-    // }, [])
+
+    useEffect(() => {
+        let is = isThisLink(msg.message)
+        setIsLink(is)
+    }, [])
 
     const handleTouchStart = useCallback(() => {
         longPressTriggered.current = false
@@ -402,18 +408,22 @@ function Message({ msg, key, onReply }) {
         }
     }
 
-    const handleDeleteForMe = () => {
-        removeMessage && removeMessage(msg.chatId, msg._id)
+    const handleDeleteForMe = async() => {
+        // removeMessage && removeMessage(msg.chatId, msg._id)
+        const res = await messageApi.deleteForMe(msg._id)
+        if(res.success){
+            console.log("Delete aaaaaaaaaaaaaaaaaaaa :: ",msg.chatId,msg._id)
+            removeMessage(msg.chatId,msg._id)
+        }
         setShowDeleteModal(false)
     }
 
-    const handleDeleteForEveryone = () => {
-        socket.emit(socketEvents.DELETE_MESSAGE || 'delete_message', {
-            messageId: msg._id,
-            chatId: msg.chatId,
-            deleteFor: 'everyone'
-        })
-        removeMessage && removeMessage(msg.chatId, msg._id)
+    const handleDeleteForEveryone = async() => {
+        const res = await messageApi.deleteForEveryone(msg._id)
+        if(res.success){
+            console.log("Delete aaaaaaaaaaaaaaaaaaaa :: ",msg.chatId,msg._id)
+            removeMessage(msg.chatId,msg._id)
+        }
         setShowDeleteModal(false)
     }
 
@@ -539,11 +549,20 @@ function Message({ msg, key, onReply }) {
                             )}
 
                             {/* Text */}
-                            {hasText && (
+                            {hasText && (isLink ? 
+                            <div className={`text-[13.5px] leading-[1.55] px-3.5 pt-2.5 font-[Sora,sans-serif] ${!hasImage ? 'pb-[26px]' : 'pb-6'} text-blue-300 hover:underline`}>
+                                <a
+                             href={msg.message}
+                             target='_blank'
+                             >{msg.message}</a>
+                            </div> :
+                            (
                                 <div className={`text-[13.5px] leading-[1.55] px-3.5 pt-2.5 font-[Sora,sans-serif] ${!hasImage ? 'pb-[26px]' : 'pb-6'}`}>
                                     {msg.message}
                                 </div>
-                            )}
+                            ))
+                            
+                            }
 
                             {/* Meta */}
                             <div className={[

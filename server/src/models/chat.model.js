@@ -52,6 +52,10 @@ const chatSchema = new mongoose.Schema({
     lastMessageTime:{
         type:String,
        
+    },
+    request:{
+        type:mongoose.Types.ObjectId,
+        ref:"Request"
     }
     
 }, { timestamps: true });
