@@ -286,21 +286,41 @@ function Home() {
         }
     }
 
-    const handleTyping = (e) => {
-        const value = e.target.value;
+    const handleGroupTyping = (e)=>{
+          const value = e.target.value;
         setMessage(value);
 
         if (!socket || !context.currentChatUser || !currentChatId) return;
 
-        if (!isTypingRef.current && !isGroupChat) {
-            socket.emit(socketEvents.TYPING, {
+        if (!isTypingRef.current) {
+            socket.emit(socketEvents.TYPING_GROUP, {
                 chatId: currentChatId,
                 isTyping: true,
             });
             isTypingRef.current = true;
         }
-        if (!isTypingRef.current && isGroupChat) {
+
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+
+        typingTimeoutRef.current = setTimeout(() => {
             socket.emit(socketEvents.TYPING_GROUP, {
+                chatId: currentChatId,
+                isTyping: false,
+            });
+            isTypingRef.current = false;
+        }, 2000);
+    }
+
+    const handleSingleTyping = (e)=>{
+          const value = e.target.value;
+        setMessage(value);
+
+        if (!socket || !context.currentChatUser || !currentChatId) return;
+
+        if (!isTypingRef.current) {
+            socket.emit(socketEvents.TYPING, {
                 chatId: currentChatId,
                 isTyping: true,
             });
@@ -318,6 +338,15 @@ function Home() {
             });
             isTypingRef.current = false;
         }, 2000);
+    }
+
+    const handleTyping = (e) => {
+        if(isGroupChat){
+            handleGroupTyping(e)
+        }
+        if(!isGroupChat){
+            handleSingleTyping(e)
+        }
     };
 
     const handleChatInfoClick = () =>{

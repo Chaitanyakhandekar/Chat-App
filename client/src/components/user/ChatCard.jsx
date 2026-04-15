@@ -34,7 +34,7 @@ function ChatCard({
 
     const context = useContext(authContext);
     const navigate = useNavigate()
-    const { userChats, setCurrentPreviewFile, addChat, resetUserSearch, userMessages } = useChatStore();
+    const { userChats, setCurrentPreviewFile, addChat, resetUserSearch, userMessages, chatUsersInfo } = useChatStore();
     const {setGroupChat,groupChat} = useGroupChatStore();
     const user1 = userAuthStore().user;
     const { scrollToBottomInChat, setScrollToBottomInChat } = useAssetsStore()
@@ -176,7 +176,7 @@ function ChatCard({
                                 <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
                                 <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
                             </span>
-                            typing
+                            {chat.isGroupChat ? `${chatUsersInfo[chat._id]?.typers[0]?.username} ` : ""} typing
                         </span>
                     ) : (
                         <span className={`text-[11.5px] text-gray-400 truncate ${newMessages > 0 ? "text-purple-300" : ""}`}>

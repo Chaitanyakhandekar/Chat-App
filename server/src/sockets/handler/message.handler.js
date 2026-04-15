@@ -101,9 +101,14 @@ export const messageHandler = (io, socket) => {
             return 
         }
 
+        const payload = {user,
+            chatId:data.chatId,
+            isTyping:data.isTyping
+        }
+
         members.forEach((member)=>{
             if(member.toString() !== socket.user._id.toString()){
-                socket.to(getUserSocket(member.toString())).emit(socketEvents.TYPING_GROUP,user )
+                socket.to(getUserSocket(member.toString())).emit(socketEvents.TYPING_GROUP, payload)
                 console.log("Emiting Group Typing to as ", user.username)
             }
         })
