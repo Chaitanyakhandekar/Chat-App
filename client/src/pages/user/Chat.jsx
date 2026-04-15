@@ -292,8 +292,15 @@ function Home() {
 
         if (!socket || !context.currentChatUser || !currentChatId) return;
 
-        if (!isTypingRef.current) {
+        if (!isTypingRef.current && !isGroupChat) {
             socket.emit(socketEvents.TYPING, {
+                chatId: currentChatId,
+                isTyping: true,
+            });
+            isTypingRef.current = true;
+        }
+        if (!isTypingRef.current && isGroupChat) {
+            socket.emit(socketEvents.TYPING_GROUP, {
                 chatId: currentChatId,
                 isTyping: true,
             });

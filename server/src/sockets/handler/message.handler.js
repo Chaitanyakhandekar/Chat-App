@@ -5,6 +5,7 @@ import { Chat } from "../../models/chat.model.js"
 // import { get } from "http"
 import { getOtherChatUser } from "../utils/getOtherChatUser.js"
 import { isValidObjectId } from "mongoose"
+import { groupTypingService } from "../services/message.service.js"
 
 export const messageHandler = (io, socket) => {
 
@@ -88,6 +89,24 @@ export const messageHandler = (io, socket) => {
         console.log("Emitting Typing Event to User : ", getUserSocket(otherUser.toString()))
 
         socket.to(getUserSocket(otherUser.toString())).emit(socketEvents.TYPING, payload)
+    })
+
+    socket.on(socketEvents.TYPING_GROUP, async(data)=>{     // handling typing event for group chat
+        console.log("Typing Group Data : ", data)
+        console.log("User in Group :: ",socket.user._id)
+
+        const {members,user} = await groupTypingService(socket.user._id,data.chatId)
+
+        if(!members.length || !user){
+            return 
+        }
+
+        members.forEach((member)=>{
+            if(member.toString() !== socket.user._id.toString()){
+                socket.to(getUserSocket(member.toString())).emit(socketEvents.TYPING_GROUP,user )
+                console.log("Emiting Group Typing to as ", user.username)
+            }
+        })
     })
 
     socket.on(socketEvents.MESSAGE_SEEN_SINGLE_CHAT, async (data) => {     // Handling message Seen for Single chat event

@@ -30,5 +30,5 @@ export const getGroupMembers = async (groupId) =>{
     
     // await redis.set(`group-members-${groupId}`, groupMembers)
 
-    return groupMembers
+    return groupMembers || []
 }

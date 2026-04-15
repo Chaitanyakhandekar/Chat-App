@@ -6,6 +6,7 @@ export const socketEvents = {
     LEAVE_CHAT:"leave_chat",
     ERROR:"error",
     TYPING:"typing",
+    TYPING_GROUP:"typing_group",
     USER_ONLINE:"user_online",
     USER_OFFLINE:"user_offline",
     ONLINE_USERS:"online_users",
