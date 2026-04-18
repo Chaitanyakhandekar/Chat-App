@@ -6,6 +6,7 @@ import { Chat } from "../../models/chat.model.js"
 import { getOtherChatUser } from "../utils/getOtherChatUser.js"
 import { isValidObjectId } from "mongoose"
 import { groupTypingService } from "../services/message.service.js"
+import { isGroupChat } from "../utils/isGroupChat.js"
 
 export const messageHandler = (io, socket) => {
 
@@ -155,7 +156,22 @@ export const messageHandler = (io, socket) => {
         const { messageId, chatId } = data
 
         console.log("Group Message Seen Event Data : ", data)
-        
+
+        if(!isGroupChat(chatId)){
+            return
+        }
+
+        const message = await Message.findByIdAndUpdate(
+            messageId,
+            {
+                $push:{
+                    seenBy:socket.user._id
+                }
+            },
+            {
+                new:true
+            }
+        )
     })
 
     socket.on(socketEvents.MESSAGE_REPLY_SINGLE_CHAT, async (data) => {
