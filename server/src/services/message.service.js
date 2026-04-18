@@ -1,4 +1,5 @@
 import { Message } from "../models/message.model.js"
+import { User } from "../models/user.model.js"
 import { isChatExists } from "../utils/document existance check/chat.js"
 import { isMessageExists } from "../utils/document existance check/message.js"
 import { isUserExists } from "../utils/document existance check/user.js"
@@ -65,8 +66,46 @@ const deleteForEveryoneService = async(messageId)=>{
     return message
 }
 
+/**
+ * @description Service for fetching members who have seen the message.
+ * @param {ObjectId} messageId 
+ * @returns Array of User Objects
+ */
+const getSeenMembersService = async(messageId)=>{
+
+    const message = await isMessageExists(messageId)
+
+    const seenByUserIds = message.seenBy
+
+    const seenMembers = await User.aggregate([
+        {
+            $match:{
+                _id:{
+                    $in:seenByUserIds
+                }
+            }  
+        },
+        {
+                $project:{
+                    username:1,
+                    name:1,
+                    avtar:1
+                }
+            }
+    ])
+
+
+
+    if(!seenMembers.length){
+        return []
+    }
+
+    return seenMembers
+}
+
 export {
     deleteForMeService,
     deleteForEveryoneService,
-    getLastChatMessage
+    getLastChatMessage,
+    getSeenMembersService
 }

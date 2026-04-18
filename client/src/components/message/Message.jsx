@@ -295,11 +295,11 @@ function MessageInfoModal({ show, onClose, msg }) {
 function MessageInfoModalGroup({ show, onClose, msg }) {
     if (!show) return null
 
-    // const seenBy = msg?.seenBy || []
-     const seenBy = [
-  { id: '1', name: 'Alice Johnson', role: 'Designer', avatar: null, seenAt: '2025-04-18T10:32:00Z' },
-  { id: '2', name: 'Bob Smith', role: 'Engineer', seenAt: '2025-04-18T10:35:00Z' },
-]
+    const [seenBy, setSeenBy] = useState([])
+
+    useEffect(() => {
+        
+    }, [msg])
 
     const getInitials = (name = '') =>
         name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
