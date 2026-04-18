@@ -181,8 +181,8 @@ function ChatCard({
                     ) : (
                         <span className={`text-[11.5px] text-gray-400 truncate ${newMessages > 0 ? "text-purple-300" : ""}`}>
                             {
-                                !chat?.isGroupChat && newMessages <=0 && chat?.lastMessage ? chat?.lastMessage.message : 
-                                !chat?.isGroupChat && newMessages > 0 && `${newMessages <= 9 ? newMessages : "9+"} new messages` 
+                                 newMessages <=0 && chat?.lastMessage ? chat?.lastMessage.message : 
+                                 newMessages > 0 && `${newMessages <= 9 ? newMessages : "9+"} new messages` 
                             }
                         </span>
                     )}

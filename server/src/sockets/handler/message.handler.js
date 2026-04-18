@@ -151,6 +151,13 @@ export const messageHandler = (io, socket) => {
 
     })
 
+    socket.on(socketEvents.MESSAGE_SEEN_GROUP_CHAT, async(data)=>{      // Handling message Seen for Group chat event
+        const { messageId, chatId } = data
+
+        console.log("Group Message Seen Event Data : ", data)
+        
+    })
+
     socket.on(socketEvents.MESSAGE_REPLY_SINGLE_CHAT, async (data) => {
 
         console.log("Message (Reply) : ", data)

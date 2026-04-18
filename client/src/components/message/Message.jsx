@@ -294,7 +294,7 @@ function MessageInfoModal({ show, onClose, msg }) {
 /* ─────────────────────────────────────────────────────────────
    MAIN Message component
 ───────────────────────────────────────────────────────────── */
-function Message({ msg, key, onReply }) {
+function Message({ msg, key, isGroupChat }) {
 
     const context = useContext(authContext)
     const { user } = userAuthStore()
@@ -344,10 +344,20 @@ function Message({ msg, key, onReply }) {
             (entries) => {
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
-                        socket.emit(socketEvents.MESSAGE_SEEN_SINGLE_CHAT, {
+                        
+                        if(isGroupChat){
+                            socket.emit(socketEvents.MESSAGE_SEEN_GROUP_CHAT, {
                             messageId: msg._id,
                             chatId: msg.chatId
                         })
+                        }
+                        else{
+                            socket.emit(socketEvents.MESSAGE_SEEN_SINGLE_CHAT, {
+                            messageId: msg._id,
+                            chatId: msg.chatId
+                        })
+                        }
+
                         resetNewMessagesCount(msg.chatId)
                         observer.disconnect()
                     }

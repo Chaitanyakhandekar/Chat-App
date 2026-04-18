@@ -632,6 +632,7 @@ function Home() {
                                             <Message
                                                 key={msg._id}
                                                 msg={msg}
+                                                isGroupChat={isGroupChat}
                                                 // onReply={(msg) => {
                                                 //     setMessageBeingReplied(msg)
                                                 //     setIsReplying(true)
