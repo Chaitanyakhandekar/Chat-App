@@ -600,7 +600,13 @@ function Home() {
                                                 <span className="typing-dot w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
                                                 <span className="typing-dot w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
                                             </span>
-                                            typing
+                                            {chatUsersInfo[currentChatId].typers.length > 0 &&
+                                             chatUsersInfo[currentChatId].typers.map((typer, index) => (
+                                                 <span key={index}>
+                                                     {typer.username || 'Unknown User'} {index < chatUsersInfo[currentChatId].typers.length - 1 ? ', ' : ' '}
+                                                 </span>
+                                             ))}
+                                             typing...
                                         </span>
                                     ) : (
                                         <span className="text-xs text-[#4a4e6a]">
