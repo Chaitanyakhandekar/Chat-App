@@ -292,13 +292,12 @@ function MessageInfoModal({ show, onClose, msg }) {
 }
 
 /* ─── Message Info modal ─── */
-function MessageInfoModalGroup({ show, onClose, msg, seenBy1 }) {
+function MessageInfoModalGroup({ show, onClose, msg, seenBy }) {
     if (!show) return null
 
-    const [seenBy, setSeenBy] = useState(seenBy1 || [])
 
     useEffect(() => {
-        console.log("Seen By in Modal: ", seenBy1)
+        console.log("Seen By in Modal: ", seenBy)
     }, [])
 
     const getInitials = (name = '') =>
@@ -503,7 +502,7 @@ function Message({ msg, key, isGroupChat }) {
         const res = await messageApi.getSeenMembers(msg._id)
         if(res.success){
             console.log("Seen members :: ",res.data)
-            setSeenBy(res.data.data)
+            setSeenBy(res.data)
         }
     }
 
@@ -523,12 +522,14 @@ function Message({ msg, key, isGroupChat }) {
                     if (entry.isIntersecting) {
                         
                         if(isGroupChat){
+                            console.log("Emitting seen for group chat :: ")
                             socket.emit(socketEvents.MESSAGE_SEEN_GROUP_CHAT, {
                             messageId: msg._id,
                             chatId: msg.chatId
                         })
                         }
                         else{
+                            console.log("Emitting seen for single chat :: ")
                             socket.emit(socketEvents.MESSAGE_SEEN_SINGLE_CHAT, {
                             messageId: msg._id,
                             chatId: msg.chatId
@@ -825,7 +826,7 @@ function Message({ msg, key, isGroupChat }) {
                 show={showInfoModalGroup}
                 onClose={() => setShowInfoModalGroup(false)}
                 msg={msg}
-                seenBy1={seenBy}
+                seenBy={seenBy}
             />
         </>
     )

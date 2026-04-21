@@ -193,6 +193,17 @@ function Home() {
             console.log("Ack from server:", ack);
         })
         }
+        else if(isGroupChat){
+            socket.emit(socketEvents.NEW_MESSAGE_GROUP, {
+                message: message || "",
+                attachments: uploadInfo?.data || [],
+                chatId: currentChatId || null,
+                tempId: tempId,
+                
+            }, (ack) => {
+                console.log("Ack from server:", ack);
+            })
+        }
         else{
             socket.emit(socketEvents.NEW_MESSAGE, {
             message: message || "",

@@ -7,6 +7,7 @@ import { getOtherChatUser } from "../utils/getOtherChatUser.js"
 import { isValidObjectId } from "mongoose"
 import { groupTypingService } from "../services/message.service.js"
 import { isGroupChat } from "../utils/isGroupChat.js"
+import { getGroupMembers } from "../utils/getGroupMembers.js"
 
 export const messageHandler = (io, socket) => {
 
@@ -29,6 +30,7 @@ export const messageHandler = (io, socket) => {
                 })
             }
         }
+
 
         const newMessage = await Message.create({    // save message to database
             sender: socket.user._id,
@@ -69,6 +71,72 @@ export const messageHandler = (io, socket) => {
         )
 
         }
+
+        }
+    })
+
+    socket.on(socketEvents.NEW_MESSAGE_GROUP, async (data) => {
+
+        console.log("Message  : ", data)
+        console.log("Sockets Map : ", socketsMap)
+
+
+        if (!data.chatId) {     // no chatId means this is new chat so create new chat in database
+          console.log("No Group Chat ID :: ")
+
+          socket.emit(socketEvents.ERROR, {
+            type: "Message Sending Error",
+            message: "Group Chat ID is required for sending message in group."
+        })
+
+        return
+        }
+
+
+        const newMessage = await Message.create({    // save message to database
+            sender: socket.user._id,
+            receiver: data.receiver,
+            attachments: data.attachments,
+            message: data.message,
+            chatId:  data.chatId
+        })
+
+
+        if (!newMessage) {   // error while saving message to database means message sending failure
+            socket.emit(socketEvents.ERROR, {
+                type: "Message Sending Error",
+                message: "Error While Sending Message."
+            })
+        }
+        else {
+            console.log("Emitting Message to Group Chat : ", data.chatId.toString())
+            // io.to(newMessage.chatId.toString()).emit(socketEvents.NEW_MESSAGE, newMessage)     // Sending Message to Other user in Chat
+
+            const members = await getGroupMembers(data.chatId)
+
+            for (let member of members){
+                if(member.toString() !== socket.user._id.toString()){
+                    socket.to(getUserSocket(member.toString())).emit(socketEvents.NEW_MESSAGE, newMessage)     // Sending Message to Other user in Chat
+                }
+            }
+
+            console.log("Emitting Message to User (TEMPID) : ", data.tempId)
+            io.to(socket.user._id.toString()).emit(socketEvents.MESSAGE_SENT_SINGLE_CHAT, {       // Notifying Sender About Message Status as Sent
+                message: newMessage,
+                chatId: newMessage.chatId,
+                sentAt: newMessage.createdAt,
+                tempId: data.tempId
+            })       
+
+            const updateChat = await Chat.findByIdAndUpdate(
+            data?.chatId,
+            {
+                $set:{
+                    lastMessage:newMessage,
+                    
+                }
+            }
+        )
 
         }
     })
@@ -176,6 +244,14 @@ export const messageHandler = (io, socket) => {
                 new:true
             }
         )
+
+          const payload = {
+            chatId,
+            status: "seen",
+            messageId
+        }
+
+          socket.to(messageId.toString()).emit(socketEvents.MESSAGE_SEEN_SINGLE_CHAT, payload)
     })
 
     socket.on(socketEvents.MESSAGE_REPLY_SINGLE_CHAT, async (data) => {

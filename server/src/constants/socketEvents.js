@@ -2,6 +2,7 @@ export const socketEvents = {
     CONNECTION:"connection",
     DISCONNECTION:"disconnect",
     NEW_MESSAGE:"new_message",
+    NEW_MESSAGE_GROUP:"new_message_group",
     JOIN_CHAT:"join_chat",
     LEAVE_CHAT:"leave_chat",
     ERROR:"error",
