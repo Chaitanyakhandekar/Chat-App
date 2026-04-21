@@ -292,14 +292,14 @@ function MessageInfoModal({ show, onClose, msg }) {
 }
 
 /* ─── Message Info modal ─── */
-function MessageInfoModalGroup({ show, onClose, msg }) {
+function MessageInfoModalGroup({ show, onClose, msg, seenBy1 }) {
     if (!show) return null
 
-    const [seenBy, setSeenBy] = useState([])
+    const [seenBy, setSeenBy] = useState(seenBy1 || [])
 
     useEffect(() => {
-        
-    }, [msg])
+        console.log("Seen By in Modal: ", seenBy1)
+    }, [])
 
     const getInitials = (name = '') =>
         name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -402,8 +402,8 @@ function MessageInfoModalGroup({ show, onClose, msg }) {
                                             className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ring-1 ring-white/[0.08]"
                                             style={{ background: color.bg, color: color.text }}
                                         >
-                                            {member.avatar
-                                                ? <img src={member.avatar} alt={member.name} className="w-full h-full rounded-full object-cover" />
+                                            {member.avtar
+                                                ? <img src={member.avtar} alt={member.name} className="w-full h-full rounded-full object-cover" />
                                                 : getInitials(member.name)
                                             }
                                         </div>
@@ -492,10 +492,26 @@ function Message({ msg, key, isGroupChat }) {
     const hasReply = !!msg?.reply
     const [isLink,setIsLink] = useState(false)
 
+    const [seenBy, setSeenBy] = useState([])
+
     /* ── Sync reactions from updated message ── */
     useEffect(() => {
         setReactions(msg?.reactions || [])
     }, [msg?.reactions])
+
+    const getSeenMembers = async() =>{
+        const res = await messageApi.getSeenMembers(msg._id)
+        if(res.success){
+            console.log("Seen members :: ",res.data)
+            setSeenBy(res.data.data)
+        }
+    }
+
+    useEffect(() => {
+        if(showInfoModalGroup){
+          getSeenMembers()
+        }
+    }, [showInfoModalGroup])
 
     /* ── Intersection observer (seen) ── */
     useEffect(() => {
@@ -809,6 +825,7 @@ function Message({ msg, key, isGroupChat }) {
                 show={showInfoModalGroup}
                 onClose={() => setShowInfoModalGroup(false)}
                 msg={msg}
+                seenBy1={seenBy}
             />
         </>
     )

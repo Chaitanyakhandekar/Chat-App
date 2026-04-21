@@ -166,6 +166,10 @@ export const messageHandler = (io, socket) => {
             {
                 $push:{
                     seenBy:socket.user._id
+                },
+                $set:{
+                    status:"seen",
+                    seenAt:Date.now()
                 }
             },
             {
