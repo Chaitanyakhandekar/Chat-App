@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getSummarizedChat } from "../../../server/src/controllers/chat.controller";
+
 
 class ChatApi {
     constructor() {
@@ -109,7 +109,7 @@ class ChatApi {
                 withCredentials: true
             });
 
-            console.log("Get Summarized Chat Response :: ", response.data.success);
+            console.log("Get Summarized Chat Response :: ", response.data);
 
             if(!response.data.success){
                 throw new Error("Chat Doesnt Exists.")

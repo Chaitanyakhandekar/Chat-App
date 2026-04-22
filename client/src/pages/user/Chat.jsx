@@ -233,9 +233,9 @@ function SummaryDrawer({ isOpen, onClose, isLoading, summary }) {
                             {/* Stats row */}
                             <div style={{ display: 'flex', gap: 10 }}>
                                 {[
-                                    { label: 'Messages', value: summary.messageCount },
+                                    { label: 'Messages', value: summary.messages },
                                     { label: 'Timespan', value: summary.timespan },
-                                    { label: 'Tone', value: sentimentLabel },
+                                    { label: 'Tone', value: summary.sentiment  },
                                 ].map(({ label, value }) => (
                                     <div key={label} style={{
                                         flex: 1, padding: '10px 12px', borderRadius: 12,
@@ -335,15 +335,16 @@ function Home() {
     const [summaryLoading, setSummaryLoading] = useState(false)
     const [summaryData, setSummaryData] = useState(null)
 
-    const handleSummarize = () => {
+    const handleSummarize = async() => {
         setSummaryOpen(true)
         if (summaryData) return // already loaded, just reopen
         setSummaryLoading(true)
         // Simulate API delay — replace with real call later
-        setTimeout(() => {
-            setSummaryData(DUMMY_SUMMARY)
+        const response = await chatApi.getSummarizedChat(currentChatId || paramChatId)
+        if(response.success){
+            setSummaryData(response.data)
             setSummaryLoading(false)
-        }, 1800)
+        }
     }
     // ──────────────────────────────────────────────────────────────────
 
