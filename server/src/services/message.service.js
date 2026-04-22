@@ -3,6 +3,7 @@ import { User } from "../models/user.model.js"
 import { isChatExists } from "../utils/document existance check/chat.js"
 import { isMessageExists } from "../utils/document existance check/message.js"
 import { isUserExists } from "../utils/document existance check/user.js"
+import mongoose from "mongoose"
 
 /**
  * @description Service for getting Last chat message
@@ -103,9 +104,58 @@ const getSeenMembersService = async(messageId)=>{
     return seenMembers
 }
 
+/**
+ * @description Service for fetching messages for summary generation
+ * @param {ObjectId} chatId 
+ * @param {number} limit 
+ * @returns Array of Message Objects
+ */
+const getMessagesForSummary = async (chatId, limit = 30) =>{
+    const messages = await Message.aggregate([
+        {
+            $match: {
+                chatId: new mongoose.Types.ObjectId(chatId),
+                deleteForEveryone: {
+                    $ne: true
+                }
+            }
+        },
+        {
+            $sort: { createdAt: -1 }
+        },
+        {
+            $limit: limit
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "sender",
+                foreignField: "_id",
+                as: "sender",
+                pipeline:[
+                    {
+                        $project:{
+                            username:1,
+                            name:1,
+                            
+                        }
+                    }
+                ]
+            }
+        }
+    ]);
+
+    console.log("Messages for summary = ", messages)
+
+    return messages;
+
+}
+
+
 export {
     deleteForMeService,
     deleteForEveryoneService,
     getLastChatMessage,
-    getSeenMembersService
+    getSeenMembersService,
+    getMessagesForSummary   
 }

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getSummarizedChat } from "../../../server/src/controllers/chat.controller";
 
 class ChatApi {
     constructor() {
@@ -84,6 +85,31 @@ class ChatApi {
             });
 
             console.log("Is Chat Exists Response :: ", response.data.success);
+
+            if(!response.data.success){
+                throw new Error("Chat Doesnt Exists.")
+            }
+            return {
+                success: true,
+                message: response.data.message,
+                data: response.data.data
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message,
+                error: error
+            }
+        }
+    }
+
+    getSummarizedChat = async (chatId) => {
+        try {
+            const response = await axios.get(`${this.baseUrl}/summary/${chatId}`, {
+                withCredentials: true
+            });
+
+            console.log("Get Summarized Chat Response :: ", response.data.success);
 
             if(!response.data.success){
                 throw new Error("Chat Doesnt Exists.")
