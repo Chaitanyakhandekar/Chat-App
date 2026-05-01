@@ -15,7 +15,6 @@ import { socketEvents } from "../constants/socketEvents.js";
 import { getUserSocket } from "../sockets/soketsMap.js";
 import { createFriendRequest } from "../services/request.service.js";
 
-const io = getIO()
 
 /**
  * @description Controller to send new friend Request
@@ -28,6 +27,9 @@ const sendFriendReuest = asyncHandler(async (req, res) => {
     const friendId = req.params.id;
 
     const newRequest = await createFriendRequest(req.user._id, friendId)
+
+    const io = getIO()
+
 
     io.to(friendId.toString()).emit(socketEvents.NEW_REQUEST, newRequest)
 

@@ -4,7 +4,11 @@ const requestSchema = new Schema({
 
     type: {
         type: String,
-        enum: ["NEW_CHAT", "NEW_GROUP"]
+        enum: [
+            "DIRECT_CHAT_REQUEST",
+            "GROUP_INVITE",
+            "GROUP_JOIN_REQUEST"
+        ],
     },
     entityId: {
         type: mongoose.Types.ObjectId,
