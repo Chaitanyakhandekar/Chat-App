@@ -32,152 +32,111 @@ const navigate = useNavigate()
     }
 
     return (
-        <>
-            <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap');
-                * { font-family: 'Sora', sans-serif; box-sizing: border-box; }
+        <div className="min-h-screen w-full bg-surface-900 flex items-center justify-center px-4 relative overflow-hidden">
 
-                .reg-input:focus {
-                    border-color: rgba(99,102,241,0.5) !important;
-                    box-shadow: 0 0 0 3px rgba(99,102,241,0.15) !important;
-                }
+            {/* Ambient orbs */}
+            <div className="absolute -top-[10%] left-[30%] w-[500px] h-[500px] rounded-full pointer-events-none bg-accent/10 blur-[80px]" />
+            <div className="absolute -bottom-[10%] right-[20%] w-[400px] h-[400px] rounded-full pointer-events-none bg-violet/10 blur-[80px]" />
 
-                .reg-input::placeholder { color: #4a4e6a; }
+            {/* Card */}
+            <div className="relative w-full max-w-md bg-surface-800 border border-white/[0.06] rounded-3xl shadow-2xl overflow-hidden animate-slide-up">
 
-                .reg-btn:hover {
-                    box-shadow: 0 6px 24px rgba(99,102,241,0.5) !important;
-                    transform: translateY(-1px);
-                }
+                {/* Top gradient line */}
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/70 to-transparent" />
 
-                .reg-btn:active { transform: scale(0.98); }
+                {/* Noise texture overlay */}
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                    style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }}
+                />
 
-                .float-icon { animation: float 3s ease-in-out infinite; }
-                @keyframes float {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-6px); }
-                }
+                {/* Header */}
+                <div className="flex flex-col items-center pt-12 pb-8 px-8 relative z-10">
+                    <div className="flex items-center justify-center w-14 h-14 rounded-2xl mb-5 animate-float"
+                        style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', boxShadow: '0 4px 24px rgba(99,102,241,0.5)' }}>
+                        <Zap size={24} color="#fff" />
+                    </div>
+                    <h1 className="text-2xl font-bold text-text-primary tracking-tight">Create an account</h1>
+                    <p className="text-sm text-text-dim mt-2">Join and start messaging instantly</p>
+                </div>
 
-                .fade-up {
-                    animation: fadeUp 0.5s ease both;
-                }
-                @keyframes fadeUp {
-                    from { opacity: 0; transform: translateY(16px); }
-                    to   { opacity: 1; transform: translateY(0); }
-                }
+                {/* Divider */}
+                <div className="h-px bg-white/[0.06] mx-8" />
 
-                .sidebar-accent::before {
-                    content: '';
-                    position: absolute;
-                    top: 0; left: 0; right: 0;
-                    height: 1px;
-                    background: linear-gradient(90deg, transparent, #6366f1, transparent);
-                    opacity: 0.7;
-                }
-            `}</style>
+                {/* Form */}
+                <form className="flex flex-col gap-4 px-8 pt-8 pb-10 relative z-10" onSubmit={register}>
 
-            {/* Full page background */}
-            <div className="min-h-screen w-full bg-[#0a0b0f] flex items-center justify-center px-4 relative overflow-hidden">
-
-                {/* Ambient orbs */}
-                <div className="absolute top-[-10%] left-[30%] w-[500px] h-[500px] rounded-full pointer-events-none"
-                    style={{ background: 'radial-gradient(circle,rgba(99,102,241,0.1),transparent 70%)', filter: 'blur(80px)' }} />
-                <div className="absolute bottom-[-10%] right-[20%] w-[400px] h-[400px] rounded-full pointer-events-none"
-                    style={{ background: 'radial-gradient(circle,rgba(139,92,246,0.08),transparent 70%)', filter: 'blur(80px)' }} />
-
-                {/* Card */}
-                <div className="sidebar-accent fade-up relative w-full max-w-md bg-[#0e1018] border border-white/[0.06] rounded-[24px] shadow-[0_24px_80px_rgba(0,0,0,0.6)] overflow-hidden">
-
-                    {/* Header */}
-                    <div className="flex flex-col items-center pt-10 pb-6 px-8">
-                        <div
-                            className="float-icon flex items-center justify-center w-12 h-12 rounded-[14px] mb-4"
-                            style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 20px rgba(99,102,241,0.45)' }}
-                        >
-                            <Zap size={22} color="#fff" />
-                        </div>
-                        <h1 className="text-2xl font-bold text-[#f1f2f7] tracking-tight">Create an account</h1>
-                        <p className="text-sm text-[#4a4e6a] mt-1.5">Join and start messaging instantly</p>
+                    {/* Name */}
+                    <div className="relative group">
+                        <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-dim pointer-events-none transition-colors group-focus-within:text-accent-light" />
+                        <input
+                            className="w-full bg-surface-700 border border-white/[0.06] rounded-xl py-3.5 pl-11 pr-4 text-text-primary text-sm outline-none transition-all duration-200 placeholder:text-text-dim focus:border-accent/50 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]"
+                            type="text"
+                            placeholder="Enter your name"
+                            name="name"
+                            value={user.name}
+                            onChange={handleUserChange}
+                        />
                     </div>
 
-                    {/* Divider */}
-                    <div className="h-px bg-white/[0.06] mx-8" />
+                    {/* Username */}
+                    <div className="relative group">
+                        <AtSign size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-dim pointer-events-none transition-colors group-focus-within:text-accent-light" />
+                        <input
+                            className="w-full bg-surface-700 border border-white/[0.06] rounded-xl py-3.5 pl-11 pr-4 text-text-primary text-sm outline-none transition-all duration-200 placeholder:text-text-dim focus:border-accent/50 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]"
+                            type="text"
+                            placeholder="Enter your username"
+                            name="username"
+                            value={user.username}
+                            onChange={handleUserChange}
+                        />
+                    </div>
 
-                    {/* Form */}
-                    <form className="flex flex-col gap-3.5 px-8 pt-6 pb-8" onSubmit={register}>
+                    {/* Email */}
+                    <div className="relative group">
+                        <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-dim pointer-events-none transition-colors group-focus-within:text-accent-light" />
+                        <input
+                            className="w-full bg-surface-700 border border-white/[0.06] rounded-xl py-3.5 pl-11 pr-4 text-text-primary text-sm outline-none transition-all duration-200 placeholder:text-text-dim focus:border-accent/50 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]"
+                            type="email"
+                            placeholder="Enter your email"
+                            name="email"
+                            value={user.email}
+                            onChange={handleUserChange}
+                        />
+                    </div>
 
-                        {/* Name */}
-                        <div className="relative">
-                            <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4a4e6a] pointer-events-none" />
-                            <input
-                                className="reg-input w-full bg-[#1a1d28] border border-white/[0.06] rounded-[12px] py-3 pl-10 pr-4 text-[#f1f2f7] text-sm outline-none transition-all duration-200"
-                                type="text"
-                                placeholder="Enter your name"
-                                name="name"
-                                value={user.name}
-                                onChange={handleUserChange}
-                            />
-                        </div>
+                    {/* Password */}
+                    <div className="relative group">
+                        <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-dim pointer-events-none transition-colors group-focus-within:text-accent-light" />
+                        <input
+                            className="w-full bg-surface-700 border border-white/[0.06] rounded-xl py-3.5 pl-11 pr-4 text-text-primary text-sm outline-none transition-all duration-200 placeholder:text-text-dim focus:border-accent/50 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]"
+                            type="password"
+                            placeholder="Enter your password"
+                            name="password"
+                            value={user.password}
+                            onChange={handleUserChange}
+                        />
+                    </div>
 
-                        {/* Username */}
-                        <div className="relative">
-                            <AtSign size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4a4e6a] pointer-events-none" />
-                            <input
-                                className="reg-input w-full bg-[#1a1d28] border border-white/[0.06] rounded-[12px] py-3 pl-10 pr-4 text-[#f1f2f7] text-sm outline-none transition-all duration-200"
-                                type="text"
-                                placeholder="Enter your username"
-                                name="username"
-                                value={user.username}
-                                onChange={handleUserChange}
-                            />
-                        </div>
+                    {/* Submit */}
+                    <button
+                        type="submit"
+                        className="w-full py-3.5 mt-2 rounded-xl text-white text-sm font-semibold tracking-wide cursor-pointer transition-all duration-200 hover:shadow-[0_8px_24px_rgba(99,102,241,0.45)] hover:-translate-y-0.5 active:scale-[0.98]"
+                        style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', boxShadow: '0 4px 16px rgba(99,102,241,0.4)' }}
+                        onClick={register}
+                    >
+                        Create Account
+                    </button>
 
-                        {/* Email */}
-                        <div className="relative">
-                            <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4a4e6a] pointer-events-none" />
-                            <input
-                                className="reg-input w-full bg-[#1a1d28] border border-white/[0.06] rounded-[12px] py-3 pl-10 pr-4 text-[#f1f2f7] text-sm outline-none transition-all duration-200"
-                                type="email"
-                                placeholder="Enter your email"
-                                name="email"
-                                value={user.email}
-                                onChange={handleUserChange}
-                            />
-                        </div>
-
-                        {/* Password */}
-                        <div className="relative">
-                            <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4a4e6a] pointer-events-none" />
-                            <input
-                                className="reg-input w-full bg-[#1a1d28] border border-white/[0.06] rounded-[12px] py-3 pl-10 pr-4 text-[#f1f2f7] text-sm outline-none transition-all duration-200"
-                                type="password"
-                                placeholder="Enter your password"
-                                name="password"
-                                value={user.password}
-                                onChange={handleUserChange}
-                            />
-                        </div>
-
-                        {/* Submit */}
-                        <button
-                            type="submit"
-                            className="reg-btn w-full py-3 mt-2 rounded-[12px] text-white text-sm font-semibold tracking-wide border-none cursor-pointer transition-all duration-200"
-                            style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px_14px rgba(99,102,241,0.4)' }}
-                            onClick={register}
-                        >
-                            Create Account
-                        </button>
-
-                        {/* Footer link */}
-                        <p className="text-center text-xs text-[#4a4e6a] mt-1">
-                            Already have an account?{' '}
-                            <a href="/login" className="text-[#818cf8] hover:text-[#a5b4fc] transition-colors duration-150 font-medium">
-                                Sign in
-                            </a>
-                        </p>
-                    </form>
-                </div>
+                    {/* Footer link */}
+                    <p className="text-center text-xs text-text-dim mt-2">
+                        Already have an account?{' '}
+                        <a href="/login" className="text-accent-light hover:text-violet-light transition-colors duration-150 font-medium">
+                            Sign in
+                        </a>
+                    </p>
+                </form>
             </div>
-        </>
+        </div>
     )
 }
 

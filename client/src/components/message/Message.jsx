@@ -90,23 +90,8 @@ function SuspiciousWarning({ type = 'link', onDismiss, onProceed, isSent }) {
             className={`flex ${isSent ? 'justify-end' : 'justify-start'} px-1 mb-1`}
             style={{ animation: 'warnIn 0.22s cubic-bezier(0.16,1,0.3,1)' }}
         >
-            <style>{`
-                @keyframes warnIn {
-                    from { opacity: 0; transform: translateY(6px) scale(0.97); }
-                    to   { opacity: 1; transform: translateY(0) scale(1); }
-                }
-                @keyframes warnShake {
-                    0%,100% { transform: translateX(0); }
-                    20%     { transform: translateX(-3px); }
-                    40%     { transform: translateX(3px); }
-                    60%     { transform: translateX(-2px); }
-                    80%     { transform: translateX(2px); }
-                }
-                .warn-icon-shake { animation: warnShake 0.5s ease 0.1s; }
-            `}</style>
-
             <div
-                className="relative max-w-[320px] w-full rounded-[16px] overflow-hidden"
+                className="relative max-w-[320px] w-full rounded-xl overflow-hidden"
                 style={{
                     background: cfg.accent,
                     border: `1px solid ${cfg.border}`,
@@ -126,7 +111,7 @@ function SuspiciousWarning({ type = 'link', onDismiss, onProceed, isSent }) {
                     <div className="flex items-start gap-2.5 mb-2.5">
                         {/* Icon container */}
                         <div
-                            className="warn-icon-shake flex-shrink-0 w-8 h-8 rounded-[10px] flex items-center justify-center"
+                            className="warn-icon-shake flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
                             style={{
                                 background: `rgba(${isLink ? '239,68,68' : '251,191,36'},0.15)`,
                                 border: `1px solid ${cfg.border}`,
@@ -139,13 +124,13 @@ function SuspiciousWarning({ type = 'link', onDismiss, onProceed, isSent }) {
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 flex-wrap mb-[3px]">
                                 <span
-                                    className="text-[10px] font-bold uppercase tracking-[0.06em] px-1.5 py-[2px] rounded-[5px]"
+                                    className="text-[10px] font-bold uppercase tracking-[0.06em] px-1.5 py-[2px] rounded-md"
                                     style={{ background: cfg.tagBg, color: cfg.tagColor }}
                                 >
                                     {cfg.tag}
                                 </span>
                             </div>
-                            <p className="text-[12.5px] font-semibold text-[#f1f2f7] leading-snug">
+                            <p className="text-[12.5px] font-semibold text-text-primary leading-snug">
                                 {cfg.headline}
                             </p>
                         </div>
@@ -153,17 +138,14 @@ function SuspiciousWarning({ type = 'link', onDismiss, onProceed, isSent }) {
                         {/* Dismiss X */}
                         <button
                             onClick={onDismiss}
-                            className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-full transition-colors duration-150"
-                            style={{ background: 'rgba(255,255,255,0.05)' }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                            className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-full transition-colors duration-150 bg-white/[0.05] hover:bg-white/10"
                         >
-                            <X size={11} color="#6b7280" />
+                            <X size={11} className="text-text-muted" />
                         </button>
                     </div>
 
                     {/* Body */}
-                    <p className="text-[11.5px] text-[#6b7280] leading-[1.55] mb-3">
+                    <p className="text-[11.5px] text-text-muted leading-[1.55] mb-3">
                         {cfg.body}
                     </p>
 
@@ -171,20 +153,7 @@ function SuspiciousWarning({ type = 'link', onDismiss, onProceed, isSent }) {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={onProceed}
-                            className="flex items-center gap-1.5 px-3 py-[6px] rounded-[9px] text-[11.5px] font-medium transition-all duration-150"
-                            style={{
-                                background: 'rgba(255,255,255,0.05)',
-                                color: '#9ca3af',
-                                border: '1px solid rgba(255,255,255,0.07)',
-                            }}
-                            onMouseEnter={e => {
-                                e.currentTarget.style.background = 'rgba(255,255,255,0.09)'
-                                e.currentTarget.style.color = '#c4c6e7'
-                            }}
-                            onMouseLeave={e => {
-                                e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
-                                e.currentTarget.style.color = '#9ca3af'
-                            }}
+                            className="flex items-center gap-1.5 px-3 py-[6px] rounded-lg text-[11.5px] font-medium transition-all duration-150 bg-white/[0.05] text-text-secondary border border-white/[0.07] hover:bg-white/[0.09] hover:text-text-primary"
                         >
                             {isLink
                                 ? <ExternalLink size={11} strokeWidth={2} />
@@ -195,7 +164,7 @@ function SuspiciousWarning({ type = 'link', onDismiss, onProceed, isSent }) {
 
                         <button
                             onClick={onDismiss}
-                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-[6px] rounded-[9px] text-[11.5px] font-semibold transition-all duration-150"
+                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-[6px] rounded-lg text-[11.5px] font-semibold transition-all duration-150"
                             style={{
                                 background: isLink ? 'rgba(239,68,68,0.14)' : 'rgba(251,191,36,0.12)',
                                 color: cfg.iconColor,
@@ -774,6 +743,18 @@ function Message({ msg, key, isGroupChat }) {
                     from { opacity: 0; transform: scaleY(0.8); transform-origin: top; }
                     to   { opacity: 1; transform: scaleY(1); }
                 }
+                @keyframes warnIn {
+                    from { opacity: 0; transform: translateY(6px) scale(0.97); }
+                    to   { opacity: 1; transform: translateY(0) scale(1); }
+                }
+                @keyframes warnShake {
+                    0%,100% { transform: translateX(0); }
+                    20%     { transform: translateX(-3px); }
+                    40%     { transform: translateX(3px); }
+                    60%     { transform: translateX(-2px); }
+                    80%     { transform: translateX(2px); }
+                }
+                .warn-icon-shake { animation: warnShake 0.5s ease 0.1s; }
             `}</style>
 
             {/* ── Suspicious warning banner — renders ABOVE the bubble row ── */}
@@ -818,22 +799,22 @@ function Message({ msg, key, isGroupChat }) {
                     <div className="relative">
                         <EmojiBar show={showEmojiBar} isSent={isSent} onPick={handleEmojiPick} />
 
-                        {/* Bubble */}
-                        <div
-                            ref={bubbleRef}
-                            className={[
-                                'relative min-w-[72px] rounded-[18px] overflow-hidden break-words whitespace-pre-wrap',
-                                'shadow-[0_2px_12px_rgba(0,0,0,0.35)]',
-                                isSent
-                                    ? 'text-white rounded-br-[5px] bg-gradient-to-br from-[#6366f1] to-[#8b5cf6]'
-                                    : 'bg-[#1e2133] text-[#e2e4f0] rounded-bl-[5px] border border-white/[0.06]',
-                                msg.status === 'uploading' ? 'opacity-75' : '',
-                                // Dim suspicious content that hasn't been explicitly unlocked
-                                (isSuspiciousLink || isSuspiciousMessage) && !proceedAnyway && !warningDismissed
-                                    ? 'blur-[1.5px] pointer-events-none select-none'
-                                    : '',
-                            ].join(' ')}
-                        >
+             {/* Bubble */}
+                         <div
+                             ref={bubbleRef}
+                             className={[
+                                 'relative min-w-[72px] rounded-2xl overflow-hidden break-words whitespace-pre-wrap',
+                                 'shadow-md',
+                                 isSent
+                                     ? 'text-white rounded-br-md bg-gradient-to-br from-accent to-violet'
+                                     : 'bg-surface-600 text-text-primary rounded-bl-md border border-white/[0.06]',
+                                 msg.status === 'uploading' ? 'opacity-75' : '',
+                                 // Dim suspicious content that hasn't been explicitly unlocked
+                                 (isSuspiciousLink || isSuspiciousMessage) && !proceedAnyway && !warningDismissed
+                                     ? 'blur-[1.5px] pointer-events-none select-none'
+                                     : '',
+                             ].join(' ')}
+                         >
                             {/* ── Reply Quote ── */}
                             {hasReply && (
                                 <div style={{ animation: 'replyQuoteIn 0.16s ease' }}>

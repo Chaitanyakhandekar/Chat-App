@@ -14,8 +14,12 @@ const requestSchema = new Schema({
         enum: ["pending", "accepted", "rejected"],
         default: "pending"
     },
+    message: {
+        type: String,
+    },
     processedAt: {
-        type: Date
+        type: Date,
+        default: Date.now()
     },
     sender: {
         type: mongoose.Types.ObjectId,
@@ -32,11 +36,8 @@ const requestSchema = new Schema({
 
 }, { timestamps: true })
 
-requestSchema.index({ receiver: 1, status: 1, createdAt: -1 })
-requestSchema.index({ sender: 1 })
 requestSchema.index(
-    {sender:1, receiver:1 , type:1},
-    {unique:true}
+    { sender: 1, receiver: 1, type: 1, status: 1 },
+    { unique: true, partialFilterExpression: { status: "pending" } }
 )
-
 export const Request = mongoose.model("Request", requestSchema)

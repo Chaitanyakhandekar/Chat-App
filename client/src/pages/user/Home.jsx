@@ -111,6 +111,17 @@ function Home() {
         }
     }
 
+    const getOnlineUsers = async () => {
+        const response = await userApi.getOnlineUsers();
+        if (response.success) {
+            const { setOnlineStatus } = useChatStore.getState();
+            console.log("Online Users List Received from socket server (API):", response.data);
+            for (let user of response.data) {
+                setOnlineStatus(user, true)
+            }
+        }
+    }
+
     const getConversationMessages = async (otherUserId) => {
         const messages = await messageApi.getConversation(otherUserId)
     }
@@ -180,12 +191,14 @@ function Home() {
     };
 
     useEffect(() => {
-        getAllUsers();
-        // Request online status after fetching users
         if (user) {
             console.log("Emitting GET_ONLINE_STATUS for user:", user._id);
             socket.emit(socketEvents.GET_ONLINE_STATUS);
         }
+        getAllUsers();
+        getOnlineUsers();
+        // Request online status after fetching users
+
         console.log("Media Files: ", mediaFiles[currentChatId]);
 
         const container = chatContainerRef.current;
@@ -208,14 +221,14 @@ function Home() {
         }
     }, [setIsAtBottom])
 
-     useEffect(() => {
-          if(activePanel !== "newGroup"){
-               setGroupsOnly(true)
-          }else{
-           setGroupsOnly(false)
-          }
-   
-       }, [activePanel])
+    useEffect(() => {
+        if (activePanel !== "newGroup") {
+            setGroupsOnly(true)
+        } else {
+            setGroupsOnly(false)
+        }
+
+    }, [activePanel])
     useEffect(() => {
         console.log("Scroll to bottom in chat:", scrollToBottomInChat);
         if (scrollToBottomInChat) {
@@ -299,72 +312,30 @@ function Home() {
     return (
         <>
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
                 * { font-family: 'Sora', sans-serif; box-sizing: border-box; }
 
-                .typing-dot { animation: blink 1.2s infinite; }
+                .typing-dot { animation: typing-blink 1.2s infinite; }
                 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
                 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-                @keyframes blink {
-                    0%, 80%, 100% { opacity: 0.2; }
-                    40% { opacity: 1; }
-                }
+
                 .online-pulse { animation: pulse-dot 2s infinite; }
-                @keyframes pulse-dot {
-                    0%, 100% { opacity: 1; transform: scale(1); }
-                    50% { opacity: 0.7; transform: scale(1.15); }
-                }
-                .float-icon { animation: float 3s ease-in-out infinite; }
-                @keyframes float {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-8px); }
-                }
+
                 .fade-in-up { animation: fadeInUp 0.3s ease; }
                 @keyframes fadeInUp {
                     from { opacity: 0; transform: translateX(-50%) translateY(8px); }
                     to   { opacity: 1; transform: translateX(-50%) translateY(0); }
                 }
-                .slide-in-panel {
-                    animation: slideInPanel 0.22s cubic-bezier(0.16,1,0.3,1);
-                }
-                @keyframes slideInPanel {
-                    from { opacity: 0; transform: translateX(-12px); }
-                    to   { opacity: 1; transform: translateX(0); }
-                }
+
                 .custom-scroll { scrollbar-width: thin; scrollbar-color: #1a1d28 transparent; }
                 .custom-scroll::-webkit-scrollbar { width: 4px; }
                 .custom-scroll::-webkit-scrollbar-track { background: transparent; }
                 .custom-scroll::-webkit-scrollbar-thumb { background: #1a1d28; border-radius: 4px; }
-                .sidebar-accent::before {
-                    content: '';
-                    position: absolute;
-                    top: 0; left: 0; right: 0;
-                    height: 1px;
-                    background: linear-gradient(90deg, transparent, #6366f1, transparent);
-                    opacity: 0.6;
-                }
-                .noise-bg::before {
-                    content: '';
-                    position: absolute;
-                    inset: 0;
-                    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-                    pointer-events: none;
-                    z-index: 0;
-                    opacity: 0.4;
-                }
-                .search-input:focus {
-                    border-color: rgba(99,102,241,0.35) !important;
-                    box-shadow: 0 0 0 3px rgba(99,102,241,0.15) !important;
-                }
+
                 .msg-input-wrap:focus-within {
                     border-color: rgba(99,102,241,0.35) !important;
                     box-shadow: 0 0 0 3px rgba(99,102,241,0.15) !important;
                 }
-                .panel-divider {
-                    height: 1px;
-                    background: linear-gradient(90deg, rgba(99,102,241,0.15), rgba(139,92,246,0.08), transparent);
-                    margin: 0 16px 12px 16px;
-                }
+
                 .action-row {
                     display: flex;
                     align-items: center;
@@ -392,7 +363,7 @@ function Home() {
             `}</style>
 
             {/* Root */}
-            <div className="flex h-[100dvh] bg-[#0a0b0f] text-[#f1f2f7] overflow-hidden">
+            <div className="flex h-[100dvh] bg-surface-900 text-text-primary overflow-hidden">
 
                 {/* ── SIDEBAR ── */}
                 <Sidebar
@@ -406,23 +377,18 @@ function Home() {
                     totalUnread={totalUnread}
                     user={user}
                     searchUsers={searchUsers}
-                    />
+                />
                 {/* ── MAIN CHAT WINDOW ── */}
-                <div className={`
-                    noise-bg relative flex flex-col flex-1 h-full bg-[#0c0e16] overflow-hidden
-                    hidden md:flex
-                      `}>
+                <div className="relative flex flex-col flex-1 h-full bg-surface-800 overflow-hidden hidden md:flex">
 
                     {/* Ambient orbs */}
-                    <div className="absolute -top-24 -right-24 w-[400px] h-[400px] rounded-full pointer-events-none z-0"
-                        style={{ background: 'radial-gradient(circle,rgba(99,102,241,0.08),transparent 70%)', filter: 'blur(80px)' }} />
-                    <div className="absolute -bottom-20 left-[10%] w-[300px] h-[300px] rounded-full pointer-events-none z-0"
-                        style={{ background: 'radial-gradient(circle,rgba(139,92,246,0.07),transparent 70%)', filter: 'blur(80px)' }} />
+                    <div className="absolute -top-24 -right-24 w-[400px] h-[400px] rounded-full pointer-events-none z-0 bg-accent/5 blur-[80px]" />
+                    <div className="absolute -bottom-20 left-[10%] w-[300px] h-[300px] rounded-full pointer-events-none z-0 bg-violet/5 blur-[80px]" />
 
                     {context.currentChatUser ? (
                         <>
                             {/* Nav */}
-                            <nav className="sticky top-0 z-10 flex items-center gap-3.5 h-16 px-6 border-b border-white/[0.06] bg-[rgba(14,16,24,0.85)] backdrop-blur-xl">
+                            <nav className="sticky top-0 z-10 flex items-center gap-3.5 h-16 px-6 border-b border-white/[0.06] bg-surface-800/90 backdrop-blur-xl">
                                 <div className="relative w-10 h-10 flex-shrink-0">
                                     <img
                                         src={context.currentChatUser.avtar}
@@ -430,25 +396,25 @@ function Home() {
                                         className="w-10 h-10 rounded-full object-cover border-2 border-white/[0.07]"
                                     />
                                     {onlineStatus[context.currentChatUser._id] && (
-                                        <div className="online-pulse absolute bottom-[1px] right-[1px] w-2.5 h-2.5 rounded-full bg-[#22d3a0] border-2 border-[#0c0e16]"
+                                        <div className="online-pulse absolute bottom-[1px] right-[1px] w-2.5 h-2.5 rounded-full bg-success border-2 border-surface-800"
                                             style={{ boxShadow: '0 0 8px #22d3a0' }} />
                                     )}
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-[15px] font-semibold tracking-tight text-[#f1f2f7]">
+                                    <span className="text-[15px] font-semibold tracking-tight text-text-primary">
                                         {context.currentChatUser.username}
                                     </span>
                                     {chatUsersInfo[currentChatId]?.typing ? (
-                                        <span className="flex items-center gap-1 text-xs text-[#22d3a0] font-medium">
+                                        <span className="flex items-center gap-1 text-xs text-success font-medium">
                                             <span className="flex gap-0.5 items-center">
-                                                <span className="typing-dot w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
-                                                <span className="typing-dot w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
-                                                <span className="typing-dot w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
+                                                <span className="typing-dot w-[3px] h-[3px] rounded-full bg-success inline-block" />
+                                                <span className="typing-dot w-[3px] h-[3px] rounded-full bg-success inline-block" />
+                                                <span className="typing-dot w-[3px] h-[3px] rounded-full bg-success inline-block" />
                                             </span>
                                             typing
                                         </span>
                                     ) : (
-                                        <span className="text-xs text-[#4a4e6a]">
+                                        <span className="text-xs text-text-dim">
                                             {onlineStatus[context.currentChatUser._id] ? 'Online' : 'Offline'}
                                         </span>
                                     )}
@@ -482,10 +448,10 @@ function Home() {
                                                 {!isAtBottom && (
                                                     <button
                                                         onClick={scrollToBottom}
-                                                        className="fixed z-20 bottom-24 right-8 w-9 h-9 flex items-center justify-center rounded-full bg-[#6366f1] border-none cursor-pointer transition-all duration-150 hover:-translate-y-0.5"
+                                                        className="fixed z-20 bottom-24 right-8 w-9 h-9 flex items-center justify-center rounded-full bg-accent border-none cursor-pointer transition-all duration-150 hover:-translate-y-0.5"
                                                         style={{ boxShadow: '0 4px 16px rgba(99,102,241,0.4)' }}
                                                     >
-                                                        <ArrowDownCircleIcon size={18} color="#fff" />
+                                                        <ArrowDownCircleIcon size={18} className="text-white" />
                                                     </button>
                                                 )}
 
@@ -494,7 +460,7 @@ function Home() {
 
                                             {/* Unread badge */}
                                             {chatUsersInfo[currentChatId]?.newMessages > 0 && (
-                                                <div className="fade-in-up absolute bottom-[88px] left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3.5 py-1.5 rounded-[20px] text-xs font-medium text-[#818cf8] border border-[rgba(99,102,241,0.35)] bg-[rgba(99,102,241,0.12)] backdrop-blur-md">
+                                                <div className="fade-in-up absolute bottom-[88px] left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium text-accent-light border border-accent/35 bg-accent/10 backdrop-blur-md">
                                                     <MoveDown size={13} />
                                                     {chatUsersInfo[currentChatId].newMessages} unread messages
                                                 </div>
@@ -503,9 +469,9 @@ function Home() {
                                             {/* Footer */}
                                             <footer
                                                 style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
-                                                className="z-10 flex items-center gap-3 h-20 px-5 border-t border-white/[0.06] bg-[rgba(14,16,24,0.9)] backdrop-blur-xl">
-                                                <div className="msg-input-wrap flex flex-1 items-center gap-2 bg-[#1a1d28] border border-white/[0.06] rounded-[20px] px-1 pr-1.5 transition-all duration-200">
-                                                    <div className="flex items-center px-1 text-[#4a4e6a] flex-shrink-0">
+                                                className="z-10 flex items-center gap-3 h-20 px-5 border-t border-white/[0.06] bg-surface-800/90 backdrop-blur-xl">
+                                                <div className="msg-input-wrap flex flex-1 items-center gap-2 bg-surface-700 border border-white/[0.06] rounded-2xl px-1 pr-1.5 transition-all duration-200">
+                                                    <div className="flex items-center px-1 text-text-dim flex-shrink-0">
                                                         <FileUpload />
                                                     </div>
                                                     <input
@@ -514,15 +480,15 @@ function Home() {
                                                         onChange={(e) => handleTyping(e)}
                                                         onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend(e)}
                                                         placeholder="Type a message…"
-                                                        className="flex-1 bg-transparent border-none outline-none text-[#f1f2f7] text-sm py-3.5 px-2 placeholder-[#4a4e6a]"
+                                                        className="flex-1 bg-transparent border-none outline-none text-text-primary text-sm py-3.5 px-2 placeholder-text-dim"
                                                     />
                                                 </div>
                                                 <button
                                                     onClick={handleSend}
-                                                    className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-[14px] border-none cursor-pointer transition-all duration-150 hover:-translate-y-0.5 hover:scale-[1.04] active:scale-95"
+                                                    className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-xl border-none cursor-pointer transition-all duration-150 hover:-translate-y-0.5 hover:scale-[1.04] active:scale-95"
                                                     style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 14px rgba(99,102,241,0.4)' }}
                                                 >
-                                                    <Send size={18} color="#fff" />
+                                                    <Send size={18} className="text-white" />
                                                 </button>
                                             </footer>
                                         </>
@@ -532,16 +498,16 @@ function Home() {
                         /* Empty state */
                         <div className="relative z-[1] flex flex-col items-center justify-center w-full h-full gap-4">
                             <div
-                                className="float-icon flex items-center justify-center w-[72px] h-[72px] rounded-[24px] border border-[rgba(99,102,241,0.35)]"
+                                className="float-icon flex items-center justify-center w-[72px] h-[72px] rounded-2xl border border-accent/35"
                                 style={{
                                     background: 'linear-gradient(135deg,rgba(99,102,241,0.15),rgba(139,92,246,0.1))',
                                     boxShadow: '0 0 30px rgba(99,102,241,0.2)'
                                 }}
                             >
-                                <MessageCircle size={32} color="#818cf8" />
+                                <MessageCircle size={32} className="text-accent-light" />
                             </div>
-                            <h1 className="text-xl font-bold tracking-tight text-[#f1f2f7]">No conversation selected</h1>
-                            <p className="text-sm text-[#4a4e6a] max-w-[280px] text-center leading-relaxed">
+                            <h1 className="text-xl font-bold tracking-tight text-text-primary">No conversation selected</h1>
+                            <p className="text-sm text-text-dim max-w-[280px] text-center leading-relaxed">
                                 Pick someone from your conversations to start messaging instantly.
                             </p>
                         </div>

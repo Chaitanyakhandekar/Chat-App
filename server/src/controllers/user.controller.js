@@ -9,6 +9,10 @@ import { generateTokens } from "../services/generateTokens.js";
 import { deleteFileFromCloudinary, uploadFileOnCloudinary } from "../services/cloudinary.service.js";
 import { generateOTP } from "../services/generateOTP.js";
 import { sendEmail } from "../services/brevoMail.service.js";
+import { getUserChatPartners } from "../sockets/utils/getUserChatPartners.js";
+import { getIO } from "../sockets/socketInstance.js";
+import { socketEvents } from "../constants/socketEvents.js";
+import { getUserSocket } from "../sockets/soketsMap.js";
 
 dotenv.config({ path: "./.env" })
 
@@ -118,6 +122,23 @@ const loginUser = asyncHandler(async (req, res) => {
   user.refreshToken = refreshToken;
 
   await user.save({ validateBeforeSave: false })
+
+  const partners = await getUserChatPartners(user._id)
+
+  const io = getIO()
+
+  let onlineUsers = []
+
+  if (partners) {
+    for (let partner of partners) {
+      if (getUserSocket(partner.toString())) {
+        io.to(partner.toString()).emit(socketEvents.USER_ONLINE, user?._id)
+        // console.log("Emitted Online Status to : ",partner.toString())
+        onlineUsers.push(partner.toString())
+      }
+    }
+    io.to(user._id.toString()).emit(socketEvents.ONLINE_USERS, onlineUsers)
+  }
 
   return res
     .status(200)
@@ -909,6 +930,25 @@ const searchUsers = asyncHandler(async (req, res) => {
 
 })
 
+const getOnlinePartners = asyncHandler(async (req, res) => {
+
+  const partners = await getUserChatPartners(req.user._id)
+
+  let onlineUsers = []
+
+  for (let partner of partners) {
+    if (getUserSocket(partner.toString())) {
+      onlineUsers.push(partner.toString())
+    }
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, onlineUsers, "Online Users Fetched Successfully.")
+    )
+
+})
 
 export {
   registerUser,
@@ -929,5 +969,6 @@ export {
   resendEmailVerification,
   getAllUsers,
   authMe,
-  searchUsers
+  searchUsers,
+  getOnlinePartners
 }
