@@ -13,7 +13,7 @@ import { getUserChatPartners } from "../sockets/utils/getUserChatPartners.js";
 import { getIO } from "../sockets/socketInstance.js";
 import { socketEvents } from "../constants/socketEvents.js";
 import { getUserSocket } from "../sockets/soketsMap.js";
-import { createFriendRequest } from "../services/request.service.js";
+import { createFriendRequest, getUserRequestsService } from "../services/request.service.js";
 
 
 /**
@@ -22,7 +22,7 @@ import { createFriendRequest } from "../services/request.service.js";
  * @access User
  * @param Id
  */
-const sendFriendReuest = asyncHandler(async (req, res) => {
+export const sendFriendReuest = asyncHandler(async (req, res) => {
 
     const friendId = req.params.id;
 
@@ -35,6 +35,25 @@ const sendFriendReuest = asyncHandler(async (req, res) => {
 
 })
 
-export {
-    sendFriendReuest
-}
+/**
+ * @description Controller to Fetch all Pending user requests
+ * @method GET
+ * @access User
+ * @param Id
+ */
+export const getUserRequests = asyncHandler(async (req, res) => {
+
+    const requests = await getUserRequestsService(req.user._id)
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, requests, "All Requests Fetched Successfully.")
+        )
+
+})
+
+// export {
+//     sendFriendReuest,
+//     getUserRequests
+// }

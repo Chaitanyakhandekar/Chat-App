@@ -11,10 +11,11 @@ import { Request } from "../models/request.model.js"
 
 /**
  * @description Service For Creating New Friend Request
+ * @access User
  * @param {ObjectId} friendId
  * @returns Request Object
  */
-export const createFriendRequest = async (userId, friendId) => {
+const createFriendRequest = async (userId, friendId) => {
 
     const friend = await isUserExists(friendId)
 
@@ -35,6 +36,35 @@ export const createFriendRequest = async (userId, friendId) => {
 
 }
 
-// export {
-//     createFriendRequest
-// }
+/**
+ * @description Service for fetching all pending requests of user
+ * @access User
+ * @param {ObjectId} userId 
+ * @returns Array of Request Objects
+ */
+const getUserRequestsService = async (userId) => {
+
+    const user = await isUserExists(userId)
+
+    const requests = await Request.aggregate([
+        {
+            $match: {
+                receiver: new mongoose.Types.ObjectId(user._id),
+                status: "pending"
+            }
+        },
+        {
+            $sort: {
+                createdAt: -1
+            }
+        }
+    ])
+
+    return requests
+
+}
+
+export {
+    createFriendRequest,
+    getUserRequestsService
+}
