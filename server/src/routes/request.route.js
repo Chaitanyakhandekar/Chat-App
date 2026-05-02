@@ -9,6 +9,6 @@ import {
 const router = Router()
 
 router.route("/friend-request/:id").post(userAuth, sendFriendReuest)
-router.route("/get/:id").get(userAuth, getUserRequests)
+router.route("/my").get(userAuth, getUserRequests)
 
 export default router;

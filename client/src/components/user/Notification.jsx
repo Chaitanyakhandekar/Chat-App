@@ -91,123 +91,72 @@
 
 
 import { X } from "lucide-react"
-import React, { useState } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import NotificationCard from "./NotificationCard"
-
-// ─── Dummy data ────────────────────────────────────────────────────────────────
-// Replace with real data fetched from your API (GET /notifications?receiver=userId)
-
-const DUMMY_NOTIFICATIONS = [
-  {
-    _id: "notif_1",
-    type: "message",
-    isRead: false,
-    content: "Hey, did you push the latest build? I can't find it on the branch.",
-    createdAt: new Date(Date.now() - 4 * 60 * 1000).toISOString(),
-    entity: "chat_abc",
-    renderUrl: "/chat/chat_abc",
-    sender: { _id: "user_1" },
-    receiver: { _id: "me" },
-  },
-  {
-    _id: "notif_2",
-    type: "group_add",
-    isRead: false,
-    content: "Priya added you to Design Sync — 6 members.",
-    createdAt: new Date(Date.now() - 18 * 60 * 1000).toISOString(),
-    entity: "group_xyz",
-    renderUrl: "/chat/group_xyz",
-    sender: { _id: "user_2" },
-    receiver: { _id: "me" },
-    isGroupNotification: true,
-  },
-  {
-    _id: "notif_3",
-    type: "mention",
-    isRead: false,
-    content: "@you — can you review the PR before EOD? It's blocking the sprint.",
-    createdAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-    entity: "group_dev",
-    renderUrl: "/chat/group_dev",
-    sender: { _id: "user_3" },
-    receiver: { _id: "me" },
-    isGroupNotification: true,
-  },
-  {
-    _id: "notif_4",
-    type: "admin_promote",
-    isRead: false,
-    content: "You've been promoted to Admin in Project Hydra.",
-    createdAt: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
-    entity: "group_hydra",
-    renderUrl: "/chat/group_hydra",
-    sender: { _id: "user_4" },
-    receiver: { _id: "me" },
-    isGroupNotification: true,
-  },
-  {
-    _id: "notif_5",
-    type: "message",
-    isRead: true,
-    content: "Thanks for the help earlier, really saved the demo!",
-    createdAt: new Date(Date.now() - 26 * 3600 * 1000).toISOString(),
-    entity: "chat_def",
-    renderUrl: "/chat/chat_def",
-    sender: { _id: "user_5" },
-    receiver: { _id: "me" },
-  },
-  {
-    _id: "notif_6",
-    type: "mention",
-    isRead: true,
-    content: "@you — dropping the updated specs in the shared folder now.",
-    createdAt: new Date(Date.now() - 3 * 86400 * 1000).toISOString(),
-    entity: "group_design",
-    renderUrl: "/chat/group_design",
-    sender: { _id: "user_6" },
-    receiver: { _id: "me" },
-    isGroupNotification: true,
-  },
-]
-
-// Sender info keyed by user _id.
-// In production, populate this by populating sender in your notifications query:
-//   Notification.find({ receiver: userId }).populate("sender", "username avatar")
-const SENDER_INFO_MAP = {
-  user_1: { username: "Aryan Mehta",  avatar: "" },
-  user_2: { username: "Priya Sharma", avatar: "" },
-  user_3: { username: "Rohan Das",    avatar: "" },
-  user_4: { username: "Neha Joshi",   avatar: "" },
-  user_5: { username: "Kabir Singh",  avatar: "" },
-  user_6: { username: "Simran Kaur",  avatar: "" },
-}
+import { requestApi } from "../../api/request.api"
+import { userAuthStore } from "../../store/userStore"
+import { socket } from "../../socket/socket"
+import { socketEvents } from "../../constants/socketEvents"
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
 function Notification({ activePanel, setActivePanel }) {
-  const [notifications, setNotifications] = useState(DUMMY_NOTIFICATIONS)
+  const [requests, setRequests] = useState([])
+  const [loading, setLoading] = useState(true)
+  const user = userAuthStore((state) => state.user)
 
-  const unreadCount = notifications.filter(n => !n.isRead).length
+  // Fetch user requests
+  const fetchRequests = useCallback(async () => {
+    if (!user?._id) return
+    setLoading(true)
+    const response = await requestApi.getMyRequests(user._id)
+    if (response.success) {
+      setRequests(response.data || [])
+    }
+    setLoading(false)
+  }, [user?._id])
 
-  // Mark a single notification as read
-  function handleMarkRead(id) {
-    setNotifications(prev =>
-      prev.map(n => n._id === id ? { ...n, isRead: true } : n)
+  useEffect(() => {
+    fetchRequests()
+  }, [fetchRequests])
+
+  // Listen for new request socket event
+  useEffect(() => {
+    const handleNewRequest = (newRequest) => {
+      console.log("New request received:", newRequest)
+      setRequests(prev => [newRequest, ...prev])
+    }
+
+    socket.on(socketEvents.NEW_REQUEST, handleNewRequest)
+    return () => {
+      socket.off(socketEvents.NEW_REQUEST, handleNewRequest)
+    }
+  }, [])
+
+  const unreadCount = requests.filter(r => r.status === "pending").length
+
+  // Handle accepting a request
+  const handleAcceptRequest = async (requestId) => {
+    // TODO: Implement accept request API call when backend adds the endpoint
+    console.log("Accept request:", requestId)
+    setRequests(prev =>
+      prev.map(r => r._id === requestId ? { ...r, status: "accepted" } : r)
     )
-    // TODO: PATCH /api/notifications/:id/read
   }
 
-  // Mark all as read
-  function handleMarkAllRead() {
-    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
-    // TODO: PATCH /api/notifications/read-all
+  // Handle rejecting a request
+  const handleRejectRequest = async (requestId) => {
+    // TODO: Implement reject request API call when backend adds the endpoint
+    console.log("Reject request:", requestId)
+    setRequests(prev =>
+      prev.map(r => r._id === requestId ? { ...r, status: "rejected" } : r)
+    )
   }
 
   // Navigate to the notification's context
-  function handleClick(notif) {
-    handleMarkRead(notif._id)
-    if (notif.renderUrl) {
-      // navigate(notif.renderUrl)  ← plug in your router here
+  const handleClick = (request) => {
+    if (request.status === "pending") {
+      handleAcceptRequest(request._id)
     }
     setActivePanel(null)
   }
@@ -218,7 +167,7 @@ function Notification({ activePanel, setActivePanel }) {
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-5 pt-6 pb-4">
         <div className="flex items-center gap-2">
-          <span className="text-[15px] font-bold">Notifications</span>
+          <span className="text-[15px] font-bold">Friend Requests</span>
           {unreadCount > 0 && (
             <span
               style={{
@@ -243,41 +192,34 @@ function Notification({ activePanel, setActivePanel }) {
 
       <div className="panel-divider" />
 
-      {/* ── Mark all read ── */}
-      {unreadCount > 0 && (
-        <div className="flex justify-end px-4 pt-2 pb-1">
-          <button
-            onClick={handleMarkAllRead}
-            style={{
-              fontSize: 11,
-              color: "rgba(196,198,231,0.45)",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: "3px 6px",
-              borderRadius: 5,
-              transition: "color 0.15s",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.color = "#7c83e5" }}
-            onMouseLeave={e => { e.currentTarget.style.color = "rgba(196,198,231,0.45)" }}
-          >
-            Mark all as read
-          </button>
-        </div>
-      )}
-
       {/* ── Notification list ── */}
       <div className="flex-1 overflow-y-auto px-2 custom-scroll">
-        {notifications.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center h-full" style={{ color: "rgba(196,198,231,0.3)", fontSize: 13 }}>
+            Loading...
+          </div>
+        ) : requests.length === 0 ? (
           <EmptyState />
         ) : (
-          notifications.map(notif => (
+          requests.map(request => (
             <NotificationCard
-              key={notif._id}
-              notification={notif}
-              senderInfo={SENDER_INFO_MAP[notif.sender._id]}
-              onClick={handleClick}
-              onMarkRead={handleMarkRead}
+              key={request._id}
+              notification={{
+                _id: request._id,
+                type: "friend_request",
+                isRead: request.status !== "pending",
+                content: `${request.sender?.username || "Someone"} sent you a friend request`,
+                createdAt: request.createdAt,
+                sender: request.sender,
+                status: request.status
+              }}
+              senderInfo={request.sender ? {
+                username: request.sender.username,
+                avatar: request.sender.avtar
+              } : null}
+              onClick={() => handleClick(request)}
+              onAccept={() => handleAcceptRequest(request._id)}
+              onReject={() => handleRejectRequest(request._id)}
             />
           ))
         )}

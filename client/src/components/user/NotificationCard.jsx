@@ -1,5 +1,5 @@
 import React from "react"
-import { UserPlus, AtSign, MessageCircle, ShieldCheck, Bell } from "lucide-react"
+import { UserPlus, AtSign, MessageCircle, ShieldCheck, Bell, Check, X } from "lucide-react"
 
 // ─── Config ────────────────────────────────────────────────────────────────────
 
@@ -27,6 +27,12 @@ const NOTIFICATION_CONFIG = {
     color: "#e5c87c",          // amber accent
     bg: "rgba(229,200,124,0.12)",
     label: "Promoted to Admin",
+  },
+  friend_request: {
+    icon: UserPlus,
+    color: "#7ce5c4",          // teal accent
+    bg: "rgba(124,229,196,0.12)",
+    label: "Friend Request",
   },
   default: {
     icon: Bell,
@@ -99,9 +105,11 @@ function Avatar({ src, username, size = 36 }) {
  *  senderInfo    – { username, avatar } resolved from sender ObjectId
  *  onClick       – called when card is clicked
  *  onMarkRead    – called when "mark read" dot is clicked
+ *  onAccept      – called when accepting a friend request
+ *  onReject      – called when rejecting a friend request
  */
-function NotificationCard({ notification, senderInfo, onClick, onMarkRead }) {
-  const { type, content, isRead, createdAt, renderUrl } = notification
+function NotificationCard({ notification, senderInfo, onClick, onMarkRead, onAccept, onReject }) {
+  const { type, content, isRead, createdAt, renderUrl, status } = notification
   const config = NOTIFICATION_CONFIG[type] ?? NOTIFICATION_CONFIG.default
   const Icon = config.icon
 
@@ -223,6 +231,70 @@ function NotificationCard({ notification, senderInfo, onClick, onMarkRead }) {
           {content}
         </p>
 
+        {/* Friend request actions */}
+        {type === "friend_request" && status === "pending" && (
+          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onAccept?.()
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                padding: "5px 12px",
+                borderRadius: 6,
+                background: "rgba(124,229,196,0.15)",
+                color: "#7ce5c4",
+                border: "1px solid rgba(124,229,196,0.3)",
+                cursor: "pointer",
+                fontSize: 11.5,
+                fontWeight: 600,
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = "rgba(124,229,196,0.25)"
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = "rgba(124,229,196,0.15)"
+              }}
+            >
+              <Check size={12} />
+              Accept
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onReject?.()
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                padding: "5px 12px",
+                borderRadius: 6,
+                background: "rgba(229,124,154,0.15)",
+                color: "#e57c9a",
+                border: "1px solid rgba(229,124,154,0.3)",
+                cursor: "pointer",
+                fontSize: 11.5,
+                fontWeight: 600,
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = "rgba(229,124,154,0.25)"
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = "rgba(229,124,154,0.15)"
+              }}
+            >
+              <X size={12} />
+              Reject
+            </button>
+          </div>
+        )}
+
         {/* CTA link if renderUrl exists */}
         {renderUrl && (
           <span
@@ -241,7 +313,7 @@ function NotificationCard({ notification, senderInfo, onClick, onMarkRead }) {
       </div>
 
       {/* ── Unread dot (click to mark read) ── */}
-      {!isRead && (
+      {!isRead && status !== "pending" && (
         <button
           onClick={handleMarkRead}
           title="Mark as read"

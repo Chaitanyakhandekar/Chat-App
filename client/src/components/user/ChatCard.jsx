@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useContext } from 'react'
 import { authContext } from '../../context/AuthProvider.jsx'
 import { messageApi } from '../../api/message.api.js';
@@ -10,6 +10,8 @@ import { useNavigate } from 'react-router-dom';
 import { useGroupChatStore } from '../../store/useGroupChatStore.js';
 import { getTime } from '../../services/getTime.js';
 import { groupApi } from '../../api/group.api.js';
+import { requestApi } from '../../api/request.api.js';
+import { UserPlus, Check } from 'lucide-react';
 
 const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount, setIsGroupChat } = useChatStore.getState();
 
@@ -38,6 +40,17 @@ function ChatCard({
     const {setGroupChat,groupChat} = useGroupChatStore();
     const user1 = userAuthStore().user;
     const { scrollToBottomInChat, setScrollToBottomInChat } = useAssetsStore()
+    const [requestSent, setRequestSent] = useState(false)
+    const [requestLoading, setRequestLoading] = useState(false)
+
+    const sendFriendRequest = async () => {
+        setRequestLoading(true)
+        const response = await requestApi.sendFriendRequest(user._id)
+        if (response.success) {
+            setRequestSent(true)
+        }
+        setRequestLoading(false)
+    }
 
     const createSingleChat = async () => {
         const response = await chatApi.createSingleChat(user._id);
@@ -131,10 +144,11 @@ function ChatCard({
             `}</style>
 
             <div
-                onClick={handleChatCardClick}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer mb-0.5 transition-all duration-[180ms] hover:bg-white/[0.05] active:bg-accent-glow"
+                onClick={!searchMode ? handleChatCardClick : undefined}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer mb-0.5 transition-all duration-[180ms] hover:bg-white/[0.05] active:bg-accent-glow ${searchMode ? 'cursor-default' : ''}`}
                 style={{ fontFamily: "'Sora', sans-serif" }}
             >
+
                 {/* Avatar */}
                 <div className="relative flex-shrink-0 w-11 h-11">
                     <img
@@ -159,11 +173,13 @@ function ChatCard({
                         <div className="text-[13.5px] font-semibold text-text-primary truncate">
                             {!chat?.isGroupChat &&  user?.username || chat?.groupName}
                         </div>
-                        <p className="text-[0.6rem] text-text-dim">{
-                                chat?.lastMessage ? getTime(chat?.lastMessage.createdAt) : ""
-                            }</p>
+                        {!searchMode && (
+                            <p className="text-[0.6rem] text-text-dim">{
+                                    chat?.lastMessage ? getTime(chat?.lastMessage.createdAt) : ""
+                                }</p>
+                        )}
                     </span>
-                    {typing ? (
+                    {!searchMode && typing ? (
                         <span className="flex items-center gap-1 text-[11.5px] text-success truncate">
                             <span className="flex gap-[2px] items-center">
                                 <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-success inline-block" />
@@ -172,18 +188,52 @@ function ChatCard({
                             </span>
                             {chat.isGroupChat ? `${chatUsersInfo[chat._id]?.typers[0]?.username} ` : ""} typing
                         </span>
-                    ) : (
+                    ) : !searchMode ? (
                         <span className={`text-[11.5px] text-text-muted truncate ${newMessages > 0 ? "text-accent-light" : ""}`}>
                             {
                                  newMessages <=0 && chat?.lastMessage ? chat?.lastMessage.message :
                                  newMessages > 0 && `${newMessages <= 9 ? newMessages : "9+"} new messages`
                             }
                         </span>
-                    )}
+                    ) : null}
                 </div>
 
+                {/* Add Friend Button (shown in search mode) */}
+                {searchMode && (
+                    <button
+                        onClick={sendFriendRequest}
+                        disabled={requestSent || requestLoading}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200"
+                        style={{
+                            background: requestSent 
+                                ? "rgba(124,229,196,0.15)" 
+                                : "rgba(124,131,229,0.15)",
+                            color: requestSent ? "#7ce5c4" : "#7c83e5",
+                            border: requestSent 
+                                ? "1px solid rgba(124,229,196,0.3)" 
+                                : "1px solid rgba(124,131,229,0.3)",
+                            cursor: requestSent || requestLoading ? "default" : "pointer",
+                            opacity: requestLoading ? 0.6 : 1
+                        }}
+                    >
+                        {requestLoading ? (
+                            "Sending..."
+                        ) : requestSent ? (
+                            <>
+                                <Check size={12} />
+                                Sent
+                            </>
+                        ) : (
+                            <>
+                                <UserPlus size={12} />
+                                Add
+                            </>
+                        )}
+                    </button>
+                )}
+
                 {/* Time + unread badge */}
-                {/* {newMessages > 0 && (
+                {!searchMode && newMessages > 0 && (
                     <div className="flex flex-col items-end gap-[5px] flex-shrink-0">
                         {time && (
                             <span className="chat-card-time text-[10.5px] text-text-dim tracking-[-0.3px]">
@@ -197,7 +247,7 @@ function ChatCard({
                             {newMessages}
                         </div>
                     </div>
-                )} */}
+                )}
             </div>
         </>
     )
