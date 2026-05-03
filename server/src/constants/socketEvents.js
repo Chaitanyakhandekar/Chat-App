@@ -25,6 +25,8 @@ export const socketEvents = {
     ADD_MEMBER_IN_GROUP:"add_member_in_group",
     MARK_MEMBER_AS_ADMIN:  "mark_member_as_admin",
     UNMARK_MEMBER_AS_ADMIN:"unmark_member_as_admin",
-    NEW_NOTIFICATION:"new_notification"
-    
+    NEW_NOTIFICATION:"new_notification",
+    NEW_REQUEST:"new_request",
+    ACCEPT_REQUEST:"accept_request",
+    REJECT_REQUEST:"reject_request"
 }

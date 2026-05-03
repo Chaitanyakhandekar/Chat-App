@@ -38,6 +38,8 @@ import SettingsPanel from '../../components/user/Settings.jsx'
 import ChatList from '../../components/user/ChatList.jsx'
 import GroupInfo from '../../components/user/GroupInfo.jsx'
 import Sidebar from './Sidebar.jsx'
+import { useRequest } from '../../hooks/useRequest.jsx'
+
 
 function Home() {
 
@@ -49,6 +51,7 @@ function Home() {
     const [activePanel, setActivePanel] = useState(null)
 
     const { user } = userAuthStore()
+    const { fetchRequests } = useRequest()
 
     const users = useChatStore(state => state.userChats)
     const setUsers = useChatStore(state => state.setUserChats)
@@ -99,6 +102,10 @@ function Home() {
         chats.forEach((chat) => {
             incrementNewMessagesCountByN(chat._id, chat.unreadMessagesCount)
         })
+    }
+
+    const getMyRequests = async () => {
+        await fetchRequests()
     }
 
     const getAllUsers = async () => {
@@ -196,6 +203,7 @@ function Home() {
             socket.emit(socketEvents.GET_ONLINE_STATUS);
         }
         getAllUsers();
+        getMyRequests();
         getOnlineUsers();
         // Request online status after fetching users
 
@@ -229,6 +237,7 @@ function Home() {
         }
 
     }, [activePanel])
+
     useEffect(() => {
         console.log("Scroll to bottom in chat:", scrollToBottomInChat);
         if (scrollToBottomInChat) {

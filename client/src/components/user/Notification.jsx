@@ -4,39 +4,39 @@
 // function Notification({activePanel,setActivePanel,chatUsersInfo,newGroupNotication}) {
 
 //              return <div className="slide-in-panel flex flex-col h-full">
-    
+
 //                 <div className="flex items-center justify-between px-5 pt-6 pb-4">
 //                   <span className="text-[15px] font-bold">
 //                     Notifications
 //                   </span>
-    
+
 //                   <button
 //                     onClick={() => setActivePanel(null)}
 //                   >
 //                     <X size={16}/>
 //                   </button>
 //                 </div>
-    
+
 //                 <div className="panel-divider"/>
-    
+
 //                 <div className="flex-1 overflow-y-auto px-3 custom-scroll">
-    
+
 //                   {Object.entries(chatUsersInfo)
 //                     .filter(([,c]) => c?.newMessages > 0)
 //                     .map(([chatId, info]) => {
-    
+
 //                       const chat =
 //                         users?.find(
 //                           c => c._id === chatId
 //                         )
-    
+
 //                       if(!chat) return null
-    
+
 //                       const otherUser =
 //                         chat.participants[0]._id === user._id
 //                           ? chat.participants[1]
 //                           : chat.participants[0]
-    
+
 //                       return (
 //                         <div
 //                           key={chatId}
@@ -45,21 +45,21 @@
 //                             setActivePanel(null)
 //                           }
 //                         >
-    
+
 //                           <img
 //                             src={otherUser.avtar}
 //                             className="w-9 h-9 rounded-full"
 //                           />
-    
+
 //                           <div>
 //                             {otherUser.username}
 //                           </div>
-    
+
 //                         </div>
 //                       )
-    
+
 //                     })}
-    
+
 //                   {
 //                     newGroupNotication &&
 //                     <div className="notif-item unread">
@@ -74,11 +74,11 @@
 //                       </div>
 //                     </div>
 //                   }
-    
+
 //                 </div>
-    
+
 //               </div>
-  
+
 // }
 
 // export default Notification
@@ -97,6 +97,7 @@ import { requestApi } from "../../api/request.api"
 import { userAuthStore } from "../../store/userStore"
 import { socket } from "../../socket/socket"
 import { socketEvents } from "../../constants/socketEvents"
+import { useChatStore } from "../../store/useChatStore"
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
@@ -104,14 +105,16 @@ function Notification({ activePanel, setActivePanel }) {
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const user = userAuthStore((state) => state.user)
+  const { updateNotificationsCount } = useChatStore()
 
   // Fetch user requests
   const fetchRequests = useCallback(async () => {
     if (!user?._id) return
     setLoading(true)
-    const response = await requestApi.getMyRequests(user._id)
+    const response = await requestApi.getMyRequests()
     if (response.success) {
       setRequests(response.data || [])
+      updateNotificationsCount(response.data.length)
     }
     setLoading(false)
   }, [user?._id])
