@@ -39,6 +39,7 @@ import ChatList from '../../components/user/ChatList.jsx'
 import GroupInfo from '../../components/user/GroupInfo.jsx'
 import Sidebar from './Sidebar.jsx'
 import { useRequest } from '../../hooks/useRequest.jsx'
+import { useNotification } from '../../hooks/useNotification.jsx'
 
 
 function Home() {
@@ -52,6 +53,7 @@ function Home() {
 
     const { user } = userAuthStore()
     const { fetchRequests } = useRequest()
+    const { fetchNotifications } = useNotification()
 
     const users = useChatStore(state => state.userChats)
     const setUsers = useChatStore(state => state.setUserChats)
@@ -104,8 +106,8 @@ function Home() {
         })
     }
 
-    const getMyRequests = async () => {
-        await fetchRequests()
+    const getMyNotifications = async () => {
+        await fetchNotifications()
     }
 
     const getAllUsers = async () => {
@@ -203,7 +205,7 @@ function Home() {
             socket.emit(socketEvents.GET_ONLINE_STATUS);
         }
         getAllUsers();
-        getMyRequests();
+        getMyNotifications();
         getOnlineUsers();
         // Request online status after fetching users
 

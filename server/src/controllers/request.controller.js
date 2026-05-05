@@ -14,6 +14,7 @@ import { getIO } from "../sockets/socketInstance.js";
 import { socketEvents } from "../constants/socketEvents.js";
 import { getUserSocket } from "../sockets/soketsMap.js";
 import { createFriendRequest, getUserRequestsService } from "../services/request.service.js";
+import { createNotificationService } from "../services/notification.service.js";
 
 
 /**
