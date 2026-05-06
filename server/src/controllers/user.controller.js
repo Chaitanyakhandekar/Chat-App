@@ -900,20 +900,53 @@ const searchUsers = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Search Query is Required.")
   }
 
-  const users = await User.find(
+  // const users = await User.find(
+  //   {
+  //     $and: [
+  //       { _id: { $ne: req.user._id } },
+  //       {
+  //         $or: [
+  //           { username: { $regex: query, $options: "i" } },
+  //           { name: { $regex: query, $options: "i" } },
+  //           { email: { $regex: query, $options: "i" } }
+  //         ]
+  //       }
+  //     ]
+  //   }
+  // ).select("-password -refreshToken");
+
+  const users = await User.aggregate([
     {
-      $and: [
-        { _id: { $ne: req.user._id } },
-        {
-          $or: [
-            { username: { $regex: query, $options: "i" } },
-            { name: { $regex: query, $options: "i" } },
-            { email: { $regex: query, $options: "i" } }
-          ]
-        }
-      ]
+      $match: {
+        $and: [
+          { _id: { $ne: req.user._id } },
+          {
+            $or: [
+              { username: { $regex: query, $options: "i" } },
+              { name: { $regex: query, $options: "i" } },
+              { email: { $regex: query, $options: "i" } }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      $lookup: {
+        from: "chats",
+        localField: "_id",
+        foreignField: "participants",
+        as: "chats",
+      }
+    },
+    {
+      $project: {
+        name: 1,
+        username: 1,
+        avatar: 1,
+        chats: "$chats"
+      }
     }
-  ).select("-password -refreshToken");
+  ])
 
   if (!users.length) {
     return res

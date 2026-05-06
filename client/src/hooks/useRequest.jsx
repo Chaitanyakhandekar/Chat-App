@@ -24,11 +24,23 @@ export const useRequest = () => {
             setRequests(response.data)
             updateNotificationsCount(response.data.length)
         }
-        setLoading(false)
+        setLoading(false);
     }
 
     const acceptRequest = async (requestId) => {
-        const response = await requestApi;
+        const response = await requestApi.acceptRequest(requestId)
+
+        if (response.success) {
+            toast.success(response.message)
+        }
+    }
+
+    const rejectRequest = async (requestId) => {
+        const response = await requestApi.rejectRequest(requestId)
+
+        if (response.success) {
+            toast.success(response.message)
+        }
     }
 
 
@@ -38,6 +50,7 @@ export const useRequest = () => {
         setLoading,
         createGroup,
         fetchRequests,
-        acceptRequest
+        acceptRequest,
+        rejectRequest
     }
 }
