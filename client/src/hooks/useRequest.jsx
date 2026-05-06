@@ -27,12 +27,17 @@ export const useRequest = () => {
         setLoading(false)
     }
 
+    const acceptRequest = async (requestId) => {
+        const response = await requestApi;
+    }
+
 
     return {
 
         loading,
         setLoading,
         createGroup,
-        fetchRequests
+        fetchRequests,
+        acceptRequest
     }
 }

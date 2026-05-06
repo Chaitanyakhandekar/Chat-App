@@ -11,6 +11,7 @@ import { Request } from "../models/request.model.js"
 import { createNotificationService } from "./notification.service.js"
 import { isRequestExists } from "../utils/document existance check/request.js"
 import { request } from "express"
+import { createSingleChatService } from "./chat.services.js"
 
 /**
  * @description Service For Creating New Friend Request
@@ -100,6 +101,12 @@ const getUserRequestsService = async (userId) => {
 const acceptRequestService = async (requestId) => {
 
     const request = await isRequestExists(requestId)
+
+    const newChat = await createSingleChatService(request.receiver, request.sender);
+
+    if (!newChat) {
+        throw new ApiError(500, "Server Error While Creating New Chat.")
+    }
 
     request.status = "accepted"
 

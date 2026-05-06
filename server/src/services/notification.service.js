@@ -85,6 +85,19 @@ const getUserNotificationsService = async (userId) => {
             }
         },
         {
+            $lookup: {
+                from: "requests",
+                localField: "entity",
+                foreignField: "_id",
+                as: "requestDetails",
+            }
+        },
+        {
+            $match: {
+                "requestDetails.status": "pending",
+            }
+        },
+        {
             $project: {
                 readBy: 0
             }
