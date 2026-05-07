@@ -7,11 +7,14 @@ import { requestApi } from '../api/request.api'
 export const useRequest = () => {
 
     const { setNewGroupInfo, GroupInfo, newGroupNotication, setNewGroupNotification, participants, resetParticipant } = useGroupChatStore()
+
     const { universalInfo, updateNotificationsCount, incrementNotificationCount, setRequests, requests } = useChatStore()
+
     const [loading, setLoading] = React.useState(false)
 
     const [sendingRequest, setSendingRequest] = useState(false);
     const [requestSent, setRequestSent] = useState(false);
+
 
 
     const sendFriendRequest = async (friendId) => {
@@ -41,17 +44,17 @@ export const useRequest = () => {
     const acceptRequest = async (requestId) => {
         const response = await requestApi.acceptRequest(requestId)
 
-        if (response.success) {
-            toast.success(response.message)
-        }
+        // if (response.success) {
+        //     toast.success(response.message)
+        // }
     }
 
     const rejectRequest = async (requestId) => {
         const response = await requestApi.rejectRequest(requestId)
 
-        if (response.success) {
-            toast.success(response.message)
-        }
+        // if (response.success) {
+        //     toast.success(response.message)
+        // }
     }
 
 

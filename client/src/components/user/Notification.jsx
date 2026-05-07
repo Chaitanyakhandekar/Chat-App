@@ -98,6 +98,7 @@ import { userAuthStore } from "../../store/userStore"
 import { socket } from "../../socket/socket"
 import { socketEvents } from "../../constants/socketEvents"
 import { useChatStore } from "../../store/useChatStore"
+import { useRequest } from "../../hooks/useRequest"
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
@@ -106,6 +107,7 @@ function Notification({ activePanel, setActivePanel }) {
   const [loading, setLoading] = useState(true)
   const user = userAuthStore((state) => state.user)
   const { updateNotificationsCount } = useChatStore()
+  const { acceptRequest, rejectRequest } = useRequest()
 
   // Fetch user requests
   const fetchRequests = useCallback(async () => {
@@ -140,7 +142,7 @@ function Notification({ activePanel, setActivePanel }) {
 
   // Handle accepting a request
   const handleAcceptRequest = async (requestId) => {
-    // TODO: Implement accept request API call when backend adds the endpoint
+    await acceptRequest(requestId)
     console.log("Accept request:", requestId)
     setRequests(prev =>
       prev.map(r => r._id === requestId ? { ...r, status: "accepted" } : r)
