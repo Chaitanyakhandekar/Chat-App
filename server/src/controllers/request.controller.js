@@ -13,7 +13,8 @@ import { getUserChatPartners } from "../sockets/utils/getUserChatPartners.js";
 import { getIO } from "../sockets/socketInstance.js";
 import { socketEvents } from "../constants/socketEvents.js";
 import { getUserSocket } from "../sockets/soketsMap.js";
-import { createFriendRequest, getUserRequestsService } from "../services/request.service.js";
+import { acceptRequestService, createFriendRequest, getUserRequestsService, rejectRequestService } from "../services/request.service.js";
+import { createNotificationService } from "../services/notification.service.js";
 
 
 /**
@@ -33,6 +34,12 @@ export const sendFriendReuest = asyncHandler(async (req, res) => {
 
     io.to(friendId.toString()).emit(socketEvents.NEW_REQUEST, newRequest)
 
+    return res
+        .status(201)
+        .json(
+            new ApiResponse(201, newRequest, "Friend Request Sent.")
+        )
+
 })
 
 /**
@@ -49,6 +56,46 @@ export const getUserRequests = asyncHandler(async (req, res) => {
         .status(200)
         .json(
             new ApiResponse(200, requests, "All Requests Fetched Successfully.")
+        )
+
+})
+
+/**
+ * @description Controller for accepting friend request
+ * @access User
+ * @method GET
+ * @param Id
+ */
+export const acceptFriendRequest = asyncHandler(async (req, res) => {
+
+    const requestId = req.params.id;
+
+    const acceptedRequest = await acceptRequestService(requestId)
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, acceptedRequest, "Request Accepted.")
+        )
+
+})
+
+/**
+ * @description Controller for rejecting friend request
+ * @access User
+ * @method GET
+ * @param Id
+ */
+export const rejectFriendRequest = asyncHandler(async (req, res) => {
+
+    const requestId = req.params.id;
+
+    const rejectedRequest = await rejectRequestService(friendId)
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, rejectedRequest, "Request Rejected.")
         )
 
 })

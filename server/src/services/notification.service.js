@@ -1,8 +1,8 @@
-import { isValidObjectId } from "mongoose"
+import mongoose, { isValidObjectId } from "mongoose"
 import { ApiError } from "../utils/apiUtils.js"
 import { isUserExists } from "../utils/document existance check/user.js"
 import { Notification } from "../models/notification.model.js"
-import { getGroupMembers } from "../sockets/utils/getGroupMembers"
+import { getGroupMembers } from "../sockets/utils/getGroupMembers.js"
 
 /**
  * @description Service for Creating new notification
@@ -16,51 +16,98 @@ import { getGroupMembers } from "../sockets/utils/getGroupMembers"
  * @param {String} renderUrl
  * @returns Notification Object
  */
-const createNotificationService = async (senderId,currentUserId,receivers=[],type,entityId,isGroupNotification=false,content,renderUrl="")=>{
+const createNotificationService = async (senderId, currentUserId, receivers = [], type, entityId, isGroupNotification = false, content, renderUrl = "") => {
 
     const sender = await isUserExists(senderId)
-    let groupMembers=[]
+    let groupMembers = []
 
-    if([type,content].some(field => !field || field && field.trim() === "")){
-        throw new ApiError(400,"Type and Content are Required Fields.")
+    if ([type, content].some(field => !field || field && field.trim() === "")) {
+        throw new ApiError(400, "Type and Content are Required Fields.")
     }
 
-    if(!isValidObjectId(entityId)){
-        throw new ApiError(400,"Invalid Entity Id.")
+    if (!isValidObjectId(entityId)) {
+        throw new ApiError(400, "Invalid Entity Id.")
     }
 
-    if(isGroupNotification && !receivers.length){
-        receivers = await getGroupMembers(entityId)     
+    if (isGroupNotification && !receivers.length) {
+        receivers = await getGroupMembers(entityId)
     }
 
-    if(!isGroupNotification && !receivers.length){
+    if (!isGroupNotification && !receivers.length) {
         receivers = [currentUserId]
     }
-    
+
     if (!receivers.length) {
         throw new ApiError(400, "No receivers found")
     }
 
-    receivers = receivers.filter(id => id.toString() !== sender_id.toString())
+    receivers = receivers.filter(id => id.toString() !== senderId.toString())
 
     const newNotification = await Notification.create({
-        sender:sender._id,
-        receivers:receivers,
-        entity:entityId,
+        sender: sender._id,
+        receivers: receivers,
+        entity: entityId,
         type,
         isGroupNotification,
         content,
         renderUrl
     })
 
-    if(!newNotification){
-        throw new ApiError(404,"Error While Creating Notification.")
+    if (!newNotification) {
+        throw new ApiError(404, "Error While Creating Notification.")
     }
 
+    // if (newNotification.isGroupNotification) {
+    //     return { newNotification, groupMembers };
+    // }
 
-    return {newNotification,groupMembers};
+    return newNotification;
+}
+
+/**
+ * @description Service to fetch all user notifications reguardless of read status.
+ * @access User
+ * @param {ObjectId} userId 
+ * @returns Array of notifications
+ */
+const getUserNotificationsService = async (userId) => {
+
+    const user = await isUserExists(userId)
+
+    const notifications = await Notification.aggregate([
+        {
+            $match: {
+                receivers: {
+                    $in: [
+                        new mongoose.Types.ObjectId(userId)
+                    ]
+                }
+            }
+        },
+        {
+            $lookup: {
+                from: "requests",
+                localField: "entity",
+                foreignField: "_id",
+                as: "requestDetails",
+            }
+        },
+        {
+            $match: {
+                "requestDetails.status": "pending",
+            }
+        },
+        {
+            $project: {
+                readBy: 0
+            }
+        }
+    ])
+
+    return notifications;
 }
 
 export {
-    createNotificationService
+    createNotificationService,
+    getUserNotificationsService
 }

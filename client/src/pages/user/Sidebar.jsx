@@ -15,6 +15,7 @@ import ChatList from "./../../components/user/ChatList.jsx"
 import GroupInfo from ".././../components/user/GroupInfo.jsx"
 import { useGroupChatStore } from "../../store/useGroupChatStore.js"
 import Notification from "../../components/user/Notification.jsx"
+import { useChatStore } from "../../store/useChatStore.js"
 
 function Sidebar({
   activePanel,
@@ -27,13 +28,15 @@ function Sidebar({
   totalUnread,
   user,
   hideOnMobile = false,
-  searchUsers=()=>{},
+  searchUsers = () => { },
   paramChatId = null
 }) {
 
   const togglePanel = (panel) =>
     setActivePanel(prev => prev === panel ? null : panel)
-      const {setNewGroupInfo,GroupInfo,newGroupNotication,setNewGroupNotification,resetParticipant,participants} = useGroupChatStore()
+  const { setNewGroupInfo, GroupInfo, newGroupNotication, setNewGroupNotification, resetParticipant, participants } = useGroupChatStore()
+
+  const { updateNotificationsCount, universalInfo } = useChatStore()
 
 
   // Nav button
@@ -49,9 +52,8 @@ function Sidebar({
           console.log("Clicked Panel :: ", participants)
         }}
         title={tooltip}
-        className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 group ${
-          active ? 'bg-accent-glow' : 'hover:bg-white/[0.03]'
-        }`}
+        className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 group ${active ? 'bg-accent-glow' : 'hover:bg-white/[0.03]'
+          }`}
         style={{
           border: active
             ? "1px solid rgba(99,102,241,0.4)"
@@ -110,7 +112,7 @@ function Sidebar({
         <NavIconBtn
           icon={Bell}
           panel="notifications"
-          badge={totalUnread}
+          badge={universalInfo.notifications}
           tooltip="Notifications"
         />
 
@@ -144,14 +146,14 @@ function Sidebar({
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent opacity-60" />
 
         {/* Notifications */}
-         {activePanel === "notifications" &&
-              <Notification
-              activePanel={activePanel}
-              setActivePanel={setActivePanel}
-              chatUsersInfo={chatUsersInfo}
-              newGroupNotication={newGroupNotication}
-              />
-          }
+        {activePanel === "notifications" &&
+          <Notification
+            activePanel={activePanel}
+            setActivePanel={setActivePanel}
+            chatUsersInfo={chatUsersInfo}
+            newGroupNotication={newGroupNotication}
+          />
+        }
 
         {/* Profile */}
         {activePanel === "profile" &&
@@ -202,18 +204,18 @@ function Sidebar({
         {(activePanel === null ||
           activePanel === "chats") && (
 
-          <ChatList
-            togglePanel={setActivePanel}
-            query={query}
-            setQuery={setQuery}
-            users={users}
-            setShowSidebar={setShowSidebar}
-            groupsOnly={false}
-            paramChatId={paramChatId}
-            searchUsers={searchUsers}
-          />
+            <ChatList
+              togglePanel={setActivePanel}
+              query={query}
+              setQuery={setQuery}
+              users={users}
+              setShowSidebar={setShowSidebar}
+              groupsOnly={false}
+              paramChatId={paramChatId}
+              searchUsers={searchUsers}
+            />
 
-        )}
+          )}
 
 
         {/* Group Info */}

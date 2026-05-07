@@ -16,7 +16,7 @@ import { validateAtleastOneField } from "../utils/fields validations/validateAtl
 import { isChatExists } from "../utils/document existance check/chat.js";
 import { getUserChatUsers, getUserChatUsersServer } from "./chat.controller.js";
 import { getUniqueMembers } from "../utils/getUniqueMembers.js";
-import { addMembertoGroupService, markMemberAsAdminService,unmarkMemberAsAdminService } from "../services/group.service.js";
+import { addMembertoGroupService, markMemberAsAdminService, unmarkMemberAsAdminService } from "../services/group.service.js";
 
 
 const getGroupMembers = asyncHandler(async (req, res) => {
@@ -38,17 +38,17 @@ const getGroupMembers = asyncHandler(async (req, res) => {
                 localField: "participants",
                 foreignField: "_id",
                 as: "participants",
-                let:{ admins: "$admins" },
-                pipeline:[
+                let: { admins: "$admins" },
+                pipeline: [
                     {
-                        $addFields:{
-                            isAdmin:{
-                                $cond:{
-                                    if:{
-                                        $in:["$_id", "$$admins"]
+                        $addFields: {
+                            isAdmin: {
+                                $cond: {
+                                    if: {
+                                        $in: ["$_id", "$$admins"]
                                     },
-                                    then:true,
-                                    else:false
+                                    then: true,
+                                    else: false
 
                                 }
                             }
@@ -56,8 +56,8 @@ const getGroupMembers = asyncHandler(async (req, res) => {
                     }
                 ]
             }
-        },   
-       
+        },
+
     ])
 
     if (!groupMembers.length) {
@@ -76,38 +76,38 @@ const getGroupMembers = asyncHandler(async (req, res) => {
 })
 
 
-const updateGroupChat = asyncHandler(async (req,res)=>{
+const updateGroupChat = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const {groupName, groupDescription} = req.body;
+    const { groupName, groupDescription } = req.body;
 
-    if(!isValidObjectId(id)){
+    if (!isValidObjectId(id)) {
         throw new ApiError(400, "Invalid GroupId")
     }
 
-    if(!validateAtleastOneField([groupName, groupDescription])){
+    if (!validateAtleastOneField([groupName, groupDescription])) {
         throw new ApiError(400, "At least one field is required")
     }
 
     let data = {}
 
-    if(groupName){
+    if (groupName) {
         data.groupName = groupName
     }
-    if(groupDescription){
+    if (groupDescription) {
         data.groupDescription = groupDescription
     }
 
     const updatedGroup = await Chat.findByIdAndUpdate(
         id,
         {
-            $set:data
+            $set: data
         },
         {
-            new:true
+            new: true
         }
     )
 
-    if(!updatedGroup){
+    if (!updatedGroup) {
         throw new ApiError(500, "Server Error While Updating Group Details.")
     }
 
@@ -117,40 +117,40 @@ const updateGroupChat = asyncHandler(async (req,res)=>{
 
 })
 
-const uploadGroupPicture = asyncHandler(async (req,res)=>{
+const uploadGroupPicture = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    if(!isValidObjectId(id)){
+    if (!isValidObjectId(id)) {
         throw new ApiError(400, "Invalid GroupId")
     }
 
-    if(!req.file){
+    if (!req.file) {
         throw new ApiError(400, "Group Picture is required.")
     }
 
-    console.log("File Path :: ",req.file)
+    console.log("File Path :: ", req.file)
 
     const uploadRes = await uploadFileOnCloudinary(req.file.path);
 
     // console.log("Cloudinary Upload Response :: ", uploadRes)
 
-    if(!uploadRes){
+    if (!uploadRes) {
         throw new ApiError(500, "Error While Uploading Group Picture.")
     }
 
     const group = await Chat.findByIdAndUpdate(
         id,
         {
-            $set:{
+            $set: {
                 groupPicture: uploadRes.secure_url
             }
         },
         {
-            new:true
+            new: true
         }
     )
-    
-    if(!group){
+
+    if (!group) {
         throw new ApiError(500, "Server Error While Updating Group Picture.")
     }
 
@@ -159,14 +159,14 @@ const uploadGroupPicture = asyncHandler(async (req,res)=>{
     )
 })
 
-const getNonGroupMembers = asyncHandler(async (req,res)=>{
+const getNonGroupMembers = asyncHandler(async (req, res) => {
 
     const groupId = req.params.id
 
     const group = await isChatExists(groupId)
 
-    if(!group){
-        throw new ApiError(400,"Invalid GroupId.")
+    if (!group) {
+        throw new ApiError(400, "Invalid GroupId.")
     }
 
     const arr = await getUserChatUsersServer(req.user._id)
@@ -176,27 +176,27 @@ const getNonGroupMembers = asyncHandler(async (req,res)=>{
     // console.log("Array ::::: ",arr)
     // console.log("Array ::::: ",chatUsers)
 
-    const users1 = getUniqueMembers(chatUsers,group.participants.filter(u=>u.toString() !== req.user._id.toString()))
+    const users1 = getUniqueMembers(chatUsers, group.participants.filter(u => u.toString() !== req.user._id.toString()))
     let u = users1.map(u1 => new mongoose.Types.ObjectId(u1))
 
     const users = await User.aggregate([
         {
-            $match:{
-                _id:{
-                    $in:u
+            $match: {
+                _id: {
+                    $in: u
                 }
             }
         }
     ])
 
-    if(!users.length){
-        throw new ApiError(400,"no users")
+    if (!users.length) {
+        throw new ApiError(400, "no users")
     }
 
     return res
         .status(200)
         .json(
-            new ApiResponse(200,users,"Fetched Users Successfully.")
+            new ApiResponse(200, users, "Fetched Users Successfully.")
         )
 })
 
@@ -206,27 +206,27 @@ const getNonGroupMembers = asyncHandler(async (req,res)=>{
  * @method POST
  * @access Admin Only
  */
-const addMemberToGroup = asyncHandler(async (req,res)=>{
+const addMemberToGroup = asyncHandler(async (req, res) => {
 
-    const {groupId,memberId} = req.body
-    
-    const { newIndicator, groupMenbers,newMember} = await addMembertoGroupService( groupId, req.user, memberId )
+    const { groupId, memberId } = req.body
 
-    if(!groupMenbers || !newIndicator){
-        throw new ApiError(500,"Error While Adding Member to Group.")
+    const { newIndicator, groupMenbers, newMember } = await addMembertoGroupService(groupId, req.user, memberId)
+
+    if (!groupMenbers || !newIndicator) {
+        throw new ApiError(500, "Error While Adding Member to Group.")
     }
 
     const io = getIO()
 
-    for(let member of groupMenbers){
-        io.to(member._id.toString()).emit(socketEvents.NEW_MESSAGE , newIndicator)
-        io.to(member._id.toString()).emit(socketEvents.ADD_MEMBER_IN_GROUP , newMember )
+    for (let member of groupMenbers) {
+        io.to(member._id.toString()).emit(socketEvents.NEW_MESSAGE, newIndicator)
+        io.to(member._id.toString()).emit(socketEvents.ADD_MEMBER_IN_GROUP, newMember)
     }
 
     return res
         .status(200)
         .json(
-            new ApiResponse(200,newIndicator,"Member Added To Group Successfully.")
+            new ApiResponse(200, newIndicator, "Member Added To Group Successfully.")
         )
 })
 
@@ -236,30 +236,30 @@ const addMemberToGroup = asyncHandler(async (req,res)=>{
  * @method POST
  * @access Admin Only
  */
-const markMemberAsAdmin = asyncHandler(async (req,res)=>{
+const markMemberAsAdmin = asyncHandler(async (req, res) => {
 
-    const {groupId,memberId} = req.body
+    const { groupId, memberId } = req.body
 
-    const {group,newIndicator,groupMenbers} = await markMemberAsAdminService(groupId,memberId)
+    const { group, newIndicator, groupMenbers } = await markMemberAsAdminService(groupId, memberId)
 
     const io = getIO()
 
-    if(newIndicator){
-        for(let member of groupMenbers){
-            io.to(member._id.toString()).emit(socketEvents.NEW_MESSAGE,newIndicator)
-            io.to(member._id.toString()).emit(socketEvents.MARK_MEMBER_AS_ADMIN,{memberId})
+    if (newIndicator) {
+        for (let member of groupMenbers) {
+            io.to(member._id.toString()).emit(socketEvents.NEW_MESSAGE, newIndicator)
+            io.to(member._id.toString()).emit(socketEvents.MARK_MEMBER_AS_ADMIN, { memberId })
         }
     }
 
     return res
         .status(200)
         .json(
-            new ApiResponse(200,{
+            new ApiResponse(200, {
                 memberId,
-                message:"User Marked as Admin"
-            },"Member Marked As Admin.")
+                message: "User Marked as Admin"
+            }, "Member Marked As Admin.")
         )
-    
+
 })
 
 
@@ -268,30 +268,30 @@ const markMemberAsAdmin = asyncHandler(async (req,res)=>{
  * @method POST
  * @access Admin Only
  */
-const unmarkMemberAsAdmin = asyncHandler(async (req,res)=>{
+const unmarkMemberAsAdmin = asyncHandler(async (req, res) => {
 
-    const {groupId,memberId} = req.body
+    const { groupId, memberId } = req.body
 
-    const {group,newIndicator,groupMenbers} = await unmarkMemberAsAdminService(groupId,memberId)
+    const { group, newIndicator, groupMenbers } = await unmarkMemberAsAdminService(groupId, memberId)
 
     const io = getIO()
 
-    if(newIndicator){
-        for(let member of groupMenbers){
-            io.to(member._id.toString()).emit(socketEvents.NEW_MESSAGE,newIndicator)
-            io.to(member._id.toString()).emit(socketEvents.UNMARK_MEMBER_AS_ADMIN,{memberId})
+    if (newIndicator) {
+        for (let member of groupMenbers) {
+            io.to(member._id.toString()).emit(socketEvents.NEW_MESSAGE, newIndicator)
+            io.to(member._id.toString()).emit(socketEvents.UNMARK_MEMBER_AS_ADMIN, { memberId })
         }
     }
 
     return res
         .status(200)
         .json(
-            new ApiResponse(200,{
+            new ApiResponse(200, {
                 memberId,
-                message:"User Unmarked as Admin"
-            },"Member Unmarked As Admin.")
+                message: "User Unmarked as Admin"
+            }, "Member Unmarked As Admin.")
         )
-    
+
 })
 
 export {

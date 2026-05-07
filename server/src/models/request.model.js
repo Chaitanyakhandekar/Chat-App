@@ -36,6 +36,10 @@ const requestSchema = new Schema({
     isDeleted: {
         type: Boolean,
         default: false
+    },
+    isRead: {
+        type: Boolean,
+        default: false
     }
 
 }, { timestamps: true })

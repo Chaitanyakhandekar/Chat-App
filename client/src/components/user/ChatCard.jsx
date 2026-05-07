@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useContext } from 'react'
 import { authContext } from '../../context/AuthProvider.jsx'
 import { messageApi } from '../../api/message.api.js';
@@ -7,11 +7,12 @@ import { chatApi } from '../../api/chat.api.js';
 import { userAuthStore } from '../../store/userStore.js';
 import { useAssetsStore } from '../../store/useAssetsStore.js';
 import { useNavigate } from 'react-router-dom';
-import { useGroupChatStore } from '../../store/useGroupChatStore.js';
-import { getTime } from '../../services/getTime.js';
-import { groupApi } from '../../api/group.api.js';
+import { requestApi } from '../../api/request.api.js';
+import { UserPlus, Check } from 'lucide-react';
+import { useRequest } from '../../hooks/useRequest.jsx';
 
-const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount, setIsGroupChat } = useChatStore.getState();
+
+const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount, setIsGroupChat, setGroupChat } = useChatStore.getState();
 
 function ChatCard({
     user = {
@@ -34,10 +35,25 @@ function ChatCard({
 
     const context = useContext(authContext);
     const navigate = useNavigate()
-    const { userChats, setCurrentPreviewFile, addChat, resetUserSearch, userMessages, chatUsersInfo } = useChatStore();
-    const {setGroupChat,groupChat} = useGroupChatStore();
-    const user1 = userAuthStore().user;
+    const { userChats, setCurrentPreviewFile, addChat, resetUserSearch } = useChatStore();
+    const { user: currentUser } = userAuthStore();
     const { scrollToBottomInChat, setScrollToBottomInChat } = useAssetsStore()
+
+    const {
+        sendFriendRequest,
+        sendingRequest,
+        setSendingRequest,
+        requestSent,
+        setRequestSent
+    } = useRequest()
+
+
+    const handleSendFriendRequest = async (e) => {
+        e.stopPropagation();
+        if (sendingRequest || requestSent) return;
+
+        await sendFriendRequest(user._id)
+    };
 
     const createSingleChat = async () => {
         const response = await chatApi.createSingleChat(user._id);
@@ -45,7 +61,7 @@ function ChatCard({
             addChat(response.data)
             setCurrentChatId(response.data._id)
             setCurrentPreviewFile(null)
-            navigate(`/chat/${response.data?._id}`)
+            navigate(`/chat/${response.data._id}`)
             getConversationMessages();
             resetNewMessagesCount(response.data._id);
             setScrollToBottomInChat(true);
@@ -59,7 +75,7 @@ function ChatCard({
         context.setCurrentChatUser(user);
         let response;
         if (groupId) {
-            response = await groupApi.getConversation(groupId)
+            response = await messageApi.getGroupConversation(groupId)
         }
         else {
             response = await messageApi.getConversation(user._id)
@@ -79,17 +95,13 @@ function ChatCard({
     }
 
     const isChatExists = async () => {
-        let isExists = false;
+
         const response = await chatApi.isChatExists(chat?._id)
-        console.log("isChatExists response :::  ",response)
         return response.success;
     }
 
-    const handleChatCardClick = async() => {
-        const chatExists = await isChatExists();
-        if (chatExists) {
-            // console.log("Chat Exists :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            // console.log("Chat Exists :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+    const handleChatCardClick = () => {
+        if (isChatExists()) {
             if (isThisGroupChat()) {
                 setCurrentChatId(chatId);
                 setIsGroupChat(chat?.isGroupChat);
@@ -116,7 +128,6 @@ function ChatCard({
             }
         }
         else {
-            console.log("Creating Single Chat:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             createSingleChat();
         }
     }
@@ -124,30 +135,33 @@ function ChatCard({
     return (
         <>
             <style>{`
-                .typing-dot-card { animation: typing-blink 1.2s infinite; }
+                @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap');
+
+                .typing-dot-card { animation: blink-card 1.2s infinite; }
                 .typing-dot-card:nth-child(2) { animation-delay: 0.2s; }
                 .typing-dot-card:nth-child(3) { animation-delay: 0.4s; }
+                @keyframes blink-card {
+                    0%, 80%, 100% { opacity: 0.2; }
+                    40% { opacity: 1; }
+                }
                 .chat-card-time { font-family: 'JetBrains Mono', monospace; }
             `}</style>
 
             <div
                 onClick={handleChatCardClick}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer mb-0.5 transition-all duration-[180ms] hover:bg-white/[0.05] active:bg-accent-glow"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer mb-0.5 transition-all duration-[180ms] hover:bg-white/[0.05] active:bg-[rgba(99,102,241,0.1)]"
                 style={{ fontFamily: "'Sora', sans-serif" }}
             >
                 {/* Avatar */}
                 <div className="relative flex-shrink-0 w-11 h-11">
                     <img
-                        src={
-                            chat?.isGroupChat ? chat?.groupPicture :
-                            !chat?.isGroupChat ? user?.avtar : "https://static.vecteezy.com/system/resources/previews/024/983/914/non_2x/simple-user-default-icon-free-png.png"
-                        }
+                        src={!chat?.isGroupChat && user.avtar || ""}
                         alt=""
                         className="w-11 h-11 rounded-full object-cover border-2 border-white/[0.07] block"
                     />
-                    {!chat?.isGroupChat && online && (
+                    {online && (
                         <div
-                            className="absolute bottom-[1px] right-[1px] w-2.5 h-2.5 rounded-full bg-success border-2 border-surface-900"
+                            className="absolute bottom-[1px] right-[1px] w-2.5 h-2.5 rounded-full bg-[#22d3a0] border-2 border-[#0e1018]"
                             style={{ boxShadow: '0 0 6px #22d3a0' }}
                         />
                     )}
@@ -155,49 +169,77 @@ function ChatCard({
 
                 {/* Name + status */}
                 <div className="flex flex-col flex-1 min-w-0 gap-[2px]">
-                    <span className="tracking-[-0.2px] truncate flex justify-between">
-                        <div className="text-[13.5px] font-semibold text-text-primary truncate">
-                            {!chat?.isGroupChat &&  user?.username || chat?.groupName}
-                        </div>
-                        <p className="text-[0.6rem] text-text-dim">{
-                                chat?.lastMessage ? getTime(chat?.lastMessage.createdAt) : ""
-                            }</p>
+                    <span className="text-[13.5px] font-semibold text-[#f1f2f7] tracking-[-0.2px] truncate">
+                        {!chat?.isGroupChat && user?.username || chat?.groupName}
                     </span>
                     {typing ? (
-                        <span className="flex items-center gap-1 text-[11.5px] text-success truncate">
+                        <span className="flex items-center gap-1 text-[11.5px] text-[#22d3a0] truncate">
                             <span className="flex gap-[2px] items-center">
-                                <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-success inline-block" />
-                                <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-success inline-block" />
-                                <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-success inline-block" />
+                                <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
+                                <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
+                                <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
                             </span>
-                            {chat.isGroupChat ? `${chatUsersInfo[chat._id]?.typers[0]?.username} ` : ""} typing
+                            typing
                         </span>
                     ) : (
-                        <span className={`text-[11.5px] text-text-muted truncate ${newMessages > 0 ? "text-accent-light" : ""}`}>
-                            {
-                                 newMessages <=0 && chat?.lastMessage ? chat?.lastMessage.message :
-                                 newMessages > 0 && `${newMessages <= 9 ? newMessages : "9+"} new messages`
-                            }
+                        <span className="text-[11.5px] text-[#4a4e6a] truncate">
+                            {!chat?.isGroupChat && online ? 'Online' : ''}
                         </span>
                     )}
                 </div>
 
-                {/* Time + unread badge */}
-                {/* {newMessages > 0 && (
-                    <div className="flex flex-col items-end gap-[5px] flex-shrink-0">
-                        {time && (
-                            <span className="chat-card-time text-[10.5px] text-text-dim tracking-[-0.3px]">
-                                {time}
-                            </span>
-                        )}
-                        <div
-                            className="flex items-center justify-center min-w-[18px] h-[18px] px-[5px] rounded-full text-[10px] font-bold text-white"
-                            style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 2px 8px rgba(99,102,241,0.45)' }}
+                {/* Time + unread badge + friend request */}
+                <div className="flex flex-col items-end gap-[5px] flex-shrink-0">
+                    {newMessages > 0 && (
+                        <>
+                            {time && (
+                                <span className="chat-card-time text-[10.5px] text-[#4a4e6a] tracking-[-0.3px]">
+                                    {time}
+                                </span>
+                            )}
+                            <div
+                                className="flex items-center justify-center min-w-[18px] h-[18px] px-[5px] rounded-[20px] text-[10px] font-bold text-white"
+                                style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 2px 8px rgba(99,102,241,0.45)' }}
+                            >
+                                {newMessages}
+                            </div>
+                        </>
+                    )}
+
+                    {/* Send Friend Request Button - only in search mode for non-friends */}
+                    {searchMode && user?.isFriend === false && (
+                        <button
+                            onClick={handleSendFriendRequest}
+                            disabled={sendingRequest || requestSent}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 ${requestSent
+                                ? 'bg-[#22d3a0]/10 text-[#22d3a0] cursor-default'
+                                : sendingRequest
+                                    ? 'bg-white/[0.05] text-[#4a4e6a] cursor-wait'
+                                    : 'bg-[rgba(99,102,241,0.15)] text-[#818cf8] hover:bg-[rgba(99,102,241,0.25)] active:scale-95'
+                                }`}
+                            style={{ border: requestSent ? '1px solid rgba(34,211,160,0.3)' : '1px solid rgba(99,102,241,0.3)' }}
+                            title={requestSent ? 'Friend request sent' : 'Send friend request'}
                         >
-                            {newMessages}
-                        </div>
-                    </div>
-                )} */}
+                            {requestSent ? (
+                                <>
+                                    <Check size={12} />
+                                    <span>Sent</span>
+                                </>
+                            ) : sendingRequest ? (
+                                <span className="flex items-center gap-1">
+                                    <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#4a4e6a] inline-block" />
+                                    <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#4a4e6a] inline-block" />
+                                    <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#4a4e6a] inline-block" />
+                                </span>
+                            ) : (
+                                <>
+                                    <UserPlus size={12} />
+                                    <span>Add</span>
+                                </>
+                            )}
+                        </button>
+                    )}
+                </div>
             </div>
         </>
     )

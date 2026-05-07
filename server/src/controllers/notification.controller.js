@@ -16,15 +16,15 @@ import { validateAtleastOneField } from "../utils/fields validations/validateAtl
 import { isChatExists } from "../utils/document existance check/chat.js";
 import { getUserChatUsers, getUserChatUsersServer } from "./chat.controller.js";
 import { getUniqueMembers } from "../utils/getUniqueMembers.js";
-import { addMembertoGroupService, markMemberAsAdminService,unmarkMemberAsAdminService } from "../services/group.service.js";
-import { createNotificationService } from "../services/notification.service.js";
+import { addMembertoGroupService, markMemberAsAdminService, unmarkMemberAsAdminService } from "../services/group.service.js";
+import { createNotificationService, getUserNotificationsService } from "../services/notification.service.js";
 
 /**
  * @description Controller for Creating new notification
  * @access User
  * @method POST
  */
-const createNotification = asyncHandler(async (req,res)=>{
+const createNotification = asyncHandler(async (req, res) => {
 
     const {
         receiverId,
@@ -35,17 +35,17 @@ const createNotification = asyncHandler(async (req,res)=>{
         renderUrl
     } = req.body
 
-    const newNotification = await createNotificationService(req.user._id,receiverId,type,entityId,isGroupChatNotification,content,renderUrl)
+    const newNotification = await createNotificationService(req.user._id, req.user._id, receiverId, type, entityId, isGroupChatNotification, content, renderUrl)
 
     // Emit Socket Event Here
-    if(isGroupChatNotification){
-        
+    if (isGroupChatNotification) {
+
     }
 
     return res
         .status(201)
         .json(
-            new ApiResponse(201,newNotification,"New Notification Created Successfully.")
+            new ApiResponse(201, newNotification, "New Notification Created Successfully.")
         )
 
 })
@@ -55,7 +55,15 @@ const createNotification = asyncHandler(async (req,res)=>{
  * @access User
  * @method GET 
  */
-const getAllUserNotifications = asyncHandler(async (req,res)=>{
+const getAllUserNotifications = asyncHandler(async (req, res) => {
+
+    const notifications = await getUserNotificationsService(req.user._id)
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, notifications, "User notifications fetched Successfully.")
+        )
 
 })
 
