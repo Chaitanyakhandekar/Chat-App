@@ -939,10 +939,17 @@ const searchUsers = asyncHandler(async (req, res) => {
       }
     },
     {
+      $match: {
+        "chats.participants": {
+          $nin: [req.user._id, "$_id"]
+        }
+      }
+    },
+    {
       $project: {
         name: 1,
         username: 1,
-        avatar: 1,
+        avtar: 1,
         chats: "$chats"
       }
     }
