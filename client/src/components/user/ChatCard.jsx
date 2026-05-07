@@ -34,7 +34,7 @@ function ChatCard({
 
     const context = useContext(authContext);
     const navigate = useNavigate()
-    const { userChats, setCurrentPreviewFile, addChat, resetUserSearch, userMessages } = useChatStore();
+    const { userChats, setCurrentPreviewFile, addChat, resetUserSearch, userMessages, chatUsersInfo } = useChatStore();
     const {setGroupChat,groupChat} = useGroupChatStore();
     const user1 = userAuthStore().user;
     const { scrollToBottomInChat, setScrollToBottomInChat } = useAssetsStore()
@@ -124,21 +124,15 @@ function ChatCard({
     return (
         <>
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap');
-
-                .typing-dot-card { animation: blink-card 1.2s infinite; }
+                .typing-dot-card { animation: typing-blink 1.2s infinite; }
                 .typing-dot-card:nth-child(2) { animation-delay: 0.2s; }
                 .typing-dot-card:nth-child(3) { animation-delay: 0.4s; }
-                @keyframes blink-card {
-                    0%, 80%, 100% { opacity: 0.2; }
-                    40% { opacity: 1; }
-                }
                 .chat-card-time { font-family: 'JetBrains Mono', monospace; }
             `}</style>
 
             <div
                 onClick={handleChatCardClick}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer mb-0.5 transition-all duration-[180ms] hover:bg-white/[0.05] active:bg-[rgba(99,102,241,0.1)]"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer mb-0.5 transition-all duration-[180ms] hover:bg-white/[0.05] active:bg-accent-glow"
                 style={{ fontFamily: "'Sora', sans-serif" }}
             >
                 {/* Avatar */}
@@ -153,7 +147,7 @@ function ChatCard({
                     />
                     {!chat?.isGroupChat && online && (
                         <div
-                            className="absolute bottom-[1px] right-[1px] w-2.5 h-2.5 rounded-full bg-[#22d3a0] border-2 border-[#0e1018]"
+                            className="absolute bottom-[1px] right-[1px] w-2.5 h-2.5 rounded-full bg-success border-2 border-surface-900"
                             style={{ boxShadow: '0 0 6px #22d3a0' }}
                         />
                     )}
@@ -161,44 +155,43 @@ function ChatCard({
 
                 {/* Name + status */}
                 <div className="flex flex-col flex-1 min-w-0 gap-[2px]">
-                    <span className=" tracking-[-0.2px] truncate flex justify-between">
-                        <div className="text-[13.5px] font-semibold text-[#f1f2f7] truncate">
+                    <span className="tracking-[-0.2px] truncate flex justify-between">
+                        <div className="text-[13.5px] font-semibold text-text-primary truncate">
                             {!chat?.isGroupChat &&  user?.username || chat?.groupName}
                         </div>
-                        <p className="text-[0.6rem]">{
+                        <p className="text-[0.6rem] text-text-dim">{
                                 chat?.lastMessage ? getTime(chat?.lastMessage.createdAt) : ""
                             }</p>
                     </span>
                     {typing ? (
-                        <span className="flex items-center gap-1 text-[11.5px] text-[#22d3a0] truncate">
+                        <span className="flex items-center gap-1 text-[11.5px] text-success truncate">
                             <span className="flex gap-[2px] items-center">
-                                <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
-                                <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
-                                <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
+                                <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-success inline-block" />
+                                <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-success inline-block" />
+                                <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-success inline-block" />
                             </span>
-                            typing
+                            {chat.isGroupChat ? `${chatUsersInfo[chat._id]?.typers[0]?.username} ` : ""} typing
                         </span>
                     ) : (
-                        <span className={`text-[11.5px] text-gray-400 truncate ${newMessages > 0 ? "text-purple-300" : ""}`}>
+                        <span className={`text-[11.5px] text-text-muted truncate ${newMessages > 0 ? "text-accent-light" : ""}`}>
                             {
-                                !chat?.isGroupChat && newMessages <=0 && chat?.lastMessage ? chat?.lastMessage.message : 
-                                !chat?.isGroupChat && newMessages > 0 && `${newMessages <= 9 ? newMessages : "9+"} new messages` 
+                                 newMessages <=0 && chat?.lastMessage ? chat?.lastMessage.message :
+                                 newMessages > 0 && `${newMessages <= 9 ? newMessages : "9+"} new messages`
                             }
                         </span>
                     )}
-                    
                 </div>
 
                 {/* Time + unread badge */}
                 {/* {newMessages > 0 && (
                     <div className="flex flex-col items-end gap-[5px] flex-shrink-0">
                         {time && (
-                            <span className="chat-card-time text-[10.5px] text-[#4a4e6a] tracking-[-0.3px]">
+                            <span className="chat-card-time text-[10.5px] text-text-dim tracking-[-0.3px]">
                                 {time}
                             </span>
                         )}
                         <div
-                            className="flex items-center justify-center min-w-[18px] h-[18px] px-[5px] rounded-[20px] text-[10px] font-bold text-white"
+                            className="flex items-center justify-center min-w-[18px] h-[18px] px-[5px] rounded-full text-[10px] font-bold text-white"
                             style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 2px 8px rgba(99,102,241,0.45)' }}
                         >
                             {newMessages}

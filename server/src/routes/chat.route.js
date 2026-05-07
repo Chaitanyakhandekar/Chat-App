@@ -6,7 +6,8 @@ getUserChats,
 createGroupChat,
 isChatExists,
 getChatById,
-getUserChatUsers
+getUserChatUsers,
+getSummarizedChat
 } from "../controllers/chat.controller.js";
 
 const router = Router();
@@ -15,6 +16,7 @@ const router = Router();
 // router.route("/receive").get();
 router.route("/user").get(userAuth,getUserChatUsers)
 router.route("/single/:userId").post(userAuth, createSingleChat)
+router.route("/summary/:chatId").get(userAuth, getSummarizedChat)
 router.route("/group").post(userAuth, createGroupChat)
 router.route("/").get(userAuth, getUserChats)
 router.route("/exists/:chatId").get(userAuth, isChatExists)

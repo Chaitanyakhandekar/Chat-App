@@ -1,0 +1,32 @@
+
+import axios from "axios";
+
+class RequestApi {
+    constructor() {
+        this.baseUrl = `${import.meta.env.VITE_ENV === "production" ? import.meta.env.VITE_BACKEND_URL_PROD : import.meta.env.VITE_BACKEND_URL}/api/requests`
+    }
+
+
+    getMyRequests = async () => {
+        try {
+            const response = await axios.get(`${this.baseUrl}/my`)
+
+            console.log("My Requests ::: ", response.data.data)
+
+            return {
+                success: true,
+                data: response.data.data,
+                message: response.data.message
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message,
+                error: error
+            }
+        }
+    }
+
+}
+
+export const requestApi = new RequestApi();

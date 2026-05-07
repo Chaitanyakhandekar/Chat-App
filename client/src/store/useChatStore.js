@@ -147,6 +147,7 @@ export const useChatStore = create(
                     chatUsersInfo:chats.reduce((acc,chat)=>{
                         acc[chat._id] = {
                             typing:false,
+                            typers:[],
                             newMessages: chat.unreadMessagesCount || 0,
                             online:false,
                             time:"",
@@ -210,6 +211,33 @@ export const useChatStore = create(
                         [chatId]:{
                             ...state.chatUsersInfo[chatId],
                             typing:isTyping
+                        }
+                    }
+                }))
+            },
+
+            addTyper:(chatId,typers=[])=>{
+                set((state)=>({
+                    chatUsersInfo:{
+                        ...state.chatUsersInfo,
+                        [chatId]:{
+                            ...state.chatUsersInfo[chatId],
+                            typers:[
+                                ...state.chatUsersInfo[chatId].typers,
+                                typers
+                            ]
+                        }
+                    }
+                }))
+            },
+
+            removeTyper:(chatId,typerId)=>{
+                set((state)=>({
+                    chatUsersInfo:{
+                        ...state.chatUsersInfo,
+                        [chatId]:{
+                            ...state.chatUsersInfo[chatId],
+                            typers: state.chatUsersInfo[chatId].typers.filter(typer=> typer._id !== typerId)
                         }
                     }
                 }))

@@ -1,6 +1,11 @@
 import { Chat } from "../../models/chat.model.js"
 import { redis } from "../../redis/config.js"
 
+/**
+ * @description Utility function for geting Group Members
+ * @param {ObjectId} groupId 
+ * @returns array of Member Ids
+ */
 export const getGroupMembers = async (groupId) =>{
     if(!groupId)return []
 
@@ -25,5 +30,5 @@ export const getGroupMembers = async (groupId) =>{
     
     // await redis.set(`group-members-${groupId}`, groupMembers)
 
-    return groupMembers
+    return groupMembers || []
 }

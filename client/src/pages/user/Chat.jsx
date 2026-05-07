@@ -22,6 +22,10 @@ import {
     ChevronRight,
     Reply,
     ImageIcon,
+    Sparkles,
+    ChevronDown,
+    Copy,
+    Check,
 } from 'lucide-react'
 import Swal from 'sweetalert2';
 import Message from '../../components/message/Message.jsx'
@@ -43,6 +47,281 @@ import { useNavigate, useParams } from 'react-router-dom'
 import Sidebar from './Sidebar.jsx'
 import { useGroupChatStore } from '../../store/useGroupChatStore.js'
 
+// ── Dummy summary generator (replace with real API call later) ──────────────
+const DUMMY_SUMMARY = {
+    overview: "This conversation covers project updates, task assignments, and team coordination for the upcoming sprint cycle.",
+    keyPoints: [
+        "The deadline for the design mockups was confirmed as Friday EOD.",
+        "Backend API endpoints need review before integration testing begins.",
+        "Three bugs were identified and assigned to respective team members.",
+        "The team agreed to a standup at 10 AM daily for the next two weeks.",
+    ],
+    sentiment: "positive",
+    messageCount: 24,
+    timespan: "2 hours",
+}
+
+function SummaryDrawer({ isOpen, onClose, isLoading, summary }) {
+    const [copied, setCopied] = useState(false)
+
+    const handleCopy = () => {
+        if (!summary) return
+        const text = `Summary\n\n${summary.overview}\n\nKey Points:\n${summary.keyPoints.map((p, i) => `${i + 1}. ${p}`).join('\n')}`
+        navigator.clipboard.writeText(text).then(() => {
+            setCopied(true)
+            setTimeout(() => setCopied(false), 2000)
+        })
+    }
+
+    const sentimentColor = {
+        positive: '#22d3a0',
+        negative: '#f87171',
+        neutral: '#818cf8',
+    }[summary?.sentiment || 'neutral']
+
+    const sentimentLabel = {
+        positive: '😊 Positive',
+        negative: '😟 Negative',
+        neutral: '😐 Neutral',
+    }[summary?.sentiment || 'neutral']
+
+    return (
+        <>
+            {/* Backdrop */}
+            <div
+                onClick={onClose}
+                className="summary-backdrop"
+                style={{
+                    position: 'fixed', inset: 0, zIndex: 40,
+                    background: 'rgba(0,0,0,0.45)',
+                    backdropFilter: 'blur(4px)',
+                    opacity: isOpen ? 1 : 0,
+                    pointerEvents: isOpen ? 'auto' : 'none',
+                    transition: 'opacity 0.25s ease',
+                }}
+            />
+
+            {/* Drawer */}
+            <div
+                style={{
+                    position: 'fixed',
+                    top: 0, right: 0, bottom: 0,
+                    width: '100%', maxWidth: '420px',
+                    zIndex: 50,
+                    background: 'linear-gradient(160deg, #0f1120 0%, #0c0e18 100%)',
+                    borderLeft: '1px solid rgba(99,102,241,0.18)',
+                    boxShadow: '-20px 0 60px rgba(0,0,0,0.5)',
+                    transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
+                    transition: 'transform 0.3s cubic-bezier(0.16,1,0.3,1)',
+                    display: 'flex', flexDirection: 'column',
+                    overflowY: 'auto',
+                }}
+                className="custom-scroll"
+            >
+                {/* Header */}
+                <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '20px 20px 16px',
+                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                    background: 'rgba(99,102,241,0.04)',
+                    flexShrink: 0,
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{
+                            width: 36, height: 36,
+                            borderRadius: 11,
+                            background: 'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.18))',
+                            border: '1px solid rgba(99,102,241,0.35)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            boxShadow: '0 0 16px rgba(99,102,241,0.2)',
+                        }}>
+                            <Sparkles size={16} color="#818cf8" />
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: '#f1f2f7', letterSpacing: '-0.01em' }}>
+                                AI Summary
+                            </div>
+                            <div style={{ fontSize: 11, color: '#4a4e6a', marginTop: 1 }}>
+                                Powered by Claude
+                            </div>
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        {summary && !isLoading && (
+                            <button
+                                onClick={handleCopy}
+                                style={{
+                                    width: 32, height: 32, borderRadius: 9,
+                                    background: copied ? 'rgba(34,211,160,0.12)' : 'rgba(255,255,255,0.05)',
+                                    border: `1px solid ${copied ? 'rgba(34,211,160,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer', transition: 'all 0.15s',
+                                }}
+                            >
+                                {copied
+                                    ? <Check size={13} color="#22d3a0" />
+                                    : <Copy size={13} color="#4a4e6a" />
+                                }
+                            </button>
+                        )}
+                        <button
+                            onClick={onClose}
+                            style={{
+                                width: 32, height: 32, borderRadius: 9,
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            <X size={14} color="#4a4e6a" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Body */}
+                <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                    {/* Loading skeleton */}
+                    {isLoading && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <div style={{
+                                borderRadius: 14,
+                                background: 'rgba(99,102,241,0.07)',
+                                border: '1px solid rgba(99,102,241,0.12)',
+                                padding: '16px',
+                                display: 'flex', flexDirection: 'column', gap: 10,
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                    <div className="skeleton-pulse" style={{ width: 80, height: 10, borderRadius: 5, background: 'rgba(99,102,241,0.2)' }} />
+                                </div>
+                                {[1, 0.7, 0.85].map((w, i) => (
+                                    <div key={i} className="skeleton-pulse" style={{
+                                        width: `${w * 100}%`, height: 8, borderRadius: 5,
+                                        background: 'rgba(255,255,255,0.05)',
+                                        animationDelay: `${i * 0.15}s`,
+                                    }} />
+                                ))}
+                            </div>
+                            <div style={{
+                                borderRadius: 14,
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(255,255,255,0.06)',
+                                padding: '16px',
+                                display: 'flex', flexDirection: 'column', gap: 10,
+                            }}>
+                                {[0.9, 0.75, 0.8, 0.65].map((w, i) => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                        <div className="skeleton-pulse" style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(99,102,241,0.25)', flexShrink: 0 }} />
+                                        <div className="skeleton-pulse" style={{
+                                            width: `${w * 100}%`, height: 7, borderRadius: 5,
+                                            background: 'rgba(255,255,255,0.05)',
+                                            animationDelay: `${i * 0.12}s`,
+                                        }} />
+                                    </div>
+                                ))}
+                            </div>
+                            <div style={{ textAlign: 'center', paddingTop: 8 }}>
+                                <span style={{ fontSize: 12, color: '#4a4e6a' }}>Analyzing conversation…</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Summary content */}
+                    {!isLoading && summary && (
+                        <>
+                            {/* Stats row */}
+                            <div style={{ display: 'flex', gap: 10 }}>
+                                {[
+                                    { label: 'Messages', value: summary.messages },
+                                    { label: 'Timespan', value: summary.timespan },
+                                    { label: 'Tone', value: summary.sentiment  },
+                                ].map(({ label, value }) => (
+                                    <div key={label} style={{
+                                        flex: 1, padding: '10px 12px', borderRadius: 12,
+                                        background: 'rgba(255,255,255,0.03)',
+                                        border: '1px solid rgba(255,255,255,0.06)',
+                                        display: 'flex', flexDirection: 'column', gap: 4,
+                                    }}>
+                                        <span style={{ fontSize: 10, color: '#4a4e6a', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
+                                        <span style={{ fontSize: 12, color: '#c4c6e7', fontWeight: 600 }}>{value}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Overview */}
+                            <div style={{
+                                borderRadius: 14,
+                                background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))',
+                                border: '1px solid rgba(99,102,241,0.18)',
+                                padding: '16px 18px',
+                                position: 'relative', overflow: 'hidden',
+                            }}>
+                                {/* Decorative orb */}
+                                <div style={{
+                                    position: 'absolute', top: -20, right: -20, width: 80, height: 80,
+                                    borderRadius: '50%',
+                                    background: 'radial-gradient(circle, rgba(99,102,241,0.15), transparent)',
+                                    filter: 'blur(20px)',
+                                }} />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
+                                    <Sparkles size={12} color="#818cf8" />
+                                    <span style={{ fontSize: 11, fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                                        Overview
+                                    </span>
+                                </div>
+                                <p style={{ fontSize: 13.5, color: '#c4c6e7', lineHeight: 1.65, margin: 0, position: 'relative' }}>
+                                    {summary.overview}
+                                </p>
+                            </div>
+
+                            {/* Key points */}
+                            <div style={{
+                                borderRadius: 14,
+                                background: 'rgba(255,255,255,0.025)',
+                                border: '1px solid rgba(255,255,255,0.06)',
+                                padding: '16px 18px',
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
+                                    <span style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                                        Key Points
+                                    </span>
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    {summary.keyPoints.map((point, i) => (
+                                        <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                                            <div style={{
+                                                width: 20, height: 20, borderRadius: 7, flexShrink: 0,
+                                                background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.15))',
+                                                border: '1px solid rgba(99,102,241,0.25)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontSize: 9, fontWeight: 700, color: '#818cf8',
+                                                marginTop: 1,
+                                            }}>
+                                                {i + 1}
+                                            </div>
+                                            <p style={{ margin: 0, fontSize: 13, color: '#a0a3b1', lineHeight: 1.6 }}>
+                                                {point}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Footer note */}
+                            <div style={{ textAlign: 'center', padding: '4px 0 8px' }}>
+                                <span style={{ fontSize: 11, color: '#2e3147' }}>
+                                    Summary generated from last 50 messages
+                                </span>
+                            </div>
+                        </>
+                    )}
+                </div>
+            </div>
+        </>
+    )
+}
+
 function Home() {
 
     const context = useContext(authContext);
@@ -50,6 +329,24 @@ function Home() {
     const [query, setQuery] = React.useState("")
 
     const [activePanel, setActivePanel] = useState(null)
+
+    // ── Summary state ──────────────────────────────────────────────────
+    const [summaryOpen, setSummaryOpen] = useState(false)
+    const [summaryLoading, setSummaryLoading] = useState(false)
+    const [summaryData, setSummaryData] = useState(null)
+
+    const handleSummarize = async() => {
+        setSummaryOpen(true)
+        if (summaryData) return // already loaded, just reopen
+        setSummaryLoading(true)
+        // Simulate API delay — replace with real call later
+        const response = await chatApi.getSummarizedChat(currentChatId || paramChatId)
+        if(response.success){
+            setSummaryData(response.data)
+            setSummaryLoading(false)
+        }
+    }
+    // ──────────────────────────────────────────────────────────────────
 
     const { user } = userAuthStore()
 
@@ -156,7 +453,6 @@ function Home() {
 
         setScrollToBottomInChat(true);
 
-        // Clear reply state
         if (isReplying) handleCancelReply()
 
         const formData = new FormData()
@@ -193,6 +489,16 @@ function Home() {
             console.log("Ack from server:", ack);
         })
         }
+        else if(isGroupChat){
+            socket.emit(socketEvents.NEW_MESSAGE_GROUP, {
+                message: message || "",
+                attachments: uploadInfo?.data || [],
+                chatId: currentChatId || null,
+                tempId: tempId,
+            }, (ack) => {
+                console.log("Ack from server:", ack);
+            })
+        }
         else{
             socket.emit(socketEvents.NEW_MESSAGE, {
             message: message || "",
@@ -200,7 +506,6 @@ function Home() {
             receiver: context.currentChatUser._id,
             chatId: currentChatId || null,
             tempId: tempId,
-           
         }, (ack) => {
             console.log("Ack from server:", ack);
         })
@@ -215,7 +520,6 @@ function Home() {
         container.scrollTop = container.scrollHeight;
     };
 
-    // Auto-focus input when reply starts
     useEffect(() => {
         if (isReplying && inputRef.current) {
             inputRef.current.focus()
@@ -273,6 +577,12 @@ function Home() {
         }
     }, [scrollToBottomInChat])
 
+    // Reset summary when chat changes
+    useEffect(() => {
+        setSummaryData(null)
+        setSummaryOpen(false)
+    }, [currentChatId])
+
     const searchUsers = async (query) => {
         setQuery(query);
         try {
@@ -286,8 +596,35 @@ function Home() {
         }
     }
 
-    const handleTyping = (e) => {
-        const value = e.target.value;
+    const handleGroupTyping = (e)=>{
+          const value = e.target.value;
+        setMessage(value);
+
+        if (!socket || !context.currentChatUser || !currentChatId) return;
+
+        if (!isTypingRef.current) {
+            socket.emit(socketEvents.TYPING_GROUP, {
+                chatId: currentChatId,
+                isTyping: true,
+            });
+            isTypingRef.current = true;
+        }
+
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+
+        typingTimeoutRef.current = setTimeout(() => {
+            socket.emit(socketEvents.TYPING_GROUP, {
+                chatId: currentChatId,
+                isTyping: false,
+            });
+            isTypingRef.current = false;
+        }, 2000);
+    }
+
+    const handleSingleTyping = (e)=>{
+          const value = e.target.value;
         setMessage(value);
 
         if (!socket || !context.currentChatUser || !currentChatId) return;
@@ -311,6 +648,15 @@ function Home() {
             });
             isTypingRef.current = false;
         }, 2000);
+    }
+
+    const handleTyping = (e) => {
+        if(isGroupChat){
+            handleGroupTyping(e)
+        }
+        if(!isGroupChat){
+            handleSingleTyping(e)
+        }
     };
 
     const handleChatInfoClick = () =>{
@@ -368,17 +714,12 @@ function Home() {
                 className="flex items-center gap-2.5 px-4 py-2 border-t border-white/[0.05]"
                 style={{ background: 'rgba(10,11,20,0.6)', animation: 'replyStripIn 0.18s cubic-bezier(0.16,1,0.3,1)' }}
             >
-                {/* Left: indigo bar + icon + content */}
                 <div className="flex items-center gap-2.5 flex-1 min-w-0 rounded-[11px] px-3 py-2"
                     style={{
                         background: 'rgba(99,102,241,0.07)',
                         borderLeft: '3px solid #6366f1',
                     }}>
-
-                    {/* Reply icon */}
                     <Reply size={12} color="#818cf8" style={{ transform: 'scaleX(-1)', flexShrink: 0 }} />
-
-                    {/* Text */}
                     <div className="flex flex-col min-w-0 flex-1">
                         <span className="text-[11px] font-semibold leading-none mb-[3px]" style={{ color: '#818cf8' }}>
                             {senderLabel}
@@ -393,8 +734,6 @@ function Home() {
                             {hasText && previewText}
                         </span>
                     </div>
-
-                    {/* Image thumbnail */}
                     {thumbUrl && (
                         <img
                             src={thumbUrl}
@@ -404,8 +743,6 @@ function Home() {
                         />
                     )}
                 </div>
-
-                {/* Cancel */}
                 <button
                     onClick={handleCancelReply}
                     className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full transition-colors duration-150"
@@ -422,90 +759,80 @@ function Home() {
     return (
         <>
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
                 * { font-family: 'Sora', sans-serif; box-sizing: border-box; }
 
-                .typing-dot { animation: blink 1.2s infinite; }
+                .typing-dot { animation: typing-blink 1.2s infinite; }
                 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
                 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-                @keyframes blink {
-                    0%, 80%, 100% { opacity: 0.2; }
-                    40% { opacity: 1; }
-                }
+
                 .online-pulse { animation: pulse-dot 2s infinite; }
-                @keyframes pulse-dot {
-                    0%, 100% { opacity: 1; transform: scale(1); }
-                    50% { opacity: 0.7; transform: scale(1.15); }
-                }
-                .float-icon { animation: float 3s ease-in-out infinite; }
-                @keyframes float {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-8px); }
-                }
+
                 .fade-in-up { animation: fadeInUp 0.3s ease; }
                 @keyframes fadeInUp {
                     from { opacity: 0; transform: translateX(-50%) translateY(8px); }
                     to   { opacity: 1; transform: translateX(-50%) translateY(0); }
                 }
-                .slide-in-panel { animation: slideInPanel 0.22s cubic-bezier(0.16,1,0.3,1); }
-                @keyframes slideInPanel {
-                    from { opacity: 0; transform: translateX(-12px); }
-                    to   { opacity: 1; transform: translateX(0); }
-                }
+
                 @keyframes replyStripIn {
                     from { opacity: 0; transform: translateY(6px); }
                     to   { opacity: 1; transform: translateY(0); }
                 }
+
                 .custom-scroll { scrollbar-width: thin; scrollbar-color: #1a1d28 transparent; }
                 .custom-scroll::-webkit-scrollbar { width: 4px; }
                 .custom-scroll::-webkit-scrollbar-track { background: transparent; }
                 .custom-scroll::-webkit-scrollbar-thumb { background: #1a1d28; border-radius: 4px; }
-                .sidebar-accent::before {
-                    content: '';
-                    position: absolute;
-                    top: 0; left: 0; right: 0;
-                    height: 1px;
-                    background: linear-gradient(90deg, transparent, #6366f1, transparent);
-                    opacity: 0.6;
-                }
-                .noise-bg::before {
-                    content: '';
-                    position: absolute;
-                    inset: 0;
-                    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-                    pointer-events: none;
-                    z-index: 0;
-                    opacity: 0.4;
-                }
+
                 .msg-input-wrap:focus-within {
                     border-color: rgba(99,102,241,0.35) !important;
                     box-shadow: 0 0 0 3px rgba(99,102,241,0.15) !important;
                 }
+
                 .msg-input-wrap-replying {
                     border-color: rgba(99,102,241,0.28) !important;
                     box-shadow: 0 0 0 2px rgba(99,102,241,0.1) !important;
                 }
+
                 .msg-input-wrap-replying:focus-within {
                     border-color: rgba(99,102,241,0.5) !important;
                     box-shadow: 0 0 0 3px rgba(99,102,241,0.18) !important;
                 }
-                .panel-divider {
-                    height: 1px;
-                    background: linear-gradient(90deg, rgba(99,102,241,0.15), rgba(139,92,246,0.08), transparent);
-                    margin: 0 16px 12px 16px;
+
+                /* Summarize button */
+                .summarize-btn {
+                    display: flex; align-items: center; gap: 6px;
+                    padding: 6px 14px; border-radius: 20px;
+                    background: linear-gradient(135deg, rgba(99,102,241,0.14), rgba(139,92,246,0.1));
+                    border: 1px solid rgba(99,102,241,0.28);
+                    color: #818cf8; font-size: 12px; font-weight: 600;
+                    cursor: pointer; transition: all 0.2s ease;
+                    white-space: nowrap;
                 }
-                .notif-item {
-                    display: flex; gap: 10px; align-items: flex-start;
-                    padding: 10px 12px; border-radius: 12px;
-                    cursor: pointer; transition: background 0.15s;
-                    border: 1px solid transparent;
+                .summarize-btn:hover {
+                    background: linear-gradient(135deg, rgba(99,102,241,0.22), rgba(139,92,246,0.16));
+                    border-color: rgba(99,102,241,0.45);
+                    box-shadow: 0 0 16px rgba(99,102,241,0.2);
+                    transform: translateY(-1px);
                 }
-                .notif-item:hover { background: rgba(99,102,241,0.07); }
-                .notif-item.unread { border-color: rgba(99,102,241,0.14); background: rgba(99,102,241,0.06); }
+                .summarize-btn:active { transform: translateY(0); }
+                .summarize-btn .sparkle-icon { animation: sparkle-spin 2.5s ease-in-out infinite; }
+                @keyframes sparkle-spin {
+                    0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+                    50% { transform: scale(1.2) rotate(15deg); opacity: 0.8; }
+                }
+
+                /* Skeleton pulse */
+                .skeleton-pulse {
+                    animation: skeletonPulse 1.4s ease-in-out infinite;
+                }
+                @keyframes skeletonPulse {
+                    0%, 100% { opacity: 0.4; }
+                    50% { opacity: 0.8; }
+                }
             `}</style>
 
             {/* Root */}
-            <div className="flex h-[100dvh] bg-[#0a0b0f] text-[#f1f2f7] overflow-hidden">
+            <div className="flex h-[100dvh] bg-surface-900 text-text-primary overflow-hidden">
 
                 {/* ── SIDEBAR ── */}
                 <Sidebar
@@ -523,57 +850,73 @@ function Home() {
                 />
 
                 {/* ── MAIN CHAT WINDOW ── */}
-                <div className="noise-bg relative flex flex-col flex-1 h-full bg-[#0c0e16] overflow-hidden md:flex ">
+                <div className="relative flex flex-col flex-1 h-full bg-surface-800 overflow-hidden md:flex">
 
                     {/* Ambient orbs */}
-                    <div className="absolute -top-24 -right-24 w-[400px] h-[400px] rounded-full pointer-events-none z-0"
-                        style={{ background: 'radial-gradient(circle,rgba(99,102,241,0.08),transparent 70%)', filter: 'blur(80px)' }} />
-                    <div className="absolute -bottom-20 left-[10%] w-[300px] h-[300px] rounded-full pointer-events-none z-0"
-                        style={{ background: 'radial-gradient(circle,rgba(139,92,246,0.07),transparent 70%)', filter: 'blur(80px)' }} />
+                    <div className="absolute -top-24 -right-24 w-[400px] h-[400px] rounded-full pointer-events-none z-0 bg-accent/5 blur-[80px]" />
+                    <div className="absolute -bottom-20 left-[10%] w-[300px] h-[300px] rounded-full pointer-events-none z-0 bg-violet/5 blur-[80px]" />
 
                     {context.currentChatUser ? (
                         <>
                             {/* Nav */}
                             <nav
-                                title={isGroupChat ? 'Group Info' : "User Profile"}
-                                onClick={handleChatInfoClick}
-                                className="sticky top-0 z-10 flex items-center gap-3.5 h-16 px-6 border-b border-white/[0.06] bg-[rgba(14,16,24,0.85)] backdrop-blur-xl">
-                                <div className="relative w-10 h-10 flex-shrink-0">
-                                    <img
-                                        src={
-                                            isGroupChat ? (groupChat?.groupPicture || context.currentChatUser.avtar):
-                                            !isGroupChat && context.currentChatUser?.avtar ? context.currentChatUser.avtar : `https://api.dicebear.com/7.x/shapes/svg?seed=${context.currentChatUser._id}&scale=90`
-                                        }
-                                      
-                                        alt=""
-                                        className="w-10 h-10 rounded-full object-cover border-2 border-white/[0.07]"
-                                    />
-                                    { !isGroupChat && onlineStatus[context.currentChatUser._id] && (
-                                        <div className="online-pulse absolute bottom-[1px] right-[1px] w-2.5 h-2.5 rounded-full bg-[#22d3a0] border-2 border-[#0c0e16]"
-                                            style={{ boxShadow: '0 0 8px #22d3a0' }} />
-                                    )}
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[15px] font-semibold tracking-tight text-[#f1f2f7]">
-                                        {(!isGroupChat && context.currentChatUser?.username) || (isGroupChat ? groupChat?.groupName : "Unknown User")}
-                                    </span>
-                                    {chatUsersInfo[currentChatId]?.typing ? (
-                                        <span className="flex items-center gap-1 text-xs text-[#22d3a0] font-medium">
-                                            <span className="flex gap-0.5 items-center">
-                                                <span className="typing-dot w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
-                                                <span className="typing-dot w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
-                                                <span className="typing-dot w-[3px] h-[3px] rounded-full bg-[#22d3a0] inline-block" />
+                                className="sticky top-0 z-10 flex items-center gap-3.5 h-16 px-6 border-b border-white/[0.06] bg-surface-800/90 backdrop-blur-xl">
+                                {/* Left: avatar + name — clickable for group info */}
+                                <div
+                                    title={isGroupChat ? 'Group Info' : "User Profile"}
+                                    onClick={handleChatInfoClick}
+                                    className="flex items-center gap-3.5 flex-1 min-w-0 cursor-pointer"
+                                >
+                                    <div className="relative w-10 h-10 flex-shrink-0">
+                                        <img
+                                            src={
+                                                isGroupChat ? (groupChat?.groupPicture || context.currentChatUser.avtar):
+                                                !isGroupChat && context.currentChatUser?.avtar ? context.currentChatUser.avtar : `https://api.dicebear.com/7.x/shapes/svg?seed=${context.currentChatUser._id}&scale=90`
+                                            }
+                                            alt=""
+                                            className="w-10 h-10 rounded-full object-cover border-2 border-white/[0.07]"
+                                        />
+                                        { !isGroupChat && onlineStatus[context.currentChatUser._id] && (
+                                            <div className="online-pulse absolute bottom-[1px] right-[1px] w-2.5 h-2.5 rounded-full bg-success border-2 border-surface-800"
+                                                style={{ boxShadow: '0 0 8px #22d3a0' }} />
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="text-[15px] font-semibold tracking-tight text-text-primary truncate">
+                                            {(!isGroupChat && context.currentChatUser?.username) || (isGroupChat ? groupChat?.groupName : "Unknown User")}
+                                        </span>
+                                        {chatUsersInfo[currentChatId]?.typing ? (
+                                            <span className="flex items-center gap-1 text-xs text-success font-medium">
+                                                <span className="flex gap-0.5 items-center">
+                                                    <span className="typing-dot w-[3px] h-[3px] rounded-full bg-success inline-block" />
+                                                    <span className="typing-dot w-[3px] h-[3px] rounded-full bg-success inline-block" />
+                                                    <span className="typing-dot w-[3px] h-[3px] rounded-full bg-success inline-block" />
+                                                </span>
+                                                {chatUsersInfo[currentChatId].typers.length > 0 &&
+                                                 chatUsersInfo[currentChatId].typers.map((typer, index) => (
+                                                     <span key={index}>
+                                                         {typer.username || 'Unknown User'} {index < chatUsersInfo[currentChatId].typers.length - 1 ? ', ' : ' '}
+                                                     </span>
+                                                 ))}
+                                                 typing...
                                             </span>
-                                            typing
-                                        </span>
-                                    ) : (
-                                        <span className="text-xs text-[#4a4e6a]">
-                                            {onlineStatus[context.currentChatUser._id] ? 'Online' : 'Offline'}
-                                        </span>
-                                    )}
+                                        ) : (
+                                            <span className="text-xs text-text-dim">
+                                                {onlineStatus[context.currentChatUser._id] ? 'Online' : 'Offline'}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
 
-                                
+                                {/* Right: Summarize button */}
+                                <button
+                                    className="summarize-btn"
+                                    onClick={handleSummarize}
+                                    title="Summarize conversation"
+                                >
+                                    <Sparkles size={13} className="sparkle-icon" />
+                                    <span className="hidden sm:inline">Summarize</span>
+                                </button>
                             </nav>
 
                             {isMedia ? (
@@ -596,20 +939,17 @@ function Home() {
                                             <Message
                                                 key={msg._id}
                                                 msg={msg}
-                                                // onReply={(msg) => {
-                                                //     setMessageBeingReplied(msg)
-                                                //     setIsReplying(true)
-                                                // }}
+                                                isGroupChat={isGroupChat}
                                             />
                                         ))}
 
                                         {!isAtBottom && (
                                             <button
                                                 onClick={scrollToBottom}
-                                                className="fixed z-20 bottom-24 right-8 w-9 h-9 flex items-center justify-center rounded-full bg-[#6366f1] border-none cursor-pointer transition-all duration-150 hover:-translate-y-0.5"
+                                                className="fixed z-20 bottom-24 right-8 w-9 h-9 flex items-center justify-center rounded-full bg-accent border-none cursor-pointer transition-all duration-150 hover:-translate-y-0.5"
                                                 style={{ boxShadow: '0 4px 16px rgba(99,102,241,0.4)' }}
                                             >
-                                                <ArrowDownCircleIcon size={18} color="#fff" />
+                                                <ArrowDownCircleIcon size={18} className="text-white" />
                                             </button>
                                         )}
 
@@ -618,7 +958,7 @@ function Home() {
 
                                     {/* Unread badge */}
                                     {chatUsersInfo[currentChatId]?.newMessages > 0 && (
-                                        <div className="fade-in-up absolute bottom-[88px] left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3.5 py-1.5 rounded-[20px] text-xs font-medium text-[#818cf8] border border-[rgba(99,102,241,0.35)] bg-[rgba(99,102,241,0.12)] backdrop-blur-md">
+                                        <div className="fade-in-up absolute bottom-[88px] left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium text-accent-light border border-accent/35 bg-accent/10 backdrop-blur-md">
                                             <MoveDown size={13} />
                                             {chatUsersInfo[currentChatId].newMessages} unread messages
                                         </div>
@@ -627,15 +967,13 @@ function Home() {
                                     {/* ── FOOTER ── */}
                                     <footer
                                         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
-                                        className="z-10 flex flex-col border-t border-white/[0.06] bg-[rgba(14,16,24,0.9)] backdrop-blur-xl"
+                                        className="z-10 flex flex-col border-t border-white/[0.06] bg-surface-800/90 backdrop-blur-xl"
                                     >
-                                        {/* Reply preview strip — slides in when isReplying */}
                                         <ReplyPreviewStrip />
 
-                                        {/* Input row */}
                                         <div className="flex items-center gap-3 h-20 px-5">
-                                            <div className={`msg-input-wrap flex flex-1 items-center gap-2 bg-[#1a1d28] border border-white/[0.06] rounded-[20px] px-1 pr-1.5 transition-all duration-200 ${isReplying ? 'msg-input-wrap-replying' : ''}`}>
-                                                <div className="flex items-center px-1 text-[#4a4e6a] flex-shrink-0">
+                                            <div className={`msg-input-wrap flex flex-1 items-center gap-2 bg-surface-700 border border-white/[0.06] rounded-2xl px-1 pr-1.5 transition-all duration-200 ${isReplying ? 'msg-input-wrap-replying' : ''}`}>
+                                                <div className="flex items-center px-1 text-text-dim flex-shrink-0">
                                                     <FileUpload />
                                                 </div>
                                                 <input
@@ -655,15 +993,15 @@ function Home() {
                                                             ? `Reply to ${messageBeingReplied?.sender === user._id ? 'yourself' : context.currentChatUser?.username}…`
                                                             : "Type a message…"
                                                     }
-                                                    className="flex-1 bg-transparent border-none outline-none text-[#f1f2f7] text-sm py-3.5 px-2 placeholder-[#4a4e6a]"
+                                                    className="flex-1 bg-transparent border-none outline-none text-text-primary text-sm py-3.5 px-2 placeholder-text-dim"
                                                 />
                                             </div>
                                             <button
                                                 onClick={handleSend}
-                                                className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-[14px] border-none cursor-pointer transition-all duration-150 hover:-translate-y-0.5 hover:scale-[1.04] active:scale-95"
+                                                className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-xl border-none cursor-pointer transition-all duration-150 hover:-translate-y-0.5 hover:scale-[1.04] active:scale-95"
                                                 style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 14px rgba(99,102,241,0.4)' }}
                                             >
-                                                <Send size={18} color="#fff" />
+                                                <Send size={18} className="text-white" />
                                             </button>
                                         </div>
                                     </footer>
@@ -690,6 +1028,14 @@ function Home() {
                     )}
                 </div>
             </div>
+
+            {/* ── SUMMARY DRAWER (portal-like, outside main layout) ── */}
+            <SummaryDrawer
+                isOpen={summaryOpen}
+                onClose={() => setSummaryOpen(false)}
+                isLoading={summaryLoading}
+                summary={summaryData}
+            />
         </>
     )
 }

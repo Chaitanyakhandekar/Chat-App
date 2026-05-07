@@ -13,6 +13,8 @@ import { Chat } from "../models/chat.model.js";
 import { getIO } from "../sockets/socketInstance.js";
 import { socketEvents } from "../constants/socketEvents.js";
 import { Message } from "../models/message.model.js";
+import { summarizeChat } from "../services/ai.service.js";
+import { summarizeChatService } from "../services/chat.services.js";
 
 
 const isChatExists = asyncHandler(async (req, res) => {
@@ -375,6 +377,17 @@ const getUserChatUsersServer = async (userId)=>{
 
 }
 
+const getSummarizedChat = asyncHandler(async (req,res)=>{
+
+    const {chatId} = req.params
+
+    const summary = await summarizeChatService(chatId)
+
+    return res.status(200).json(
+        new ApiResponse(200,summary,"Chat Summarized Successfully.")
+    )
+})
+
 
 export {
     createGroupChat,
@@ -383,5 +396,6 @@ export {
     isChatExists,
     getChatById,
     getUserChatUsers,
-    getUserChatUsersServer
+    getUserChatUsersServer,
+    getSummarizedChat
 }

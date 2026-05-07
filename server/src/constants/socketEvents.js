@@ -2,15 +2,18 @@ export const socketEvents = {
     CONNECTION:"connection",
     DISCONNECTION:"disconnect",
     NEW_MESSAGE:"new_message",
+    NEW_MESSAGE_GROUP:"new_message_group",
     JOIN_CHAT:"join_chat",
     LEAVE_CHAT:"leave_chat",
     ERROR:"error",
     TYPING:"typing",
+    TYPING_GROUP:"typing_group",
     USER_ONLINE:"user_online",
     USER_OFFLINE:"user_offline",
     ONLINE_USERS:"online_users",
     MESSAGE_DELIVERED_SINGLE_CHAT:"message_delivered_single_chat",
     MESSAGE_SEEN_SINGLE_CHAT:"message_seen_single_chat",
+    MESSAGE_SEEN_GROUP_CHAT:"message_seen_group_chat",
     MESSAGE_SENT_SINGLE_CHAT:"message_sent_single_chat",
     MESSAGE_SEEN_ERROR:"message_seen_error",
     USER_LOGGED_IN:"user_logged_in",
@@ -21,6 +24,7 @@ export const socketEvents = {
     GROUP_CREATED:"group_created",
     ADD_MEMBER_IN_GROUP:"add_member_in_group",
     MARK_MEMBER_AS_ADMIN:  "mark_member_as_admin",
-    UNMARK_MEMBER_AS_ADMIN:"unmark_member_as_admin"
+    UNMARK_MEMBER_AS_ADMIN:"unmark_member_as_admin",
+    NEW_NOTIFICATION:"new_notification"
     
 }

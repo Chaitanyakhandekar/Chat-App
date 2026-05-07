@@ -12,8 +12,17 @@ import { sendEmail } from "../services/brevoMail.service.js";
 import { Message } from "../models/message.model.js";
 import { validObjectId } from "../utils/isValidObjectId.js";
 import { assertRequiredFields } from "../utils/fields validations/assertRequiredFields.js";
+import { deleteForEveryoneService, deleteForMeService, getSeenMembersService } from "../services/message.service.js";
+import { getIO } from "../sockets/socketInstance.js";
+import { socketEvents } from "../constants/socketEvents.js";
 
 
+/**
+ * @description Controller for fetching conversation between two chat users.
+ * @access single chat members
+ * @method GET
+ * @param id (other chat user id)
+ */
 const getConversation = asyncHandler(async (req,res)=>{
     const id = req?.user?._id || null
     const otherUserId = req?.params?.id || null
@@ -32,8 +41,15 @@ const getConversation = asyncHandler(async (req,res)=>{
             {
                 sender:otherUserId,
                 receiver:id
+            },
+            
+        ],
+            deletedFor: {
+                $nin: [req.user._id]
+            },
+            deleteForEveryone: {
+                $ne: true
             }
-        ]
       }
     )
 
@@ -53,6 +69,13 @@ const getConversation = asyncHandler(async (req,res)=>{
     
 })
 
+
+/**
+ * @description Controller for fetching conversation of group chat.
+ * @access every group member
+ * @method GET
+ * @param id (Group Id)
+ */
 const getGroupConversation = asyncHandler(async (req,res)=>{
     const id = req?.user?._id || null
     const groupId = req?.params?.id || null
@@ -85,6 +108,13 @@ const getGroupConversation = asyncHandler(async (req,res)=>{
     
 })
 
+
+/**
+ * @description Controller for upload image that being send in chat.
+ * @access single chat members
+ * @method POST
+ * @param req.files (files uploaded via multer)
+ */
 const uploadImage = asyncHandler(async (req,res)=>{
 
     const images = req.files
@@ -124,6 +154,15 @@ const uploadImage = asyncHandler(async (req,res)=>{
 
 })
 
+
+/**
+ * @description Controller for send reply in single chat.
+ * @access single chat members
+ * @method POST
+ * @param messageId (for which sending reply)
+ * @param chatId 
+ * @param replyMessage (reply text)
+ */
 const replyToMessage = asyncHandler(async (req,res)=>{
 
     const {messageId,chatId,replyMessage} = req.body
@@ -143,8 +182,74 @@ const replyToMessage = asyncHandler(async (req,res)=>{
 
 })
 
+
+/**
+ * @description Controller for delete message for me.
+ * @access single chat (owner)
+ *         group chat (every member)
+ * @method DELETE
+ */
+const deleteForMe = asyncHandler(async (req,res)=>{
+
+    const messageId = req.params.id
+    const userId = req.user._id
+
+    const message = await deleteForMeService(messageId,userId)
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200,message,"Message Deleted For User Successfully.")
+        )
+
+    
+})
+
+
+/**
+ * @description Controller for Delete message for everyone
+ * @access message owner
+ * @method DELETE
+ * @param id (messageId)
+ */
+const deleteForEveryone = asyncHandler(async (req,res)=>{
+
+    const messageId = req.params.id
+
+    const message = await deleteForEveryoneService(messageId)
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200,message,"Message Deleted for Everyone Successfully.")
+        )
+})
+
+/**
+ * @description Controller for fetching members who have seen the message.
+ * @access single chat (message sender and receiver)
+ *         group chat (message sender and group members)
+ * @method GET
+ * @param id (messageId)
+ */
+const getSeenMembers = asyncHandler(async(req,res)=>{
+    
+    const messageId = req.params.id
+
+    const seenMembers = await getSeenMembersService(messageId)
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200,seenMembers,"Seen Members Feteched Successfully.")
+        )
+})
+
 export {
     getConversation,
     uploadImage,
-    getGroupConversation
+    getGroupConversation,
+    deleteForMe,
+    deleteForEveryone,
+    getSeenMembers
 }
