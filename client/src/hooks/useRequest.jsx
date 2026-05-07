@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useGroupChatStore } from '../store/useGroupChatStore'
 import { chatApi } from '../api/chat.api'
 import { useChatStore } from '../store/useChatStore'
@@ -10,11 +10,22 @@ export const useRequest = () => {
     const { universalInfo, updateNotificationsCount, incrementNotificationCount, setRequests, requests } = useChatStore()
     const [loading, setLoading] = React.useState(false)
 
+    const [sendingRequest, setSendingRequest] = useState(false);
+    const [requestSent, setRequestSent] = useState(false);
 
-    const createGroup = async (groupName, participants) => {
-        setLoading(true)
-        console.log("Creating Group with Data :: ", participants)
-        const response = await chatApi.createGroupChat(groupName, participants)
+
+    const sendFriendRequest = async (friendId) => {
+        setSendingRequest(true);
+        try {
+            const response = await requestApi.sendFriendRequest(friendId);
+            if (response.success) {
+                setRequestSent(true);
+            }
+        } catch (error) {
+            console.error('Failed to send friend request:', error);
+        } finally {
+            setSendingRequest(false);
+        }
     }
 
     const fetchRequests = async () => {
@@ -48,9 +59,13 @@ export const useRequest = () => {
 
         loading,
         setLoading,
-        createGroup,
         fetchRequests,
         acceptRequest,
-        rejectRequest
+        rejectRequest,
+        sendFriendRequest,
+        sendingRequest,
+        setSendingRequest,
+        requestSent,
+        setRequestSent
     }
 }

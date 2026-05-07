@@ -34,6 +34,12 @@ export const sendFriendReuest = asyncHandler(async (req, res) => {
 
     io.to(friendId.toString()).emit(socketEvents.NEW_REQUEST, newRequest)
 
+    return res
+        .status(201)
+        .json(
+            new ApiResponse(201, newRequest, "Friend Request Sent.")
+        )
+
 })
 
 /**

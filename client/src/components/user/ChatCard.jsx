@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useContext } from 'react'
 import { authContext } from '../../context/AuthProvider.jsx'
 import { messageApi } from '../../api/message.api.js';
@@ -7,6 +7,10 @@ import { chatApi } from '../../api/chat.api.js';
 import { userAuthStore } from '../../store/userStore.js';
 import { useAssetsStore } from '../../store/useAssetsStore.js';
 import { useNavigate } from 'react-router-dom';
+import { requestApi } from '../../api/request.api.js';
+import { UserPlus, Check } from 'lucide-react';
+import { useRequest } from '../../hooks/useRequest.jsx';
+
 
 const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount, setIsGroupChat, setGroupChat } = useChatStore.getState();
 
@@ -32,8 +36,24 @@ function ChatCard({
     const context = useContext(authContext);
     const navigate = useNavigate()
     const { userChats, setCurrentPreviewFile, addChat, resetUserSearch } = useChatStore();
-    const user1 = userAuthStore().user;
+    const { user: currentUser } = userAuthStore();
     const { scrollToBottomInChat, setScrollToBottomInChat } = useAssetsStore()
+
+    const {
+        sendFriendRequest,
+        sendingRequest,
+        setSendingRequest,
+        requestSent,
+        setRequestSent
+    } = useRequest()
+
+
+    const handleSendFriendRequest = async (e) => {
+        e.stopPropagation();
+        if (sendingRequest || requestSent) return;
+
+        await sendFriendRequest(user._id)
+    };
 
     const createSingleChat = async () => {
         const response = await chatApi.createSingleChat(user._id);
@@ -168,22 +188,58 @@ function ChatCard({
                     )}
                 </div>
 
-                {/* Time + unread badge */}
-                {newMessages > 0 && (
-                    <div className="flex flex-col items-end gap-[5px] flex-shrink-0">
-                        {time && (
-                            <span className="chat-card-time text-[10.5px] text-[#4a4e6a] tracking-[-0.3px]">
-                                {time}
-                            </span>
-                        )}
-                        <div
-                            className="flex items-center justify-center min-w-[18px] h-[18px] px-[5px] rounded-[20px] text-[10px] font-bold text-white"
-                            style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 2px 8px rgba(99,102,241,0.45)' }}
+                {/* Time + unread badge + friend request */}
+                <div className="flex flex-col items-end gap-[5px] flex-shrink-0">
+                    {newMessages > 0 && (
+                        <>
+                            {time && (
+                                <span className="chat-card-time text-[10.5px] text-[#4a4e6a] tracking-[-0.3px]">
+                                    {time}
+                                </span>
+                            )}
+                            <div
+                                className="flex items-center justify-center min-w-[18px] h-[18px] px-[5px] rounded-[20px] text-[10px] font-bold text-white"
+                                style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 2px 8px rgba(99,102,241,0.45)' }}
+                            >
+                                {newMessages}
+                            </div>
+                        </>
+                    )}
+
+                    {/* Send Friend Request Button - only in search mode for non-friends */}
+                    {searchMode && user?.isFriend === false && (
+                        <button
+                            onClick={handleSendFriendRequest}
+                            disabled={sendingRequest || requestSent}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 ${requestSent
+                                ? 'bg-[#22d3a0]/10 text-[#22d3a0] cursor-default'
+                                : sendingRequest
+                                    ? 'bg-white/[0.05] text-[#4a4e6a] cursor-wait'
+                                    : 'bg-[rgba(99,102,241,0.15)] text-[#818cf8] hover:bg-[rgba(99,102,241,0.25)] active:scale-95'
+                                }`}
+                            style={{ border: requestSent ? '1px solid rgba(34,211,160,0.3)' : '1px solid rgba(99,102,241,0.3)' }}
+                            title={requestSent ? 'Friend request sent' : 'Send friend request'}
                         >
-                            {newMessages}
-                        </div>
-                    </div>
-                )}
+                            {requestSent ? (
+                                <>
+                                    <Check size={12} />
+                                    <span>Sent</span>
+                                </>
+                            ) : sendingRequest ? (
+                                <span className="flex items-center gap-1">
+                                    <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#4a4e6a] inline-block" />
+                                    <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#4a4e6a] inline-block" />
+                                    <span className="typing-dot-card w-[3px] h-[3px] rounded-full bg-[#4a4e6a] inline-block" />
+                                </span>
+                            ) : (
+                                <>
+                                    <UserPlus size={12} />
+                                    <span>Add</span>
+                                </>
+                            )}
+                        </button>
+                    )}
+                </div>
             </div>
         </>
     )
