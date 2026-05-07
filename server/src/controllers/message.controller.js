@@ -12,7 +12,7 @@ import { sendEmail } from "../services/brevoMail.service.js";
 import { Message } from "../models/message.model.js";
 import { validObjectId } from "../utils/isValidObjectId.js";
 import { assertRequiredFields } from "../utils/fields validations/assertRequiredFields.js";
-import { deleteForEveryoneService, deleteForMeService } from "../services/message.service.js";
+import { deleteForEveryoneService, deleteForMeService, getSeenMembersService } from "../services/message.service.js";
 import { getIO } from "../sockets/socketInstance.js";
 import { socketEvents } from "../constants/socketEvents.js";
 
@@ -225,10 +225,31 @@ const deleteForEveryone = asyncHandler(async (req,res)=>{
         )
 })
 
+/**
+ * @description Controller for fetching members who have seen the message.
+ * @access single chat (message sender and receiver)
+ *         group chat (message sender and group members)
+ * @method GET
+ * @param id (messageId)
+ */
+const getSeenMembers = asyncHandler(async(req,res)=>{
+    
+    const messageId = req.params.id
+
+    const seenMembers = await getSeenMembersService(messageId)
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200,seenMembers,"Seen Members Feteched Successfully.")
+        )
+})
+
 export {
     getConversation,
     uploadImage,
     getGroupConversation,
     deleteForMe,
-    deleteForEveryone
+    deleteForEveryone,
+    getSeenMembers
 }

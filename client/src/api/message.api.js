@@ -107,6 +107,29 @@ class MessageApi{
         }
     }
 
+    getSeenMembers = async (messageId) =>{
+        try {
+            const response = await axios.get(`${this.baseUrl}/seen-by/${messageId}`,
+                {
+                    withCredentials:true
+                }
+            )
+             console.log("Seen Members response :: ",response.data)
+
+            return {
+                success:true,
+                data:response.data.data,
+                message:"Seen members retrieved successfully."
+            }
+        } catch (error) {
+            return{
+                success:false,
+                message:error.message,
+                error:error
+            }
+        }
+    }
+
 }
 
 export const messageApi = new MessageApi()

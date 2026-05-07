@@ -32,6 +32,18 @@ function App() {
     }
     // context.setUser
   }
+  const beep = () => {
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const oscillator = audioCtx.createOscillator();
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime); // frequency in Hz
+  oscillator.connect(audioCtx.destination);
+
+  setTimeout(() => {
+    oscillator.stop();
+  }, 200); // duration in ms
+};
+
 
   useEffect(()=>{
     authMe();
@@ -39,11 +51,16 @@ function App() {
                 console.log("Emitting GET_ONLINE_STATUS for user:", user._id);
                 socket.emit(socketEvents.GET_ONLINE_STATUS);
       }
+beep();
+
+
+
   },[])
 
   return (
-   <Routes>
-
+    <Routes>
+    
+    <Route path='/beep' element={ <button onClick={beep}>Beep</button>}/>
     <Route path='/' element={<ProtectedRoute><Home /></ProtectedRoute>}/>
     <Route path='/register' element={<ProtectedRouteAuth><Register /></ProtectedRouteAuth>}/>
     <Route path='/login' element={<ProtectedRouteAuth><Login /></ProtectedRouteAuth>}/>

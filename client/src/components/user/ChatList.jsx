@@ -46,12 +46,12 @@ function ChatList({
                             <div className="flex items-center justify-between px-5 pt-6 pb-4">
                                 <div className="flex items-center gap-2">
                                     <span className="text-base font-bold tracking-tight">Messages</span>
-                                    {totalUnread > 0 && (
+                                    {/* {totalUnread > 0 && (
                                         <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold text-white"
                                             style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}>
                                             {totalUnread}
                                         </span>
-                                    )}
+                                    )} */}
                                 </div>
                                 <button
                                     onClick={() => togglePanel('createGroup')}
@@ -83,7 +83,7 @@ function ChatList({
                             {/* Users */}
                             <div className="flex-1 overflow-y-auto px-2 custom-scroll">
                                 {((!query   || query.trim() === "") && groupsOnly) && !createGroup && users?.map((chat) => (
-                                    chat.isGroupChat ? 
+                                    chat?.isGroupChat ? 
                                      <ChatCard
                                         key={chat._id}
                                         user={chat.participants[0]._id === user._id ? chat.participants[1] : chat.participants[0]}

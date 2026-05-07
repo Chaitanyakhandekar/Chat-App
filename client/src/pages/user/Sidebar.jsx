@@ -15,6 +15,7 @@ import ChatList from "./../../components/user/ChatList.jsx"
 import GroupInfo from ".././../components/user/GroupInfo.jsx"
 import { useGroupChatStore } from "../../store/useGroupChatStore.js"
 import Notification from "../../components/user/Notification.jsx"
+import { useChatStore } from "../../store/useChatStore.js"
 
 function Sidebar({
   activePanel,
@@ -27,13 +28,15 @@ function Sidebar({
   totalUnread,
   user,
   hideOnMobile = false,
-  searchUsers=()=>{},
+  searchUsers = () => { },
   paramChatId = null
 }) {
 
   const togglePanel = (panel) =>
     setActivePanel(prev => prev === panel ? null : panel)
-      const {setNewGroupInfo,GroupInfo,newGroupNotication,setNewGroupNotification,resetParticipant,participants} = useGroupChatStore()
+  const { setNewGroupInfo, GroupInfo, newGroupNotication, setNewGroupNotification, resetParticipant, participants } = useGroupChatStore()
+
+  const { updateNotificationsCount, universalInfo } = useChatStore()
 
 
   // Nav button
@@ -49,11 +52,9 @@ function Sidebar({
           console.log("Clicked Panel :: ", participants)
         }}
         title={tooltip}
-        className="relative flex items-center justify-center w-10 h-10 rounded-[13px] transition-all duration-200 group"
+        className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 group ${active ? 'bg-accent-glow' : 'hover:bg-white/[0.03]'
+          }`}
         style={{
-          background: active
-            ? "linear-gradient(135deg,rgba(99,102,241,0.28),rgba(139,92,246,0.18))"
-            : "transparent",
           border: active
             ? "1px solid rgba(99,102,241,0.4)"
             : "1px solid transparent",
@@ -64,7 +65,7 @@ function Sidebar({
       >
         <Icon
           size={18}
-          color={active ? "#818cf8" : "#4a4e6a"}
+          className={active ? 'text-accent-light' : 'text-text-dim'}
         />
 
         {badge > 0 && (
@@ -78,7 +79,7 @@ function Sidebar({
           </span>
         )}
 
-        <span className="absolute left-full ml-2.5 px-2 py-1 text-[11px] font-medium text-[#c4c6e7] bg-[#1a1d28] border border-white/[0.08] rounded-[8px] whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+        <span className="absolute left-full ml-2.5 px-2 py-1 text-[11px] font-medium text-text-secondary bg-surface-700 border border-white/[0.08] rounded-lg whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
           {tooltip}
         </span>
       </button>
@@ -88,10 +89,10 @@ function Sidebar({
   return (
     <>
       {/* ICON RAIL */}
-      <div className={`${hideOnMobile ? 'hidden md:flex' : 'flex'} flex-col items-center gap-1.5 w-[62px] min-w-[62px] h-[100dvh] bg-[#0a0b0f] border-r border-white/[0.05] pt-5 pb-4 z-30`}>
+      <div className={`${hideOnMobile ? 'hidden md:flex' : 'flex'} flex-col items-center gap-1.5 w-[62px] min-w-[62px] h-[100dvh] bg-surface-900 border-r border-white/[0.05] pt-5 pb-4 z-30`}>
 
         <div
-          className="flex items-center justify-center w-9 h-9 rounded-[11px] mb-4"
+          className="flex items-center justify-center w-10 h-10 rounded-xl mb-4 shadow-lg"
           style={{
             background:
               "linear-gradient(135deg,#6366f1,#8b5cf6)",
@@ -99,7 +100,7 @@ function Sidebar({
               "0 4px 14px rgba(99,102,241,0.45)"
           }}
         >
-          <Zap size={15} color="#fff" />
+          <Zap size={18} className="text-white" />
         </div>
 
         <NavIconBtn
@@ -111,7 +112,7 @@ function Sidebar({
         <NavIconBtn
           icon={Bell}
           panel="notifications"
-          badge={totalUnread}
+          badge={universalInfo.notifications}
           tooltip="Notifications"
         />
 
@@ -139,17 +140,20 @@ function Sidebar({
 
 
       {/* SIDEBAR PANEL */}
-      <div className={`${hideOnMobile ? 'hidden md:flex' : 'flex'} sidebar-accent relative flex flex-col w-full md:w-[280px] md:min-w-[260px] h-screen bg-[#0e1018] border-r border-white/[0.06]`}>
+      <div className={`${hideOnMobile ? 'hidden md:flex' : 'flex'} relative flex flex-col w-full md:w-[300px] md:min-w-[280px] h-screen bg-surface-800 border-r border-white/[0.06]`}>
 
-        {/* Notifications */}      
-         {activePanel === "notifications" && 
-              <Notification
-              activePanel={activePanel}
-              setActivePanel={setActivePanel}
-              chatUsersInfo={chatUsersInfo}
-              newGroupNotication={newGroupNotication}
-              />
-          }
+        {/* Top gradient accent */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent opacity-60" />
+
+        {/* Notifications */}
+        {activePanel === "notifications" &&
+          <Notification
+            activePanel={activePanel}
+            setActivePanel={setActivePanel}
+            chatUsersInfo={chatUsersInfo}
+            newGroupNotication={newGroupNotication}
+          />
+        }
 
         {/* Profile */}
         {activePanel === "profile" &&
@@ -200,18 +204,18 @@ function Sidebar({
         {(activePanel === null ||
           activePanel === "chats") && (
 
-          <ChatList
-            togglePanel={setActivePanel}
-            query={query}
-            setQuery={setQuery}
-            users={users}
-            setShowSidebar={setShowSidebar}
-            groupsOnly={false}
-            paramChatId={paramChatId}
-            searchUsers={searchUsers}
-          />
+            <ChatList
+              togglePanel={setActivePanel}
+              query={query}
+              setQuery={setQuery}
+              users={users}
+              setShowSidebar={setShowSidebar}
+              groupsOnly={false}
+              paramChatId={paramChatId}
+              searchUsers={searchUsers}
+            />
 
-        )}
+          )}
 
 
         {/* Group Info */}

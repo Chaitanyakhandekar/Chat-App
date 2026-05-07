@@ -66,6 +66,18 @@ export const messageHandler = (socket) => {
         setTypingStatus(data.chatId, data.isTyping)
     })
 
+    socket.on(socketEvents.TYPING_GROUP, (data) => {     // Listener for receiving typing status updates from the socket server
+        // console.log("Typing event received from socket server:",data);
+        const { setTypingStatus,addTyper,removeTyper } = useChatStore.getState();
+        setTypingStatus(data.chatId, data.isTyping)
+        if(data.isTyping){
+            addTyper(data.chatId,data.user)
+        }
+         else {
+            removeTyper(data.chatId,data.user._id)
+         }
+    })
+
 
     socket.on(socketEvents.MESSAGE_SEEN_SINGLE_CHAT, (payload) => {       // Listener for Updating Seen Status of Message
         console.log("message seen status : ", payload.status)

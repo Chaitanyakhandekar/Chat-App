@@ -4,7 +4,11 @@ const requestSchema = new Schema({
 
     type: {
         type: String,
-        enum: ["NEW_CHAT", "NEW_GROUP"]
+        enum: [
+            "DIRECT_CHAT_REQUEST",
+            "GROUP_INVITE",
+            "GROUP_JOIN_REQUEST"
+        ],
     },
     entityId: {
         type: mongoose.Types.ObjectId,
@@ -14,8 +18,12 @@ const requestSchema = new Schema({
         enum: ["pending", "accepted", "rejected"],
         default: "pending"
     },
+    message: {
+        type: String,
+    },
     processedAt: {
-        type: Date
+        type: Date,
+        default: Date.now()
     },
     sender: {
         type: mongoose.Types.ObjectId,
@@ -28,15 +36,16 @@ const requestSchema = new Schema({
     isDeleted: {
         type: Boolean,
         default: false
+    },
+    isRead: {
+        type: Boolean,
+        default: false
     }
 
 }, { timestamps: true })
 
-requestSchema.index({ receiver: 1, status: 1, createdAt: -1 })
-requestSchema.index({ sender: 1 })
 requestSchema.index(
-    {sender:1, receiver:1 , type:1},
-    {unique:true}
+    { sender: 1, receiver: 1, type: 1, status: 1 },
+    { unique: true, partialFilterExpression: { status: "pending" } }
 )
-
 export const Request = mongoose.model("Request", requestSchema)

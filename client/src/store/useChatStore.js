@@ -1,26 +1,56 @@
-import {create} from "zustand"
-import {devtools} from "zustand/middleware"
+import { create } from "zustand"
+import { devtools } from "zustand/middleware"
 import { getTime } from "../services/getTime"
 
 export const useChatStore = create(
     devtools(
-        (set)=>({
-            userMessages:{},
+        (set) => ({
 
-            setUserMessages:(chatId,messages)=>(
-                set((state)=>({
-                    userMessages:{
+            universalInfo: {
+                notifications: 0
+            },
+
+            updateNotificationsCount: (count = 0) => {
+                set({
+                    universalInfo: {
+                        notifications: count
+                    }
+                })
+            },
+
+            incrementNotificationCount: (count = 1) => {
+                set((state) => ({
+                    universalInfo: {
+                        ...state.universalInfo,
+                        notifications: state.universalInfo.notifications + count
+                    }
+                }))
+            },
+
+            requests: [],
+
+            setRequests: (req = []) => {
+                set({
+                    requests: req
+                })
+            },
+
+            userMessages: {},
+
+            setUserMessages: (chatId, messages) => (
+                set((state) => ({
+                    userMessages: {
                         ...state.userMessages,
-                        [chatId]:messages
+                        [chatId]: messages
                     }
                 }))
             ),
 
-            addMessage:(chatId,message)=>(
-                set((state)=>({
-                    userMessages:{
+            addMessage: (chatId, message) => (
+                set((state) => ({
+                    userMessages: {
                         ...state.userMessages,
-                        [chatId]:[
+                        [chatId]: [
                             ...state.userMessages[chatId] || [],
                             message
                         ]
@@ -28,34 +58,34 @@ export const useChatStore = create(
                 }))
             ),
 
-            replaceMessage:(chatId,tempId,message)=>{
-                set((state)=>({
-                    userMessages:{
+            replaceMessage: (chatId, tempId, message) => {
+                set((state) => ({
+                    userMessages: {
                         ...state.userMessages,
                         [chatId]:
-                            state.userMessages[chatId].map((chat)=>(
-                                chat._id  === tempId ? message : chat
+                            state.userMessages[chatId].map((chat) => (
+                                chat._id === tempId ? message : chat
                             ))
-                        
+
                     }
                 }))
             },
 
-            removeMessage:(chatId,messageId)=>{
-                set((state)=>({
-                    userMessages:{
+            removeMessage: (chatId, messageId) => {
+                set((state) => ({
+                    userMessages: {
                         ...state.userMessages,
-                        [chatId]: state.userMessages[chatId].filter(message=> message._id !== messageId)
+                        [chatId]: state.userMessages[chatId].filter(message => message._id !== messageId)
                     }
                 }))
             },
 
-            updateSeenStatus:(chatId,messageId,seenStatus)=>{
-                set((state)=>({
-                    userMessages:{
+            updateSeenStatus: (chatId, messageId, seenStatus) => {
+                set((state) => ({
+                    userMessages: {
                         ...state.userMessages,
-                        [chatId]: state.userMessages[chatId].map((message)=>{
-                            if(message._id === messageId){
+                        [chatId]: state.userMessages[chatId].map((message) => {
+                            if (message._id === messageId) {
                                 message.status = seenStatus
                             }
                             return message
@@ -64,105 +94,107 @@ export const useChatStore = create(
                 }))
             },
 
-            currentChatId:null,
+            currentChatId: null,
 
-            setCurrentChatId: (chatId)=>(
+            setCurrentChatId: (chatId) => (
                 set({
-                    currentChatId:chatId
+                    currentChatId: chatId
                 })
             ),
 
             userChats: [],
 
-            setUserChats: (chats)=>{
+            setUserChats: (chats) => {
                 set({
-                    userChats:chats
+                    userChats: chats
                 })
             },
 
-            addChat:(chat)=>{
-                set((state)=>(
+            addChat: (chat) => {
+                set((state) => (
                     {
-                    userChats:[
-                        ...state.userChats,
-                        chat
-                    ]
-                }
+                        userChats: [
+                            ...state.userChats,
+                            chat
+                        ]
+                    }
                 ))
             },
 
-            tempChat:{},
+            tempChat: {},
 
-            setTempChat:(chat)=>{
+            setTempChat: (chat) => {
                 set({
-                    tempChat:chat
+                    tempChat: chat
                 })
             },
 
-            shiftChatAtFirstPosition:(chatId)=>{
-                set((state)=>{
-                    let chat = state.userChats.find(c=> c._id === chatId)
+            shiftChatAtFirstPosition: (chatId) => {
+                set((state) => {
+                    let chat = state.userChats.find(c => c._id === chatId)
                     let chats = state.userChats.filter(c => c._id !== chatId)
-                
-                return {
-                    userChats:[chat,...chats]
-                }  
-                    
+
+                    return {
+                        userChats: [chat, ...chats]
+                    }
+
                 })
             },
 
-            updateLastMessage:(chatId,message)=>{
-                set((state)=>({
-                    userChats: state.userChats?.map((chat)=>{
-                        if(chat._id === chatId){
+            updateLastMessage: (chatId, message) => {
+                set((state) => ({
+                    userChats: state.userChats?.map((chat) => {
+                        if (chat._id === chatId) {
                             return {
                                 ...chat,
-                                lastMessage:message
+                                lastMessage: message
                             }
                         }
                         return chat
                     })
                 }
-            ))
+                ))
             },
 
-            userSearch:[],
+            userSearch: [],
 
-            setUserSearch:(users)=>{
+            setUserSearch: (users) => {
                 set({
-                    userSearch:users
+                    userSearch: users
                 })
             },
 
-            resetUserSearch:()=>{
+            resetUserSearch: () => {
                 set({
-                    userSearch:[]
+                    userSearch: []
                 })
             },
 
-            chatUsersInfo:{},
+            chatUsersInfo: {},
 
-            setChatUsersInfo:(chats)=>{
+            setChatUsersInfo: (chats) => {
                 set({
-                    chatUsersInfo:chats.reduce((acc,chat)=>{
+                    chatUsersInfo: chats.reduce((acc, chat) => {
                         acc[chat._id] = {
-                            typing:false,
+                            typing: false,
+                            typers: [],
                             newMessages: chat.unreadMessagesCount || 0,
-                            online:false,
-                            time:"",
-                            newReactions:0
+                            online: false,
+                            time: "",
+                            newReactions: 0,
+                            notifications: 0
                         }
-                        
+
                         return acc;
-                    },{})
+                    }, {})
                 })
             },
 
-            incrementNewMessagesCount:(chatId,time=null)=>{
-                set((state)=>({
-                    chatUsersInfo:{
+            incrementNewMessagesCount: (chatId, time = null) => {
+                set((state) => ({
+                    chatUsersInfo: {
                         ...state.chatUsersInfo,
-                        [chatId]:{
+                        [chatId]: {
                             ...state.chatUsersInfo[chatId],
                             newMessages: state.chatUsersInfo[chatId].newMessages + 1,
                             time: time && getTime(time) || null
@@ -171,11 +203,11 @@ export const useChatStore = create(
                 }))
             },
 
-            incrementNewMessagesCountByN:(chatId,count=0)=>{
-                set((state)=>({
-                    chatUsersInfo:{
+            incrementNewMessagesCountByN: (chatId, count = 0) => {
+                set((state) => ({
+                    chatUsersInfo: {
                         ...state.chatUsersInfo,
-                        [chatId]:{
+                        [chatId]: {
                             ...state.chatUsersInfo[chatId],
                             newMessages: count,
                         }
@@ -183,59 +215,86 @@ export const useChatStore = create(
                 }))
             },
 
-            resetNewMessagesCount:(chatId)=>{
-                set((state)=>({
-                    chatUsersInfo:{
+            resetNewMessagesCount: (chatId) => {
+                set((state) => ({
+                    chatUsersInfo: {
                         ...state.chatUsersInfo,
-                        [chatId]:{
+                        [chatId]: {
                             ...state.chatUsersInfo[chatId],
-                            newMessages:0
+                            newMessages: 0
                         }
                     }
                 }))
             },
 
-            emitedTyping:false,
+            emitedTyping: false,
 
-            toogleEmitedTyping:(value)=>{
-                set((state)=>({
-                    emitedTyping:value
+            toogleEmitedTyping: (value) => {
+                set((state) => ({
+                    emitedTyping: value
                 }))
             },
 
-            setTypingStatus:(chatId,isTyping)=>{
-                set((state)=>({
-                    chatUsersInfo:{
+            setTypingStatus: (chatId, isTyping) => {
+                set((state) => ({
+                    chatUsersInfo: {
                         ...state.chatUsersInfo,
-                        [chatId]:{
+                        [chatId]: {
                             ...state.chatUsersInfo[chatId],
-                            typing:isTyping
+                            typing: isTyping
                         }
                     }
                 }))
             },
 
-            onlineStatus:{},
+            addTyper: (chatId, typers = []) => {
+                set((state) => ({
+                    chatUsersInfo: {
+                        ...state.chatUsersInfo,
+                        [chatId]: {
+                            ...state.chatUsersInfo[chatId],
+                            typers: [
+                                ...state.chatUsersInfo[chatId].typers,
+                                typers
+                            ]
+                        }
+                    }
+                }))
+            },
 
-            setOnlineStatus:(userId,status)=>{
-                set((state)=>({
-                    onlineStatus:{
+            removeTyper: (chatId, typerId) => {
+                set((state) => ({
+                    chatUsersInfo: {
+                        ...state.chatUsersInfo,
+                        [chatId]: {
+                            ...state.chatUsersInfo[chatId],
+                            typers: state.chatUsersInfo[chatId].typers.filter(typer => typer._id !== typerId)
+                        }
+                    }
+                }))
+            },
+
+            onlineStatus: {},
+
+            setOnlineStatus: (userId, status) => {
+                set((state) => ({
+                    onlineStatus: {
                         ...state.onlineStatus,
-                    [userId]: status
+                        [userId]: status
                     }
                 }))
             },
 
 
-            mediaFiles:{},
+            mediaFiles: {},
 
-            currentFile:{},
+            currentFile: {},
 
-            addMediaFile:(chatId,file)=>{
-                set((state)=>({
+            addMediaFile: (chatId, file) => {
+                set((state) => ({
                     mediaFiles: {
                         ...state.mediaFiles,
-                        [chatId]:[
+                        [chatId]: [
                             ...(state.mediaFiles[chatId]) || [],
                             file
                         ]
@@ -243,104 +302,104 @@ export const useChatStore = create(
                 }))
             },
 
-            removeMediaFile:(chatId,file)=>{
-                set(state=>({
-                    mediaFiles:{
+            removeMediaFile: (chatId, file) => {
+                set(state => ({
+                    mediaFiles: {
                         ...state.mediaFiles,
-                        [chatId]:state.mediaFiles[chatId].filter(media=> media.preview !== file.preview)
+                        [chatId]: state.mediaFiles[chatId].filter(media => media.preview !== file.preview)
                     }
                 }))
             },
 
-            resetMediaFiles:(chatId)=>{
-                set(state=>({
-                    mediaFiles:{
+            resetMediaFiles: (chatId) => {
+                set(state => ({
+                    mediaFiles: {
                         ...state.mediaFiles,
-                        [chatId]:[]
+                        [chatId]: []
                     }
                 }))
             },
 
-            setCurrentFile:(file)=>{
+            setCurrentFile: (file) => {
                 set({
-                    currentFile:file
+                    currentFile: file
                 })
             },
 
-            currentPreviewFile:{},
+            currentPreviewFile: {},
 
-            setCurrentPreviewFile:(file)=>{
+            setCurrentPreviewFile: (file) => {
                 set({
-                    currentPreviewFile:file
+                    currentPreviewFile: file
                 })
             },
 
-            isGroupChat:false,
+            isGroupChat: false,
 
 
-            setIsGroupChat:(value)=>{
+            setIsGroupChat: (value) => {
                 set({
-                    isGroupChat:value
+                    isGroupChat: value
                 })
             },
 
-            groupChat:null,
+            groupChat: null,
 
-            setGroupChat:(chat)=>{
+            setGroupChat: (chat) => {
                 set({
-                    groupChat:chat
+                    groupChat: chat
                 })
             },
 
-            isReplying:false,
+            isReplying: false,
 
-            setIsReplying:(value)=>{
+            setIsReplying: (value) => {
                 set({
-                    isReplying:value
+                    isReplying: value
                 })
             },
 
-            messageBeingReplied:null,
+            messageBeingReplied: null,
 
-            setMessageBeingReplied:(message)=>{
+            setMessageBeingReplied: (message) => {
                 set({
-                    messageBeingReplied:message
-                    
+                    messageBeingReplied: message
+
                 })
             },
 
-            reaction:null,
+            reaction: null,
 
-            setReaction:(messageId,reaction)=>{
+            setReaction: (messageId, reaction) => {
                 set({
-                    reaction:{
+                    reaction: {
                         messageId,
                         reaction
                     }
                 })
             },
 
-            resetReaction:()=>{
+            resetReaction: () => {
                 set({
-                    reaction:null
+                    reaction: null
                 })
             },
 
-            usersInfo:{},
+            usersInfo: {},
 
-            setUsersInfo:(users)=>{
-               set({
-                  usersInfo:users.reduce((acc,user)=>{
-                    acc[user._id]={
-                        online:false,
-                        typing:false,
-                    }
+            setUsersInfo: (users) => {
+                set({
+                    usersInfo: users.reduce((acc, user) => {
+                        acc[user._id] = {
+                            online: false,
+                            typing: false,
+                        }
 
-                    return acc;
-                },{})
-               })
+                        return acc;
+                    }, {})
+                })
             }
         }),
-        {name:"Chat Store"}
+        { name: "Chat Store" }
     )
 )

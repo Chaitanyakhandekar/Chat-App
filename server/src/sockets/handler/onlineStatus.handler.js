@@ -2,11 +2,21 @@ import { socketEvents } from "../../constants/socketEvents.js";
 import { addUserSocket,removeUserSocket,getUserSocket } from "../soketsMap.js";
 import { getUserChatPartners } from "../utils/getUserChatPartners.js";
 import { redis } from "../../redis/config.js";
+import { getUserGroupsService } from "../services/group.service.js";
 
 export const onlineStatusHandler = async(io,socket)=>{
 
     socket.join(socket.user?._id.toString())     // joining socket/user to its personal room
+
+    const groups = await getUserGroupsService(socket.user._id)
+
+    for (let group of groups){
+        socket.join(group.toString())
+        console.log("User Joined Group : ", group)
+    }
+
     console.log("User Joined Room : ", socket.user?._id.toString())
+    console.log("User Groups : ", groups)
 
     addUserSocket(socket.user?._id.toString(),socket.id)  // maping socket.id with user id in memory
 
