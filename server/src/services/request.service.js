@@ -28,7 +28,14 @@ const createFriendRequest = async (userId, friendId) => {
         sender: userId,
         receiver: friendId,
         type: "DIRECT_CHAT_REQUEST",
-        status: "pending"
+        $or: [
+            {
+                status: "pending"
+            },
+            {
+                status: "accepted"
+            }
+        ]
     });
 
     if (existingRequest) {
@@ -96,11 +103,16 @@ const getUserRequestsService = async (userId) => {
  * @description Service for accepting friend request
  * @access User
  * @param {ObjectId} requestId 
+ * @param {ObjectId} userId 
  * @returns Updated Request Object
  */
-const acceptRequestService = async (requestId) => {
+const acceptRequestService = async (requestId, userId) => {
 
     const request = await isRequestExists(requestId)
+
+    if (request.receiver.toString() !== userId.toString()) {
+        throw new ApiError(401, "Unauthorized User.")
+    }
 
     const newChat = await createSingleChatService(request.receiver, request.sender);
 
@@ -120,11 +132,16 @@ const acceptRequestService = async (requestId) => {
  * @description Service for rejecting friend request
  * @access User
  * @param {ObjectId} requestId 
+ * @param {ObjectId} userId 
  * @returns Updated Request Object
  */
-const rejectRequestService = async (requestId) => {
+const rejectRequestService = async (requestId, userId) => {
 
     const request = await isRequestExists(requestId)
+
+    if (request.receiver.toString() !== userId.toString()) {
+        throw new ApiError(401, "Unauthorized User.")
+    }
 
     request.status = "rejected"
 

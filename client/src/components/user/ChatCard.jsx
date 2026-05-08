@@ -220,7 +220,7 @@ function ChatCard({
                             style={{ border: requestSent ? '1px solid rgba(34,211,160,0.3)' : '1px solid rgba(99,102,241,0.3)' }}
                             title={requestSent ? 'Friend request sent' : 'Send friend request'}
                         >
-                            {requestSent ? (
+                            {requestSent || user?.requests[0]?.status === "pending" ? (
                                 <>
                                     <Check size={12} />
                                     <span>Sent</span>
