@@ -70,7 +70,7 @@ export const acceptFriendRequest = asyncHandler(async (req, res) => {
 
     const requestId = req.params.id;
 
-    const acceptedRequest = await acceptRequestService(requestId)
+    const acceptedRequest = await acceptRequestService(requestId,req.user._id)
 
     return res
         .status(200)
@@ -90,7 +90,7 @@ export const rejectFriendRequest = asyncHandler(async (req, res) => {
 
     const requestId = req.params.id;
 
-    const rejectedRequest = await rejectRequestService(friendId)
+    const rejectedRequest = await rejectRequestService(requestId,req.user._id)
 
     return res
         .status(200)
