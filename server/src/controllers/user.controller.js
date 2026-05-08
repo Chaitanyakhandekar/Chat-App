@@ -943,11 +943,58 @@ const searchUsers = asyncHandler(async (req, res) => {
     },
 
     {
+      $lookup: {
+        from: "requests",
+        let: {
+          userId: "$_id",
+          currentUserId: new mongoose.Types.ObjectId(req.user._id)
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr:
+              {
+                $or: [
+
+                  {
+                    $and: [
+                      { $eq: ["$sender", "$$userId"] },
+                      { $eq: ["$receiver", "$$currentUserId"] }
+                    ]
+                  },
+                  {
+                    $and: [
+                      { $eq: ["$sender", "$$currentUserId"] },
+                      { $eq: ["$receiver", "$$userId"] }
+                    ]
+                  }
+
+                ]
+              },
+              status: "pending",
+              type: "DIRECT_CHAT_REQUEST"
+            }
+          },
+          {
+            $project: {
+              status: 1,
+              type: 1,
+              sender: 1,
+              receiver: 1
+            }
+          }
+        ],
+        as: "requests"
+      }
+    },
+
+    {
       $project: {
         name: 1,
         username: 1,
         avtar: 1,
-        isFriend: 1
+        isFriend: 1,
+        requests: 1
       }
     }
   ])

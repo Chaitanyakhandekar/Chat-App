@@ -28,7 +28,14 @@ const createFriendRequest = async (userId, friendId) => {
         sender: userId,
         receiver: friendId,
         type: "DIRECT_CHAT_REQUEST",
-        status: "pending"
+        $or: [
+            {
+                status: "pending"
+            },
+            {
+                status: "accepted"
+            }
+        ]
     });
 
     if (existingRequest) {
