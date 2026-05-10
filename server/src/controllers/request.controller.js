@@ -32,7 +32,7 @@ export const sendFriendReuest = asyncHandler(async (req, res) => {
     const io = getIO()
 
 
-    io.to(friendId.toString()).emit(socketEvents.NEW_REQUEST, newRequest)
+    io.to(friendId.toString()).emit(socketEvents.NEW_NOTIFICATION, newRequest)
 
     return res
         .status(201)
@@ -70,7 +70,7 @@ export const acceptFriendRequest = asyncHandler(async (req, res) => {
 
     const requestId = req.params.id;
 
-    const acceptedRequest = await acceptRequestService(requestId,req.user._id)
+    const acceptedRequest = await acceptRequestService(requestId, req.user._id)
 
     return res
         .status(200)
@@ -90,7 +90,7 @@ export const rejectFriendRequest = asyncHandler(async (req, res) => {
 
     const requestId = req.params.id;
 
-    const rejectedRequest = await rejectRequestService(requestId,req.user._id)
+    const rejectedRequest = await rejectRequestService(requestId, req.user._id)
 
     return res
         .status(200)
