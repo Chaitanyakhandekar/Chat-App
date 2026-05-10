@@ -12,6 +12,8 @@ import { createNotificationService } from "./notification.service.js"
 import { isRequestExists } from "../utils/document existance check/request.js"
 import { request } from "express"
 import { createSingleChatService } from "./chat.services.js"
+import { getIO } from "../sockets/socketInstance.js"
+import { socketEvents } from "../constants/socketEvents.js"
 
 /**
  * @description Service For Creating New Friend Request
@@ -110,11 +112,30 @@ const acceptRequestService = async (requestId, userId) => {
 
     const request = await isRequestExists(requestId)
 
+    const user = await isUserExists(userId)
+
+    const io = getIO()
+
     if (request.receiver.toString() !== userId.toString()) {
         throw new ApiError(401, "Unauthorized User.")
     }
 
     const newChat = await createSingleChatService(request.receiver, request.sender);
+
+    const notificationPayload = {
+        sender: userId,
+        receivers: [request.sender],
+        type: "notify",
+        content: `${user.username} accepted your friend request`
+    }
+
+    const notification = await createNotificationService(notificationPayload)
+
+    if (notification) {
+
+        io.to(request.sender.toString()).emit(socketEvents.NEW_NOTIFICATION, notification)
+
+    }
 
     if (!newChat) {
         throw new ApiError(500, "Server Error While Creating New Chat.")

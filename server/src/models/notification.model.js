@@ -15,7 +15,7 @@ const notificationSchema = new Schema({
     },
     type: {
         type: String,
-        enum: ["group_add", "mention", "message", "admin_promote", "friend_request"]
+        enum: ["group_add", "mention", "message", "admin_promote", "friend_request", "notify"]
     },
     isGroupNotification: {
         type: Boolean,
