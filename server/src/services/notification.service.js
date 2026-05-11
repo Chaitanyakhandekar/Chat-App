@@ -25,7 +25,7 @@ const createNotificationService = async (senderId, currentUserId, receivers = []
         throw new ApiError(400, "Type and Content are Required Fields.")
     }
 
-    if (!isValidObjectId(entityId)) {
+    if (entityId && !isValidObjectId(entityId)) {
         throw new ApiError(400, "Invalid Entity Id.")
     }
 
@@ -94,7 +94,10 @@ const getUserNotificationsService = async (userId) => {
         },
         {
             $match: {
-                "requestDetails.status": "pending",
+                $or: [
+                    { entity: null },
+                    { "requestDetails.status": "pending" }
+                ]
             }
         },
         {

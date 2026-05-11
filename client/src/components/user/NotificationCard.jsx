@@ -40,6 +40,12 @@ const NOTIFICATION_CONFIG = {
     bg: "rgba(196,198,231,0.10)",
     label: "Notification",
   },
+  notify: {
+    icon: Bell,
+    color: "#c4c6e7",
+    bg: "rgba(196,198,231,0.10)",
+    label: "Notification",
+  }
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -47,12 +53,12 @@ const NOTIFICATION_CONFIG = {
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime()
   const m = Math.floor(diff / 60000)
-  if (m < 1)  return "just now"
+  if (m < 1) return "just now"
   if (m < 60) return `${m}m ago`
   const h = Math.floor(m / 60)
   if (h < 24) return `${h}h ago`
   const d = Math.floor(h / 24)
-  if (d < 7)  return `${d}d ago`
+  if (d < 7) return `${d}d ago`
   return new Date(dateStr).toLocaleDateString(undefined, { month: "short", day: "numeric" })
 }
 
@@ -74,7 +80,7 @@ function Avatar({ src, username, size = 36 }) {
     />
   ) : (
     <div
-    //   style={{ width: size, height: size, fontSize: size * 0.36 }}
+      //   style={{ width: size, height: size, fontSize: size * 0.36 }}
       className="rounded-full flex-shrink-0 flex items-center justify-center font-semibold"
       style={{
         width: size,

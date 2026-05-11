@@ -14,6 +14,7 @@ import { request } from "express"
 import { createSingleChatService } from "./chat.services.js"
 import { getIO } from "../sockets/socketInstance.js"
 import { socketEvents } from "../constants/socketEvents.js"
+import { ZodNullable } from "zod"
 
 /**
  * @description Service For Creating New Friend Request
@@ -126,10 +127,20 @@ const acceptRequestService = async (requestId, userId) => {
         sender: userId,
         receivers: [request.sender],
         type: "notify",
-        content: `${user.username} accepted your friend request`
+        content: `${user.username} accepted your friend request`,
+        entityId: null,
+        isGroupNotification: false,
+        renderUrl: ""
     }
 
-    const notification = await createNotificationService(notificationPayload)
+    const notification = await createNotificationService(userId,
+        userId,
+        notificationPayload.receivers, notificationPayload.type,
+        notificationPayload.entityId,
+        notificationPayload.isGroupNotification,
+        notificationPayload.content,
+        notificationPayload.renderUrl
+    )
 
     if (notification) {
 

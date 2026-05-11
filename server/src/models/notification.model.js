@@ -11,7 +11,8 @@ const notificationSchema = new Schema({
         ref: "User"
     }],
     entity: {
-        type: mongoose.Types.ObjectId
+        type: mongoose.Types.ObjectId,
+        default: null
     },
     type: {
         type: String,
