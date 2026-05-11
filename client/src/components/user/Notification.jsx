@@ -94,6 +94,7 @@ import { X } from "lucide-react"
 import React, { useState, useEffect, useCallback } from "react"
 import NotificationCard from "./NotificationCard"
 import { requestApi } from "../../api/request.api"
+import { notificationApi } from "../../api/notification.api"
 import { userAuthStore } from "../../store/userStore"
 import { socket } from "../../socket/socket"
 import { socketEvents } from "../../constants/socketEvents"
@@ -104,9 +105,10 @@ import { useRequest } from "../../hooks/useRequest"
 
 function Notification({ activePanel, setActivePanel }) {
   const [requests, setRequests] = useState([])
+  const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
   const user = userAuthStore((state) => state.user)
-  const { updateNotificationsCount } = useChatStore()
+  const { updateNotificationsCount, incrementNotificationCount } = useChatStore()
   const { acceptRequest, rejectRequest } = useRequest()
 
   // Fetch user requests
@@ -116,14 +118,29 @@ function Notification({ activePanel, setActivePanel }) {
     const response = await requestApi.getMyRequests()
     if (response.success) {
       setRequests(response.data || [])
-      updateNotificationsCount(response.data.length)
     }
-    setLoading(false)
   }, [user?._id])
 
+  // Fetch general notifications
+  const fetchNotifications = useCallback(async () => {
+    if (!user?._id) return
+    const response = await notificationApi.getMyNotifications()
+    if (response.success) {
+      setNotifications(response.data || [])
+    }
+  }, [user?._id])
+
+  // Update badge count whenever requests or notifications change
   useEffect(() => {
-    fetchRequests()
-  }, [fetchRequests])
+    const count = requests.filter(r => r.status === "pending").length + notifications.length
+    updateNotificationsCount(count)
+  }, [requests, notifications])
+
+  useEffect(() => {
+    Promise.all([fetchRequests(), fetchNotifications()]).then(() => {
+      setLoading(false)
+    })
+  }, [fetchRequests, fetchNotifications])
 
   // Listen for new request socket event
   useEffect(() => {
@@ -138,7 +155,21 @@ function Notification({ activePanel, setActivePanel }) {
     }
   }, [])
 
-  const unreadCount = requests.filter(r => r.status === "pending").length
+  // Listen for new notification socket event
+  useEffect(() => {
+    const handleNewNotification = (notification) => {
+      console.log("New notification received:", notification)
+      setNotifications(prev => [notification, ...prev])
+      incrementNotificationCount(1)
+    }
+
+    socket.on(socketEvents.NEW_NOTIFICATION, handleNewNotification)
+    return () => {
+      socket.off(socketEvents.NEW_NOTIFICATION, handleNewNotification)
+    }
+  }, [])
+
+  const unreadCount = requests.filter(r => r.status === "pending").length + notifications.length
 
   // Handle accepting a request
   const handleAcceptRequest = async (requestId) => {
@@ -203,30 +234,43 @@ function Notification({ activePanel, setActivePanel }) {
           <div className="flex items-center justify-center h-full" style={{ color: "rgba(196,198,231,0.3)", fontSize: 13 }}>
             Loading...
           </div>
-        ) : requests.length === 0 ? (
+        ) : requests.length === 0 && notifications.length === 0 ? (
           <EmptyState />
         ) : (
-          requests.map(request => (
-            <NotificationCard
-              key={request._id}
-              notification={{
-                _id: request._id,
-                type: "friend_request",
-                isRead: request.status !== "pending",
-                content: `${request.sender?.username || "Someone"} sent you a friend request`,
-                createdAt: request.createdAt,
-                sender: request.sender,
-                status: request.status
-              }}
-              senderInfo={request.sender ? {
-                username: request.sender.username,
-                avatar: request.sender.avtar
-              } : null}
-              onClick={() => handleClick(request)}
-              onAccept={() => handleAcceptRequest(request._id)}
-              onReject={() => handleRejectRequest(request._id)}
-            />
-          ))
+          <>
+            {requests.map(request => (
+              <NotificationCard
+                key={request._id}
+                notification={{
+                  _id: request._id,
+                  type: "friend_request",
+                  isRead: request.status !== "pending",
+                  content: `${request.sender?.username || "Someone"} sent you a friend request`,
+                  createdAt: request.createdAt,
+                  sender: request.sender,
+                  status: request.status
+                }}
+                senderInfo={request.sender ? {
+                  username: request.sender.username,
+                  avatar: request.sender.avtar
+                } : null}
+                onClick={() => handleClick(request)}
+                onAccept={() => handleAcceptRequest(request._id)}
+                onReject={() => handleRejectRequest(request._id)}
+              />
+            ))}
+            {notifications.map(notif => (
+              <NotificationCard
+                key={notif._id}
+                notification={notif}
+                senderInfo={notif.sender ? {
+                  username: notif.sender.username,
+                  avatar: notif.sender.avtar
+                } : null}
+                onClick={() => setActivePanel(null)}
+              />
+            ))}
+          </>
         )}
       </div>
 

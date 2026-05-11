@@ -8,23 +8,24 @@ import { onlineStatusHandler } from "./handlers/onlineStatus.handler";
 import { errorHandler } from "./handlers/error.handler";
 import { chatHandler } from "./handlers/chat.handler";
 import { groupHandler } from "./handlers/group.handler";
+import { notificationHandler } from "./handlers/notification.handler";
 
 
 
 
-export const initializeSocketListeners = () =>{
+export const initializeSocketListeners = () => {
 
-    socket.on(socketEvents.CONNECT,()=>{    // Listener for successful connection to the socket server
+    socket.on(socketEvents.CONNECT, () => {    // Listener for successful connection to the socket server
         console.log("Connected to socket server");
     });
 
-    socket.on(socketEvents.DISCONNECT,()=>{     // Listener for disconnection from the socket server
+    socket.on(socketEvents.DISCONNECT, () => {     // Listener for disconnection from the socket server
         console.log("Disconnected from socket server");
     });
 
 
     messageHandler(socket)      //  Handler for Message Events
-    
+
     onlineStatusHandler(socket)   // Handler for Online Status Events
 
     groupHandler(socket)    // Handler for Group Events
@@ -32,5 +33,7 @@ export const initializeSocketListeners = () =>{
     chatHandler(socket)  // Handler for Chat Events
 
     errorHandler(socket)    // Handler for socket Errors
-    
+
+    notificationHandler(socket)  // Handler for Notification Events
+
 }

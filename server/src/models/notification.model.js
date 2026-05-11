@@ -11,11 +11,12 @@ const notificationSchema = new Schema({
         ref: "User"
     }],
     entity: {
-        type: mongoose.Types.ObjectId
+        type: mongoose.Types.ObjectId,
+        default: null
     },
     type: {
         type: String,
-        enum: ["group_add", "mention", "message", "admin_promote", "friend_request"]
+        enum: ["group_add", "mention", "message", "admin_promote", "friend_request", "notify"]
     },
     isGroupNotification: {
         type: Boolean,
