@@ -3,6 +3,7 @@ import { useContext } from 'react'
 import { authContext } from '../../context/AuthProvider.jsx'
 import { messageApi } from '../../api/message.api.js';
 import { useChatStore } from '../../store/useChatStore.js';
+import { useGroupChatStore } from '../../store/useGroupChatStore.js';
 import { chatApi } from '../../api/chat.api.js';
 import { userAuthStore } from '../../store/userStore.js';
 import { useAssetsStore } from '../../store/useAssetsStore.js';
@@ -13,12 +14,13 @@ import { useRequest } from '../../hooks/useRequest.jsx';
 import { getTime } from '../../services/getTime.js';
 
 
-const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount, setIsGroupChat, setGroupChat } = useChatStore.getState();
+const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount, setIsGroupChat } = useChatStore.getState();
+const { setGroupChat } = useGroupChatStore.getState();
 
 function ChatCard({
     user = {
         name: "John Doe",
-        avatar: "https://static.vecteezy.com/system/resources/previews/024/983/914/non_2x/simple-user-default-icon-free-png.png",
+        avtar: "https://static.vecteezy.com/system/resources/previews/024/983/914/non_2x/simple-user-default-icon-free-png.png",
         groupName: ""
     },
     searchMode = false,
@@ -105,10 +107,9 @@ function ChatCard({
         if (isChatExists()) {
             if (isThisGroupChat()) {
                 setCurrentChatId(chatId);
-                setIsGroupChat(chat?.isGroupChat);
-                if (chat?.isGroupChat) {
-                    setGroupChat(chat);
-                }
+                setIsGroupChat(chat.isGroupChat);
+                setGroupChat(chat);
+                console.log("CLICKED GROUP CHAT :: ", chat)
                 setCurrentPreviewFile(null)
                 navigate(`/chat/${chat?._id}`)
                 getConversationMessages(chat?._id);
@@ -156,7 +157,7 @@ function ChatCard({
                 {/* Avatar */}
                 <div className="relative flex-shrink-0 w-11 h-11">
                     <img
-                        src={!chat?.isGroupChat && user.avtar || ""}
+                        src={!chat?.isGroupChat && user.avtar ? user.avtar : chat?.isGroupChat ? chat?.groupPicture : ""}
                         alt=""
                         className="w-11 h-11 rounded-full object-cover border-2 border-white/[0.07] block"
                     />

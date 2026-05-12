@@ -542,6 +542,8 @@ function Home() {
         };
 
         container.addEventListener("scroll", handleScroll);
+
+        console.log("GROUP CHAT CHAT ::: ", groupChat)
         return () => container.removeEventListener("scroll", handleScroll);
     }, [])
 
@@ -871,7 +873,7 @@ function Home() {
                                     <div className="relative w-10 h-10 flex-shrink-0">
                                         <img
                                             src={
-                                                isGroupChat ? (groupChat?.groupPicture || context.currentChatUser.avtar) :
+                                                isGroupChat && groupChat?.groupPicture ? groupChat.groupPicture :
                                                     !isGroupChat && context.currentChatUser?.avtar ? context.currentChatUser.avtar : `https://api.dicebear.com/7.x/shapes/svg?seed=${context.currentChatUser._id}&scale=90`
                                             }
                                             alt=""
