@@ -904,9 +904,15 @@ function Home() {
                                                 typing...
                                             </span>
                                         ) : (
-                                            <span className="text-xs text-gray-400">
-                                                {onlineStatus[context.currentChatUser._id] ? 'Online' : !onlineStatus[context.currentChatUser._id] ? `last active ${getTime(context?.currentChatUser?.lastActive)}` : 'Offline'}
-                                            </span>
+                                            !isGroupChat ?
+                                                <span className="text-xs text-gray-400">
+                                                    {onlineStatus[context.currentChatUser._id] ? 'Online' : !onlineStatus[context.currentChatUser._id] ? `last active ${getTime(context?.currentChatUser?.lastActive)}` : 'Offline'}
+                                                </span>
+                                                : <span className="text-xs text-gray-400">
+
+                                                </span>
+
+
                                         )}
                                     </div>
                                 </div>
