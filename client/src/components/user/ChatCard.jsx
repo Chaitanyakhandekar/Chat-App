@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { requestApi } from '../../api/request.api.js';
 import { UserPlus, Check } from 'lucide-react';
 import { useRequest } from '../../hooks/useRequest.jsx';
+import { getTime } from '../../services/getTime.js';
 
 
 const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount, setIsGroupChat, setGroupChat } = useChatStore.getState();
@@ -165,6 +166,7 @@ function ChatCard({
                             style={{ boxShadow: '0 0 6px #22d3a0' }}
                         />
                     )}
+
                 </div>
 
                 {/* Name + status */}
@@ -182,9 +184,12 @@ function ChatCard({
                             typing
                         </span>
                     ) : (
-                        <span className="text-[11.5px] text-[#4a4e6a] truncate">
-                            {!chat?.isGroupChat && online ? 'Online' : ''}
+                        <span className="text-[11.5px] text-gray-400 truncate">
+                            {!chat?.isGroupChat && online ? 'Online' : ""}
                         </span>
+                        // <span className="text-[11.5px] text-gray-400 truncate">
+                        //     {!chat?.isGroupChat && online ? 'Online' : !chat?.isGroupChat && !online ? `last active ${getTime(user?.lastActive)}` : ""}
+                        // </span>
                     )}
                 </div>
 

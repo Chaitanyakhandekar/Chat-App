@@ -294,6 +294,10 @@ const unmarkMemberAsAdmin = asyncHandler(async (req, res) => {
 
 })
 
+const leaveGroup = asyncHandler(async (req, res) => {
+
+})
+
 export {
     getGroupMembers,
     updateGroupChat,
