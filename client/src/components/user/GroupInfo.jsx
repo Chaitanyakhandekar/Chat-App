@@ -16,6 +16,7 @@ import { chatApi } from '../../api/chat.api'
 import { socket } from '../../socket/socket'
 import { socketEvents } from '../../constants/socketEvents'
 import Swal from "sweetalert2"
+import { useGroup } from '../../hooks/useGroup'
 
 // ─── Mock data ─────────────────────────────────────────────────────────────
 const MOCK_MEMBERS = [
@@ -148,11 +149,17 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
     const [copied, setCopied] = useState(false)
     const isOwner = currentUserId === CURRENT_USER_ID
     const { setGroupChat, groupChat } = useGroupChatStore();
+    const { currentChatId } = useChatStore()
+    const { leaveGroup } = useGroup()
 
     const copyLink = () => {
-        navigator.clipboard.writeText(`https://chat.app/invite/${group._id}`)
+        navigator.clipboard.writeText(`https://chat.app/invite/${groupChat._id}`)
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
+    }
+
+    const handleLeaveGroup = async () => {
+        await leaveGroup(group?._id)
     }
 
     return (
@@ -176,7 +183,7 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
                 <div className="flex flex-col items-center gap-3 px-5 pt-5 pb-4">
                     <div className="relative">
                         <div className="w-20 h-20 rounded-2xl overflow-hidden border-[2.5px] border-indigo-500/[0.45] shadow-[0_0_28px_rgba(99,102,241,0.2)]">
-                            <img src={groupChat?.groupPicture || group.name} alt={group.name} className="w-full h-full object-cover" />
+                            <img src={groupChat?.groupPicture || group?.name} alt={group?.name} className="w-full h-full object-cover" />
                         </div>
                         {isOwner && (
                             <button
@@ -190,30 +197,30 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
 
                     <div className="text-center">
                         <div className="flex items-center gap-2 justify-center">
-                            <p className="text-[16px] font-bold text-[#f1f2f7] tracking-tight">{group.name}</p>
+                            <p className="text-[16px] font-bold text-[#f1f2f7] tracking-tight">{group?.name}</p>
                             {isOwner && (
                                 <button onClick={() => setView('edit')} className="text-[#4a4e6a] hover:text-[#818cf8] transition-colors">
                                     <Edit3 size={13} />
                                 </button>
                             )}
                         </div>
-                        <p className="text-[11.5px] text-[#4a4e6a] mt-0.5">{group.memberCount} members · Created {group.createdAt}</p>
+                        <p className="text-[11.5px] text-[#4a4e6a] mt-0.5">{group?.memberCount} members · Created {group?.createdAt}</p>
                     </div>
 
-                    {group.description && (
-                        <p className="text-center text-[12px] text-[#6b7099] leading-relaxed px-2">{group.description}</p>
+                    {group?.description && (
+                        <p className="text-center text-[12px] text-[#6b7099] leading-relaxed px-2">{group?.description}</p>
                     )}
 
                     {/* Privacy pill */}
-                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${group.isPublic
+                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${group?.isPublic
                         ? 'bg-emerald-400/[0.08] border-emerald-400/20'
                         : 'bg-indigo-500/[0.08] border-indigo-500/20'
                         }`}>
-                        {group.isPublic
+                        {group?.isPublic
                             ? <Globe size={11} color="#22d3a0" />
                             : <Lock size={11} color="#818cf8" />}
-                        <span className={`text-[11px] font-semibold ${group.isPublic ? 'text-[#22d3a0]' : 'text-[#818cf8]'}`}>
-                            {group.isPublic ? 'Public Group' : 'Private Group'}
+                        <span className={`text-[11px] font-semibold ${group?.isPublic ? 'text-[#22d3a0]' : 'text-[#818cf8]'}`}>
+                            {group?.isPublic ? 'Public Group' : 'Private Group'}
                         </span>
                     </div>
                 </div>
@@ -222,8 +229,8 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
                 <div className="px-4 mb-1">
                     <div className="flex gap-2">
                         {[
-                            { label: 'Members', value: group.memberCount, dest: 'members' },
-                            { label: 'Media', value: group.media?.length || 0, dest: 'media' },
+                            { label: 'Members', value: group?.memberCount, dest: 'members' },
+                            { label: 'Media', value: group?.media?.length || 0, dest: 'media' },
                             { label: 'Files', value: 24, dest: null },
                         ].map(s => (
                             <button
@@ -289,7 +296,7 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-indigo-500/[0.12]">
                             <Link2 size={12} color="#818cf8" />
                         </div>
-                        <p className="text-[11px] text-[#4a4e6a] truncate flex-1">chat.app/invite/{group._id}</p>
+                        <p className="text-[11px] text-[#4a4e6a] truncate flex-1">chat.app/invite/{group?._id}</p>
                         <button
                             onClick={copyLink}
                             className={`flex items-center gap-1 px-2.5 py-1 rounded-[7px] text-[11px] font-semibold transition-all border ${copied
@@ -327,6 +334,7 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
                 <div className="px-3 pb-5">
                     <SectionLabel danger>Danger Zone</SectionLabel>
                     <ActionRow
+                        onClick={handleLeaveGroup}
                         danger
                         icon={<LogOut size={13} color="#f87171" />}
                         label="Leave Group"
@@ -431,7 +439,7 @@ function MembersView({ group, currentUserId, setView }) {
                                         {member._id === user._id ? "you" : member.username}
                                     </span>
                                     <RoleBadge role={
-                                        member._id === group.ownerId ? 'owner' :
+                                        member._id === group?.ownerId ? 'owner' :
                                             member.isAdmin ? 'admin' :
                                                 null
                                     } />
@@ -523,7 +531,7 @@ function AddMemberModal({ onClose, onAdd, group }) {
             Swal.fire({
                 icon: "success",
                 title: `User Added to Group`,
-                html: `<b>${username}</b> has been added to <b>${group.name}</b>.`,
+                html: `<b>${username}</b> has been added to <b>${group?.name}</b>.`,
                 confirmButtonText: "OK",
             });
         }
@@ -601,7 +609,7 @@ function MediaView({ group, setView }) {
             <div className="flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#1a1d28_transparent] px-4 pb-4">
                 {tab === 'photos' && (
                     <div className="grid grid-cols-3 gap-1.5 mt-1">
-                        {group.media?.map((src, i) => (
+                        {group?.media?.map((src, i) => (
                             <div key={i} className="rounded-[8px] overflow-hidden aspect-square cursor-pointer border border-white/[0.06] hover:scale-[1.04] hover:opacity-85 transition-all duration-150">
                                 <img src={src} alt="" className="w-full h-full object-cover" />
                             </div>
@@ -647,9 +655,9 @@ function MediaView({ group, setView }) {
 // ═══════════════════════════════════════════════════════════════════════════
 function EditView({ group, setView }) {
     const { groupChat, setGroupChat } = useGroupChatStore();
-    const [name, setName] = useState(groupChat?.groupName || group.name)
-    const [desc, setDesc] = useState(groupChat?.groupDescription || group.groupDescription)
-    const [isPublic, setPublic] = useState(groupChat?.isPublic || group.isPublic)
+    const [name, setName] = useState(groupChat?.groupName || group?.name)
+    const [desc, setDesc] = useState(groupChat?.groupDescription || group?.groupDescription)
+    const [isPublic, setPublic] = useState(groupChat?.isPublic || group?.isPublic)
     const [saved, setSaved] = useState(false)
     const [file, setFile] = useState(null);
     const fileRef = useRef(null)

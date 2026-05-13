@@ -296,6 +296,8 @@ const unmarkMemberAsAdmin = asyncHandler(async (req, res) => {
 
 const leaveGroup = asyncHandler(async (req, res) => {
 
+    console.log("GROUP ID :: ", req.params.id)
+
     const group = await leaveGroupService(req.params.id, req.user._id)
 
     return res
