@@ -42,6 +42,9 @@ const userSchema = new mongoose.Schema({
     lastActive: {
         type: Date
     },
+    lastNotificationRead: {
+        type: Date
+    },
     isVerified: {
         type: Boolean,
         default: false

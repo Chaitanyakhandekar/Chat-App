@@ -27,7 +27,6 @@ export const useGroup = () => {
   }
 
   return {
-
     loading,
     setLoading,
     createGroup,

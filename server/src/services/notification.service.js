@@ -81,8 +81,14 @@ const getUserNotificationsService = async (userId) => {
                     $in: [
                         new mongoose.Types.ObjectId(userId)
                     ]
+                },
+                isRead: {
+                    $ne: true
                 }
             }
+        },
+        {
+            $sort: { createdAt: -1 }
         },
         {
             $lookup: {
@@ -107,7 +113,17 @@ const getUserNotificationsService = async (userId) => {
         }
     ])
 
-    return notifications;
+    let count = await Notification.countDocuments({
+        isRead: {
+            $ne: true
+        },
+        receivers: {
+            $in: [user._id]
+        }
+    })
+
+
+    return { notifications, count };
 }
 
 export {
