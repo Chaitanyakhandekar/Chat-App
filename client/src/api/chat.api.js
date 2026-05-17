@@ -78,6 +78,28 @@ class ChatApi {
         }
     }
 
+    getChatById = async (chatId) => {
+        try {
+            const response = await axios.get(`${this.baseUrl}/${chatId}`, {
+                withCredentials: true
+            });
+
+            console.log("Get User Chats Response :: ", response);
+            return {
+                success: true,
+                message: response.data.message,
+                data: response.data.data,
+                unreadMessagesCount: response.data.data.unreadMessagesCount || 0
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message,
+                error: error
+            }
+        }
+    }
+
     isChatExists = async (chatId) => {
         try {
             const response = await axios.get(`${this.baseUrl}/exists/${chatId}`, {
@@ -86,7 +108,7 @@ class ChatApi {
 
             console.log("Is Chat Exists Response :: ", response.data.success);
 
-            if(!response.data.success){
+            if (!response.data.success) {
                 throw new Error("Chat Doesnt Exists.")
             }
             return {
@@ -111,7 +133,7 @@ class ChatApi {
 
             console.log("Get Summarized Chat Response :: ", response.data);
 
-            if(!response.data.success){
+            if (!response.data.success) {
                 throw new Error("Chat Doesnt Exists.")
             }
             return {

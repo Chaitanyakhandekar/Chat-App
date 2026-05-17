@@ -167,6 +167,7 @@ function Sidebar({
         {activePanel === "newGroup" && (
           <ChatList
             togglePanel={setActivePanel}
+            activePanel={activePanel}
             query={query}
             setQuery={setQuery}
             users={users}
@@ -180,6 +181,7 @@ function Sidebar({
         {activePanel === "createGroup" && (
           <ChatList
             togglePanel={setActivePanel}
+            activePanel={activePanel}
             query={query}
             setQuery={setQuery}
             users={users}
@@ -206,6 +208,7 @@ function Sidebar({
 
             <ChatList
               togglePanel={setActivePanel}
+              activePanel={activePanel}
               query={query}
               setQuery={setQuery}
               users={users}
@@ -223,6 +226,7 @@ function Sidebar({
 
           <ChatList
             togglePanel={setActivePanel}
+            activePanel={activePanel}
             query={query}
             setQuery={setQuery}
             users={users}

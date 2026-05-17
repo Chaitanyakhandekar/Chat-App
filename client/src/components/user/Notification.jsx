@@ -259,7 +259,7 @@ function Notification({ activePanel, setActivePanel }) {
                 onReject={() => handleRejectRequest(request._id)}
               />
             ))}
-            {notifications.map(notif => (
+            {notifications.length > 0 ? notifications : [].map(notif => (
               <NotificationCard
                 key={notif._id}
                 notification={notif}

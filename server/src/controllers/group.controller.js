@@ -16,7 +16,7 @@ import { validateAtleastOneField } from "../utils/fields validations/validateAtl
 import { isChatExists } from "../utils/document existance check/chat.js";
 import { getUserChatUsers, getUserChatUsersServer } from "./chat.controller.js";
 import { getUniqueMembers } from "../utils/getUniqueMembers.js";
-import { addMembertoGroupService, markMemberAsAdminService, unmarkMemberAsAdminService } from "../services/group.service.js";
+import { addMembertoGroupService, leaveGroupService, markMemberAsAdminService, unmarkMemberAsAdminService } from "../services/group.service.js";
 
 
 const getGroupMembers = asyncHandler(async (req, res) => {
@@ -294,6 +294,20 @@ const unmarkMemberAsAdmin = asyncHandler(async (req, res) => {
 
 })
 
+const leaveGroup = asyncHandler(async (req, res) => {
+
+    console.log("GROUP ID :: ", req.params.id)
+
+    const group = await leaveGroupService(req.params.id, req.user._id)
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, group, "Leaved group.")
+        )
+
+})
+
 export {
     getGroupMembers,
     updateGroupChat,
@@ -301,5 +315,6 @@ export {
     getNonGroupMembers,
     addMemberToGroup,
     markMemberAsAdmin,
-    unmarkMemberAsAdmin
+    unmarkMemberAsAdmin,
+    leaveGroup
 }

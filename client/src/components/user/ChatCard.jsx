@@ -3,6 +3,7 @@ import { useContext } from 'react'
 import { authContext } from '../../context/AuthProvider.jsx'
 import { messageApi } from '../../api/message.api.js';
 import { useChatStore } from '../../store/useChatStore.js';
+import { useGroupChatStore } from '../../store/useGroupChatStore.js';
 import { chatApi } from '../../api/chat.api.js';
 import { userAuthStore } from '../../store/userStore.js';
 import { useAssetsStore } from '../../store/useAssetsStore.js';
@@ -10,14 +11,16 @@ import { useNavigate } from 'react-router-dom';
 import { requestApi } from '../../api/request.api.js';
 import { UserPlus, Check } from 'lucide-react';
 import { useRequest } from '../../hooks/useRequest.jsx';
+import { getTime } from '../../services/getTime.js';
 
 
-const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount, setIsGroupChat, setGroupChat } = useChatStore.getState();
+const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount, setIsGroupChat } = useChatStore.getState();
+const { setGroupChat } = useGroupChatStore.getState();
 
 function ChatCard({
     user = {
         name: "John Doe",
-        avatar: "https://static.vecteezy.com/system/resources/previews/024/983/914/non_2x/simple-user-default-icon-free-png.png",
+        avtar: "https://static.vecteezy.com/system/resources/previews/024/983/914/non_2x/simple-user-default-icon-free-png.png",
         groupName: ""
     },
     searchMode = false,
@@ -104,10 +107,9 @@ function ChatCard({
         if (isChatExists()) {
             if (isThisGroupChat()) {
                 setCurrentChatId(chatId);
-                setIsGroupChat(chat?.isGroupChat);
-                if (chat?.isGroupChat) {
-                    setGroupChat(chat);
-                }
+                setIsGroupChat(chat.isGroupChat);
+                setGroupChat(chat);
+                console.log("CLICKED GROUP CHAT :: ", chat)
                 setCurrentPreviewFile(null)
                 navigate(`/chat/${chat?._id}`)
                 getConversationMessages(chat?._id);
@@ -155,7 +157,7 @@ function ChatCard({
                 {/* Avatar */}
                 <div className="relative flex-shrink-0 w-11 h-11">
                     <img
-                        src={!chat?.isGroupChat && user.avtar || ""}
+                        src={!chat?.isGroupChat && user.avtar ? user.avtar : chat?.isGroupChat ? chat?.groupPicture : ""}
                         alt=""
                         className="w-11 h-11 rounded-full object-cover border-2 border-white/[0.07] block"
                     />
@@ -165,6 +167,7 @@ function ChatCard({
                             style={{ boxShadow: '0 0 6px #22d3a0' }}
                         />
                     )}
+
                 </div>
 
                 {/* Name + status */}
@@ -182,9 +185,12 @@ function ChatCard({
                             typing
                         </span>
                     ) : (
-                        <span className="text-[11.5px] text-[#4a4e6a] truncate">
-                            {!chat?.isGroupChat && online ? 'Online' : ''}
+                        <span className="text-[11.5px] text-gray-400 truncate">
+                            {!chat?.isGroupChat && online ? 'Online' : ""}
                         </span>
+                        // <span className="text-[11.5px] text-gray-400 truncate">
+                        //     {!chat?.isGroupChat && online ? 'Online' : !chat?.isGroupChat && !online ? `last active ${getTime(user?.lastActive)}` : ""}
+                        // </span>
                     )}
                 </div>
 

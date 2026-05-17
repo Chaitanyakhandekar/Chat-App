@@ -4,7 +4,7 @@ import { ApiError } from "../utils/apiUtils.js"
 import { isChatExists } from "../utils/document existance check/chat.js"
 import { isUserExists } from "../utils/document existance check/user.js"
 import { Message } from "../models/message.model.js"
-import {isMemberAlreadyInGroup} from "../utils/document existance check/group.js"
+import { isMemberAlreadyInGroup } from "../utils/document existance check/group.js"
 
 /**
  * @description Adds a new participant to an existing group chat.
@@ -14,44 +14,44 @@ import {isMemberAlreadyInGroup} from "../utils/document existance check/group.js
  * @param   {string}  memberId  - The ID of the user to be added
  * @returns {object}  result
  */
-const addMembertoGroupService = async (groupId,user,memberId)=>{   // Admin Protected 
+const addMembertoGroupService = async (groupId, user, memberId) => {   // Admin Protected 
 
     const groupChat = await isChatExists(groupId)
     const newMember = await isUserExists(memberId)
-       
-    if(!groupChat || !newMember){
-        throw new ApiError(400,"Invalid GroupId or MemberId.")
+
+    if (!groupChat || !newMember) {
+        throw new ApiError(400, "Invalid GroupId or MemberId.")
     }
-      
+
     const isAlreadyInGroup = groupChat.participants.some(p => p.toString() === memberId.toString())
-    
-    if(isAlreadyInGroup){
-        throw new ApiError(400,"Member Already In Group.")
+
+    if (isAlreadyInGroup) {
+        throw new ApiError(400, "Member Already In Group.")
     }
-    
+
     const newIndicator = await Message.create({
-        chatId:groupId,
-        sender:user._id,
-        message:`${user.username} added ${newMember.username}`,
-        isIndicator:true
+        chatId: groupId,
+        sender: user._id,
+        message: `${user.username} added ${newMember.username}`,
+        isIndicator: true
     })
 
-        groupChat.participants.push(new mongoose.Types.ObjectId(memberId))
+    groupChat.participants.push(new mongoose.Types.ObjectId(memberId))
 
-        await groupChat.save()
+    await groupChat.save()
 
-        const groupMenbers = await getGroupMembers(groupId)
+    const groupMenbers = await getGroupMembers(groupId)
 
 
-        if(!groupMenbers || !groupMenbers.length){
-           throw new ApiError(500,"Error While Adding Member In Group.")
-        }
+    if (!groupMenbers || !groupMenbers.length) {
+        throw new ApiError(500, "Error While Adding Member In Group.")
+    }
 
-        return {
-            newIndicator, 
-            groupMenbers,
-            newMember
-        }
+    return {
+        newIndicator,
+        groupMenbers,
+        newMember
+    }
 }
 
 
@@ -62,15 +62,15 @@ const addMembertoGroupService = async (groupId,user,memberId)=>{   // Admin Prot
  * @param {ObjectId} groupId 
  * @param {ObjectId} memberId 
  */
-const markMemberAsAdminService = async (groupId,memberId)=>{       // Admin Protected
+const markMemberAsAdminService = async (groupId, memberId) => {       // Admin Protected
 
     const group = await isChatExists(groupId)
     const member = await isUserExists(memberId)
 
-    const isAlreadyInGroup = isMemberAlreadyInGroup(group,memberId)
+    const isAlreadyInGroup = isMemberAlreadyInGroup(group, memberId)
 
-    if(isAlreadyInGroup){
-        throw new ApiError(400,"User already admin")
+    if (isAlreadyInGroup) {
+        throw new ApiError(400, "User already admin")
     }
 
     group.admins.push(member._id)
@@ -78,8 +78,8 @@ const markMemberAsAdminService = async (groupId,memberId)=>{       // Admin Prot
     await group.save()
 
     const newIndicator = await Message.create({
-        chatId:groupId,
-        isIndicator:true,
+        chatId: groupId,
+        isIndicator: true,
         message: `${member.username} is now an admin.`
     })
 
@@ -88,7 +88,7 @@ const markMemberAsAdminService = async (groupId,memberId)=>{       // Admin Prot
     return {
         group,
         newIndicator,
-        groupMenbers:groupMenbers?.length > 0 ? groupMenbers : []
+        groupMenbers: groupMenbers?.length > 0 ? groupMenbers : []
     };
 
 }
@@ -100,7 +100,7 @@ const markMemberAsAdminService = async (groupId,memberId)=>{       // Admin Prot
  * @param {ObjectId} groupId 
  * @param {ObjectId} memberId 
  */
-const unmarkMemberAsAdminService = async (groupId,memberId)=>{       // Admin Protected
+const unmarkMemberAsAdminService = async (groupId, memberId) => {       // Admin Protected
 
     const group = await isChatExists(groupId)
     const member = await isUserExists(memberId)
@@ -110,8 +110,8 @@ const unmarkMemberAsAdminService = async (groupId,memberId)=>{       // Admin Pr
     await group.save()
 
     const newIndicator = await Message.create({
-        chatId:groupId,
-        isIndicator:true,
+        chatId: groupId,
+        isIndicator: true,
         message: `${member.username} is no longer an admin.`
     })
 
@@ -120,8 +120,30 @@ const unmarkMemberAsAdminService = async (groupId,memberId)=>{       // Admin Pr
     return {
         group,
         newIndicator,
-        groupMenbers:groupMenbers?.length > 0 ? groupMenbers : []
+        groupMenbers: groupMenbers?.length > 0 ? groupMenbers : []
     };
+
+}
+
+/**
+ * @description service for leaving group for user
+ * @param {ObjectId} groupId 
+ * @param {ObjectId} userId 
+ * @returns updated group object
+ */
+const leaveGroupService = async (groupId, userId) => {
+
+    const group = await isChatExists(groupId)
+
+    const user = await isUserExists(userId)
+
+    group.participants = group.participants.filter((participant) => participant.toString() !== user._id.toString())
+
+    await group.save({
+        validateBeforeSave: false
+    })
+
+    return group;
 
 }
 
@@ -129,5 +151,6 @@ const unmarkMemberAsAdminService = async (groupId,memberId)=>{       // Admin Pr
 export {
     addMembertoGroupService,
     markMemberAsAdminService,
-    unmarkMemberAsAdminService
+    unmarkMemberAsAdminService,
+    leaveGroupService
 }

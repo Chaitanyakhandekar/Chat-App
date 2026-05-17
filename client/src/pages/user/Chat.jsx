@@ -46,6 +46,7 @@ import GroupInfo from '../../components/user/GroupInfo.jsx'
 import { useNavigate, useParams } from 'react-router-dom'
 import Sidebar from './Sidebar.jsx'
 import { useGroupChatStore } from '../../store/useGroupChatStore.js'
+import { getTime } from '../../services/getTime.js'
 
 // ── Dummy summary generator (replace with real API call later) ──────────────
 const DUMMY_SUMMARY = {
@@ -235,7 +236,7 @@ function SummaryDrawer({ isOpen, onClose, isLoading, summary }) {
                                 {[
                                     { label: 'Messages', value: summary.messages },
                                     { label: 'Timespan', value: summary.timespan },
-                                    { label: 'Tone', value: summary.sentiment  },
+                                    { label: 'Tone', value: summary.sentiment },
                                 ].map(({ label, value }) => (
                                     <div key={label} style={{
                                         flex: 1, padding: '10px 12px', borderRadius: 12,
@@ -335,13 +336,13 @@ function Home() {
     const [summaryLoading, setSummaryLoading] = useState(false)
     const [summaryData, setSummaryData] = useState(null)
 
-    const handleSummarize = async() => {
+    const handleSummarize = async () => {
         setSummaryOpen(true)
         if (summaryData) return // already loaded, just reopen
         setSummaryLoading(true)
         // Simulate API delay — replace with real call later
         const response = await chatApi.getSummarizedChat(currentChatId || paramChatId)
-        if(response.success){
+        if (response.success) {
             setSummaryData(response.data)
             setSummaryLoading(false)
         }
@@ -381,7 +382,7 @@ function Home() {
         setMessageBeingReplied
     } = useChatStore()
 
-     const {setGroupChat,groupChat,currentGroupParticipants,setCurrentGroupParticipants} = useGroupChatStore();
+    const { setGroupChat, groupChat, currentGroupParticipants, setCurrentGroupParticipants } = useGroupChatStore();
 
     const {
         scrollToBottomInChat,
@@ -477,19 +478,19 @@ function Home() {
 
         if (!socket) return
 
-        if(isReplying && messageBeingReplied){
+        if (isReplying && messageBeingReplied) {
             socket.emit(socketEvents.MESSAGE_REPLY_SINGLE_CHAT, {
-            message: message || "",
-            attachments: uploadInfo?.data || [],
-            receiver: context.currentChatUser._id,
-            chatId: currentChatId || null,
-            tempId: tempId,
-            replyTo: messageBeingReplied || null
-        }, (ack) => {
-            console.log("Ack from server:", ack);
-        })
+                message: message || "",
+                attachments: uploadInfo?.data || [],
+                receiver: context.currentChatUser._id,
+                chatId: currentChatId || null,
+                tempId: tempId,
+                replyTo: messageBeingReplied || null
+            }, (ack) => {
+                console.log("Ack from server:", ack);
+            })
         }
-        else if(isGroupChat){
+        else if (isGroupChat) {
             socket.emit(socketEvents.NEW_MESSAGE_GROUP, {
                 message: message || "",
                 attachments: uploadInfo?.data || [],
@@ -499,16 +500,16 @@ function Home() {
                 console.log("Ack from server:", ack);
             })
         }
-        else{
+        else {
             socket.emit(socketEvents.NEW_MESSAGE, {
-            message: message || "",
-            attachments: uploadInfo?.data || [],
-            receiver: context.currentChatUser._id,
-            chatId: currentChatId || null,
-            tempId: tempId,
-        }, (ack) => {
-            console.log("Ack from server:", ack);
-        })
+                message: message || "",
+                attachments: uploadInfo?.data || [],
+                receiver: context.currentChatUser._id,
+                chatId: currentChatId || null,
+                tempId: tempId,
+            }, (ack) => {
+                console.log("Ack from server:", ack);
+            })
         }
 
         setMessage("")
@@ -541,6 +542,8 @@ function Home() {
         };
 
         container.addEventListener("scroll", handleScroll);
+
+        console.log("GROUP CHAT CHAT ::: ", groupChat)
         return () => container.removeEventListener("scroll", handleScroll);
     }, [])
 
@@ -551,21 +554,21 @@ function Home() {
     }, [setIsAtBottom])
 
     useEffect(() => {
-       if(activePanel !== "newGroup"){
+        if (activePanel !== "newGroup") {
             setGroupsOnly(true)
-       }else{
-        setGroupsOnly(false)
-       }
-
-       switch(activePanel){
-        case "newGroup":
+        } else {
             setGroupsOnly(false)
-            break;
-        default:
-            setGroupsOnly(true)
-            break;
-        case "groupInfo":
-            navigate(`/chat/group-info/${currentChatId}`)
+        }
+
+        switch (activePanel) {
+            case "newGroup":
+                setGroupsOnly(false)
+                break;
+            default:
+                setGroupsOnly(true)
+                break;
+            case "groupInfo":
+                navigate(`/chat/group-info/${currentChatId}`)
         }
     }, [activePanel])
 
@@ -596,8 +599,8 @@ function Home() {
         }
     }
 
-    const handleGroupTyping = (e)=>{
-          const value = e.target.value;
+    const handleGroupTyping = (e) => {
+        const value = e.target.value;
         setMessage(value);
 
         if (!socket || !context.currentChatUser || !currentChatId) return;
@@ -623,8 +626,8 @@ function Home() {
         }, 2000);
     }
 
-    const handleSingleTyping = (e)=>{
-          const value = e.target.value;
+    const handleSingleTyping = (e) => {
+        const value = e.target.value;
         setMessage(value);
 
         if (!socket || !context.currentChatUser || !currentChatId) return;
@@ -651,16 +654,16 @@ function Home() {
     }
 
     const handleTyping = (e) => {
-        if(isGroupChat){
+        if (isGroupChat) {
             handleGroupTyping(e)
         }
-        if(!isGroupChat){
+        if (!isGroupChat) {
             handleSingleTyping(e)
         }
     };
 
-    const handleChatInfoClick = () =>{
-        if(isGroupChat){
+    const handleChatInfoClick = () => {
+        if (isGroupChat) {
             setActivePanel("groupInfo")
         }
     }
@@ -870,13 +873,13 @@ function Home() {
                                     <div className="relative w-10 h-10 flex-shrink-0">
                                         <img
                                             src={
-                                                isGroupChat ? (groupChat?.groupPicture || context.currentChatUser.avtar):
-                                                !isGroupChat && context.currentChatUser?.avtar ? context.currentChatUser.avtar : `https://api.dicebear.com/7.x/shapes/svg?seed=${context.currentChatUser._id}&scale=90`
+                                                isGroupChat && groupChat?.groupPicture ? groupChat.groupPicture :
+                                                    !isGroupChat && context.currentChatUser?.avtar ? context.currentChatUser.avtar : `https://api.dicebear.com/7.x/shapes/svg?seed=${context.currentChatUser._id}&scale=90`
                                             }
                                             alt=""
                                             className="w-10 h-10 rounded-full object-cover border-2 border-white/[0.07]"
                                         />
-                                        { !isGroupChat && onlineStatus[context.currentChatUser._id] && (
+                                        {!isGroupChat && onlineStatus[context.currentChatUser._id] && (
                                             <div className="online-pulse absolute bottom-[1px] right-[1px] w-2.5 h-2.5 rounded-full bg-success border-2 border-surface-800"
                                                 style={{ boxShadow: '0 0 8px #22d3a0' }} />
                                         )}
@@ -893,17 +896,23 @@ function Home() {
                                                     <span className="typing-dot w-[3px] h-[3px] rounded-full bg-success inline-block" />
                                                 </span>
                                                 {chatUsersInfo[currentChatId].typers.length > 0 &&
-                                                 chatUsersInfo[currentChatId].typers.map((typer, index) => (
-                                                     <span key={index}>
-                                                         {typer.username || 'Unknown User'} {index < chatUsersInfo[currentChatId].typers.length - 1 ? ', ' : ' '}
-                                                     </span>
-                                                 ))}
-                                                 typing...
+                                                    chatUsersInfo[currentChatId].typers.map((typer, index) => (
+                                                        <span key={index}>
+                                                            {typer.username || 'Unknown User'} {index < chatUsersInfo[currentChatId].typers.length - 1 ? ', ' : ' '}
+                                                        </span>
+                                                    ))}
+                                                typing...
                                             </span>
                                         ) : (
-                                            <span className="text-xs text-text-dim">
-                                                {onlineStatus[context.currentChatUser._id] ? 'Online' : 'Offline'}
-                                            </span>
+                                            !isGroupChat ?
+                                                <span className="text-xs text-gray-400">
+                                                    {onlineStatus[context.currentChatUser._id] ? 'Online' : !onlineStatus[context.currentChatUser._id] ? `last active ${getTime(context?.currentChatUser?.lastActive)}` : 'Offline'}
+                                                </span>
+                                                : <span className="text-xs text-gray-400">
+
+                                                </span>
+
+
                                         )}
                                     </div>
                                 </div>

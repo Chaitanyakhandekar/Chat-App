@@ -129,6 +129,12 @@ export const useChatStore = create(
                 })
             },
 
+            removeChat: (chatId)=>{
+                set((state)=>({
+                    userChats: state.userChats.filter(chat=>chat._id !== chatId)
+                }))
+            },
+
             shiftChatAtFirstPosition: (chatId) => {
                 set((state) => {
                     let chat = state.userChats.find(c => c._id === chatId)

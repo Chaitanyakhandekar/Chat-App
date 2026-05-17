@@ -16,15 +16,16 @@ import { chatApi } from '../../api/chat.api'
 import { socket } from '../../socket/socket'
 import { socketEvents } from '../../constants/socketEvents'
 import Swal from "sweetalert2"
+import { useGroup } from '../../hooks/useGroup'
 
 // ─── Mock data ─────────────────────────────────────────────────────────────
 const MOCK_MEMBERS = [
-    { _id: '1', username: 'alexmontoya', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=alex',   role: 'owner',  online: true  },
-    { _id: '2', username: 'sarahkim',    avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sarah',  role: 'admin',  online: true  },
-    { _id: '3', username: 'devraj_p',    avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=dev',    role: 'member', online: false },
-    { _id: '4', username: 'luna_west',   avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=luna',   role: 'member', online: true  },
-    { _id: '5', username: 'marcus.t',    avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=marcus', role: 'member', online: false },
-    { _id: '6', username: 'priya_s',     avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=priya',  role: 'member', online: true  },
+    { _id: '1', username: 'alexmontoya', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=alex', role: 'owner', online: true },
+    { _id: '2', username: 'sarahkim', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sarah', role: 'admin', online: true },
+    { _id: '3', username: 'devraj_p', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=dev', role: 'member', online: false },
+    { _id: '4', username: 'luna_west', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=luna', role: 'member', online: true },
+    { _id: '5', username: 'marcus.t', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=marcus', role: 'member', online: false },
+    { _id: '6', username: 'priya_s', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=priya', role: 'member', online: true },
 ]
 
 
@@ -72,9 +73,8 @@ const RoleBadge = ({ role }) => {
 const Toggle = ({ on, toggle }) => (
     <div
         onClick={toggle}
-        className={`relative w-9 h-5 rounded-full cursor-pointer flex-shrink-0 transition-all duration-200 ${
-            on ? 'bg-gradient-to-br from-indigo-500 to-violet-500' : 'bg-white/10'
-        }`}
+        className={`relative w-9 h-5 rounded-full cursor-pointer flex-shrink-0 transition-all duration-200 ${on ? 'bg-gradient-to-br from-indigo-500 to-violet-500' : 'bg-white/10'
+            }`}
     >
         <div className={`absolute top-[2px] left-[2px] w-4 h-4 rounded-full bg-white shadow-md transition-transform duration-200 ${on ? 'translate-x-4' : 'translate-x-0'}`} />
     </div>
@@ -108,9 +108,8 @@ const SectionLabel = ({ children, danger }) => (
 const ActionRow = ({ onClick, iconBg, icon, label, sublabel, right, danger }) => (
     <div
         onClick={onClick}
-        className={`flex items-center gap-[10px] px-3 py-[10px] rounded-[10px] cursor-pointer transition-colors duration-150 ${
-            danger ? 'hover:bg-red-400/[0.06]' : 'hover:bg-white/[0.05] active:bg-indigo-500/[0.08]'
-        }`}
+        className={`flex items-center gap-[10px] px-3 py-[10px] rounded-[10px] cursor-pointer transition-colors duration-150 ${danger ? 'hover:bg-red-400/[0.06]' : 'hover:bg-white/[0.05] active:bg-indigo-500/[0.08]'
+            }`}
     >
         <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${iconBg || (danger ? 'bg-red-400/10' : 'bg-indigo-500/[0.15]')}`}>
             {icon}
@@ -126,18 +125,18 @@ const ActionRow = ({ onClick, iconBg, icon, label, sublabel, right, danger }) =>
 // ═══════════════════════════════════════════════════════════════════════════
 // ROOT
 // ═══════════════════════════════════════════════════════════════════════════
-function GroupInfo({ setActivePanel = () => {}, group = MOCK_GROUP, currentUserId = CURRENT_USER_ID }) {
+function GroupInfo({ setActivePanel = () => { }, group = MOCK_GROUP, currentUserId = CURRENT_USER_ID }) {
     const [view, setView] = useState('main')
     // const groupId = useParams().id
 
-  
+
 
     return (
         <div className="flex flex-col h-full w-full bg-[#0e1018]">
-            {view === 'main'    && <MainView    group={group} currentUserId={currentUserId} setView={setView} setActivePanel={setActivePanel} />}
+            {view === 'main' && <MainView group={group} currentUserId={currentUserId} setView={setView} setActivePanel={setActivePanel} />}
             {view === 'members' && <MembersView group={group} currentUserId={currentUserId} setView={setView} />}
-            {view === 'media'   && <MediaView   group={group} setView={setView} />}
-            {view === 'edit'    && <EditView    group={group} setView={setView} />}
+            {view === 'media' && <MediaView group={group} setView={setView} />}
+            {view === 'edit' && <EditView group={group} setView={setView} />}
         </div>
     )
 }
@@ -146,15 +145,21 @@ function GroupInfo({ setActivePanel = () => {}, group = MOCK_GROUP, currentUserI
 // MAIN VIEW
 // ═══════════════════════════════════════════════════════════════════════════
 function MainView({ group, currentUserId, setView, setActivePanel }) {
-    const [muted,  setMuted]  = useState(false)
+    const [muted, setMuted] = useState(false)
     const [copied, setCopied] = useState(false)
     const isOwner = currentUserId === CURRENT_USER_ID
-    const {setGroupChat,groupChat} = useGroupChatStore();
+    const { setGroupChat, groupChat } = useGroupChatStore();
+    const { currentChatId } = useChatStore()
+    const { leaveGroup } = useGroup()
 
     const copyLink = () => {
-        navigator.clipboard.writeText(`https://chat.app/invite/${group._id}`)
+        navigator.clipboard.writeText(`https://chat.app/invite/${groupChat._id}`)
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
+    }
+
+    const handleLeaveGroup = async () => {
+        await leaveGroup(group?._id)
     }
 
     return (
@@ -178,7 +183,7 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
                 <div className="flex flex-col items-center gap-3 px-5 pt-5 pb-4">
                     <div className="relative">
                         <div className="w-20 h-20 rounded-2xl overflow-hidden border-[2.5px] border-indigo-500/[0.45] shadow-[0_0_28px_rgba(99,102,241,0.2)]">
-                            <img src={groupChat?.groupPicture || group.name} alt={group.name} className="w-full h-full object-cover" />
+                            <img src={groupChat?.groupPicture || group?.name} alt={group?.name} className="w-full h-full object-cover" />
                         </div>
                         {isOwner && (
                             <button
@@ -192,31 +197,30 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
 
                     <div className="text-center">
                         <div className="flex items-center gap-2 justify-center">
-                            <p className="text-[16px] font-bold text-[#f1f2f7] tracking-tight">{group.name}</p>
+                            <p className="text-[16px] font-bold text-[#f1f2f7] tracking-tight">{group?.name}</p>
                             {isOwner && (
                                 <button onClick={() => setView('edit')} className="text-[#4a4e6a] hover:text-[#818cf8] transition-colors">
                                     <Edit3 size={13} />
                                 </button>
                             )}
                         </div>
-                        <p className="text-[11.5px] text-[#4a4e6a] mt-0.5">{group.memberCount} members · Created {group.createdAt}</p>
+                        <p className="text-[11.5px] text-[#4a4e6a] mt-0.5">{group?.memberCount} members · Created {group?.createdAt}</p>
                     </div>
 
-                    {group.description && (
-                        <p className="text-center text-[12px] text-[#6b7099] leading-relaxed px-2">{group.description}</p>
+                    {group?.description && (
+                        <p className="text-center text-[12px] text-[#6b7099] leading-relaxed px-2">{group?.description}</p>
                     )}
 
                     {/* Privacy pill */}
-                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${
-                        group.isPublic
-                            ? 'bg-emerald-400/[0.08] border-emerald-400/20'
-                            : 'bg-indigo-500/[0.08] border-indigo-500/20'
-                    }`}>
-                        {group.isPublic
+                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${group?.isPublic
+                        ? 'bg-emerald-400/[0.08] border-emerald-400/20'
+                        : 'bg-indigo-500/[0.08] border-indigo-500/20'
+                        }`}>
+                        {group?.isPublic
                             ? <Globe size={11} color="#22d3a0" />
-                            : <Lock  size={11} color="#818cf8" />}
-                        <span className={`text-[11px] font-semibold ${group.isPublic ? 'text-[#22d3a0]' : 'text-[#818cf8]'}`}>
-                            {group.isPublic ? 'Public Group' : 'Private Group'}
+                            : <Lock size={11} color="#818cf8" />}
+                        <span className={`text-[11px] font-semibold ${group?.isPublic ? 'text-[#22d3a0]' : 'text-[#818cf8]'}`}>
+                            {group?.isPublic ? 'Public Group' : 'Private Group'}
                         </span>
                     </div>
                 </div>
@@ -225,9 +229,9 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
                 <div className="px-4 mb-1">
                     <div className="flex gap-2">
                         {[
-                            { label: 'Members', value: group.memberCount,        dest: 'members' },
-                            { label: 'Media',   value: group.media?.length || 0, dest: 'media'   },
-                            { label: 'Files',   value: 24,                       dest: null       },
+                            { label: 'Members', value: group?.memberCount, dest: 'members' },
+                            { label: 'Media', value: group?.media?.length || 0, dest: 'media' },
+                            { label: 'Files', value: 24, dest: null },
                         ].map(s => (
                             <button
                                 key={s.label}
@@ -292,14 +296,13 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-indigo-500/[0.12]">
                             <Link2 size={12} color="#818cf8" />
                         </div>
-                        <p className="text-[11px] text-[#4a4e6a] truncate flex-1">chat.app/invite/{group._id}</p>
+                        <p className="text-[11px] text-[#4a4e6a] truncate flex-1">chat.app/invite/{group?._id}</p>
                         <button
                             onClick={copyLink}
-                            className={`flex items-center gap-1 px-2.5 py-1 rounded-[7px] text-[11px] font-semibold transition-all border ${
-                                copied
-                                    ? 'bg-emerald-400/[0.15] text-[#22d3a0] border-emerald-400/25'
-                                    : 'bg-indigo-500/[0.15] text-[#818cf8] border-indigo-500/25 hover:bg-indigo-500/25'
-                            }`}
+                            className={`flex items-center gap-1 px-2.5 py-1 rounded-[7px] text-[11px] font-semibold transition-all border ${copied
+                                ? 'bg-emerald-400/[0.15] text-[#22d3a0] border-emerald-400/25'
+                                : 'bg-indigo-500/[0.15] text-[#818cf8] border-indigo-500/25 hover:bg-indigo-500/25'
+                                }`}
                         >
                             {copied ? <><Check size={10} /> Copied</> : <><Copy size={10} /> Copy</>}
                         </button>
@@ -331,6 +334,7 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
                 <div className="px-3 pb-5">
                     <SectionLabel danger>Danger Zone</SectionLabel>
                     <ActionRow
+                        onClick={handleLeaveGroup}
                         danger
                         icon={<LogOut size={13} color="#f87171" />}
                         label="Leave Group"
@@ -354,30 +358,30 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
 // MEMBERS VIEW
 // ═══════════════════════════════════════════════════════════════════════════
 function MembersView({ group, currentUserId, setView }) {
-    const [members,      setMembers]      = useState(MOCK_MEMBERS)
-    const [search,       setSearch]       = useState('')
-    const [openMenu,     setOpenMenu]     = useState(null)
+    const [members, setMembers] = useState(MOCK_MEMBERS)
+    const [search, setSearch] = useState('')
+    const [openMenu, setOpenMenu] = useState(null)
     const [showAddModal, setShowAddModal] = useState(false)
-    const {currentGroupParticipants,setCurrentGroupParticipants,groupChat} = useGroupChatStore();
-    const {user} = userAuthStore()
-    const {onlineStatus} = useChatStore();
+    const { currentGroupParticipants, setCurrentGroupParticipants, groupChat } = useGroupChatStore();
+    const { user } = userAuthStore()
+    const { onlineStatus } = useChatStore();
 
-    const isOwner     = currentUserId === CURRENT_USER_ID
+    const isOwner = currentUserId === CURRENT_USER_ID
     const currentRole = members.find(m => m._id === currentUserId)?.role || 'member'
-    const canManage   = isOwner || currentRole === 'admin'
+    const canManage = isOwner || currentRole === 'admin'
     // const filtered    = currentGroupParticipants.filter(m => m.username.toLowerCase().includes(search.toLowerCase()))
 
-   
 
-    const handleRemove      = (id) => { setMembers(p => p.filter(m => m._id !== id)); setOpenMenu(null) }
 
-    const handleToggleAdmin = async(member) => {
+    const handleRemove = (id) => { setMembers(p => p.filter(m => m._id !== id)); setOpenMenu(null) }
 
-        if(member.isAdmin){
-            const res = await groupApi.unmarkMemberAsAdmin(groupChat._id,member._id)
+    const handleToggleAdmin = async (member) => {
+
+        if (member.isAdmin) {
+            const res = await groupApi.unmarkMemberAsAdmin(groupChat._id, member._id)
         }
-        else{
-            const res = await groupApi.markMemberAsAdmin(groupChat._id,member._id)
+        else {
+            const res = await groupApi.markMemberAsAdmin(groupChat._id, member._id)
         }
         setOpenMenu(null)
     }
@@ -385,7 +389,7 @@ function MembersView({ group, currentUserId, setView }) {
     return (
         <div className="flex flex-col h-full bg-[#0e1018]">
             <SubHeader
-                title={`Members · ${members.length}`}
+                title={`Members · ${new Array(group?.participants).length}`}
                 onBack={() => setView('main')}
                 action={canManage && (
                     <button
@@ -411,8 +415,8 @@ function MembersView({ group, currentUserId, setView }) {
             {/* List */}
             <div className="flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#1a1d28_transparent] px-3 pb-4 flex flex-col gap-0.5">
                 {currentGroupParticipants?.map(member => {
-                    const isSelf   = member._id === currentUserId
-                    const canAct   = canManage && !isSelf && member?.role !== 'owner' || ""
+                    const isSelf = member._id === currentUserId
+                    const canAct = canManage && !isSelf && member?.role !== 'owner' || ""
                     const menuOpen = openMenu === member._id
 
                     return (
@@ -423,7 +427,7 @@ function MembersView({ group, currentUserId, setView }) {
                             {/* Avatar */}
                             <div className="relative flex-shrink-0">
                                 <img src={member.avtar} alt="" className="w-9 h-9 rounded-full object-cover border border-white/[0.07]" />
-                                { onlineStatus[member._id] && (
+                                {onlineStatus[member._id] && (
                                     <div className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#22d3a0] border-2 border-[#0e1018]" />
                                 )}
                             </div>
@@ -435,9 +439,9 @@ function MembersView({ group, currentUserId, setView }) {
                                         {member._id === user._id ? "you" : member.username}
                                     </span>
                                     <RoleBadge role={
-                                        member._id === group.ownerId ? 'owner' :
-                                        member.isAdmin ? 'admin' :
-                                        null
+                                        member._id === group?.ownerId ? 'owner' :
+                                            member.isAdmin ? 'admin' :
+                                                null
                                     } />
                                 </div>
                                 <span className="text-[11px] text-[#4a4e6a]">{onlineStatus[member._id] ? 'Online' : 'Offline'}</span>
@@ -465,7 +469,7 @@ function MembersView({ group, currentUserId, setView }) {
                                             >
                                                 {member.isAdmin
                                                     ? <><UserMinus size={13} color="#818cf8" /> Remove Admin</>
-                                                    : <><Shield    size={13} color="#818cf8" /> Make Admin</>}
+                                                    : <><Shield size={13} color="#818cf8" /> Make Admin</>}
                                             </button>
                                             {isOwner && (
                                                 <button
@@ -487,7 +491,7 @@ function MembersView({ group, currentUserId, setView }) {
             {showAddModal && (
                 <AddMemberModal
                     onClose={() => setShowAddModal(false)}
-                    onAdd={ ()=>setShowAddModal(false) }
+                    onAdd={() => setShowAddModal(false)}
                     group={group}
                 />
             )}
@@ -496,46 +500,46 @@ function MembersView({ group, currentUserId, setView }) {
 }
 
 // ─── Add Member Modal ──────────────────────────────────────────────────────
-function AddMemberModal({ onClose, onAdd,group }) {
+function AddMemberModal({ onClose, onAdd, group }) {
     const [q, setQ] = useState('')
-    const {currentGroupParticipants,setCurrentGroupParticipants,groupChat} = useGroupChatStore();
-    const [users,setUsers] = useState([])
+    const { currentGroupParticipants, setCurrentGroupParticipants, groupChat } = useGroupChatStore();
+    const [users, setUsers] = useState([])
     const SUGGESTIONS = [
-        { _id: '99',  username: 'kai_design', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=kai'  },
-        { _id: '100', username: 'nina.rx',    avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=nina' },
-        { _id: '101', username: 'theo_dev',   avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=theo' },
+        { _id: '99', username: 'kai_design', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=kai' },
+        { _id: '100', username: 'nina.rx', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=nina' },
+        { _id: '101', username: 'theo_dev', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=theo' },
     ]
-    const [results,setResults] = useState([])
+    const [results, setResults] = useState([])
 
-    const getUsers = async ()=>{
+    const getUsers = async () => {
         const users = await groupApi.getUserChatUsersExceptGroupMembers(groupChat._id)
-        if(users.success){
+        if (users.success) {
             setResults(users.data)
-            
+
         }
     }
 
-    const handleAddMember =  async(userId,username)=>{
-        console.log("Emitting Add Memeber :: ",userId)
+    const handleAddMember = async (userId, username) => {
+        console.log("Emitting Add Memeber :: ", userId)
         const payload = {
-            groupId:groupChat._id,
+            groupId: groupChat._id,
             userId
         }
-        const res = await groupApi.addMemberToGroup(groupChat._id,userId)
-        if(res.success){
+        const res = await groupApi.addMemberToGroup(groupChat._id, userId)
+        if (res.success) {
             onAdd()
             Swal.fire({
                 icon: "success",
                 title: `User Added to Group`,
-                html: `<b>${username}</b> has been added to <b>${group.name}</b>.`,
+                html: `<b>${username}</b> has been added to <b>${group?.name}</b>.`,
                 confirmButtonText: "OK",
             });
         }
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         getUsers()
-    },[])
+    }, [])
 
 
 
@@ -559,7 +563,7 @@ function AddMemberModal({ onClose, onAdd,group }) {
                         <img src={u.avtar} alt="" className="w-9 h-9 rounded-full object-cover border border-white/[0.07]" />
                         <span className="text-[13px] font-semibold text-[#f1f2f7] flex-1">{u.username}</span>
                         <button
-                            onClick={() => {handleAddMember(u._id,u.username)}}
+                            onClick={() => { handleAddMember(u._id, u.username) }}
                             className="px-2.5 py-1 rounded-[8px] text-[11.5px] font-semibold bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-[0_3px_10px_rgba(99,102,241,0.35)] hover:opacity-85 transition-opacity"
                         >
                             Add
@@ -577,9 +581,9 @@ function AddMemberModal({ onClose, onAdd,group }) {
 function MediaView({ group, setView }) {
     const [tab, setTab] = useState('photos')
     const tabs = [
-        { id: 'photos', label: 'Photos', Icon: Image    },
-        { id: 'files',  label: 'Files',  Icon: FileText },
-        { id: 'links',  label: 'Links',  Icon: Hash     },
+        { id: 'photos', label: 'Photos', Icon: Image },
+        { id: 'files', label: 'Files', Icon: FileText },
+        { id: 'links', label: 'Links', Icon: Hash },
     ]
 
     return (
@@ -592,11 +596,10 @@ function MediaView({ group, setView }) {
                     <button
                         key={t.id}
                         onClick={() => setTab(t.id)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[12px] font-semibold transition-all border ${
-                            tab === t.id
-                                ? 'bg-indigo-500/[0.2] text-[#818cf8] border-indigo-500/30'
-                                : 'bg-transparent text-[#4a4e6a] border-transparent hover:text-[#818cf8]'
-                        }`}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[12px] font-semibold transition-all border ${tab === t.id
+                            ? 'bg-indigo-500/[0.2] text-[#818cf8] border-indigo-500/30'
+                            : 'bg-transparent text-[#4a4e6a] border-transparent hover:text-[#818cf8]'
+                            }`}
                     >
                         <t.Icon size={11} /> {t.label}
                     </button>
@@ -606,7 +609,7 @@ function MediaView({ group, setView }) {
             <div className="flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#1a1d28_transparent] px-4 pb-4">
                 {tab === 'photos' && (
                     <div className="grid grid-cols-3 gap-1.5 mt-1">
-                        {group.media?.map((src, i) => (
+                        {group?.media?.map((src, i) => (
                             <div key={i} className="rounded-[8px] overflow-hidden aspect-square cursor-pointer border border-white/[0.06] hover:scale-[1.04] hover:opacity-85 transition-all duration-150">
                                 <img src={src} alt="" className="w-full h-full object-cover" />
                             </div>
@@ -651,28 +654,28 @@ function MediaView({ group, setView }) {
 // EDIT GROUP VIEW
 // ═══════════════════════════════════════════════════════════════════════════
 function EditView({ group, setView }) {
-    const {groupChat,setGroupChat} = useGroupChatStore();
-    const [name,     setName]   = useState(groupChat?.groupName || group.name)
-    const [desc,     setDesc]   = useState(groupChat?.groupDescription || group.groupDescription)
-    const [isPublic, setPublic] = useState(groupChat?.isPublic || group.isPublic)
-    const [saved,    setSaved]  = useState(false)
+    const { groupChat, setGroupChat } = useGroupChatStore();
+    const [name, setName] = useState(groupChat?.groupName || group?.name)
+    const [desc, setDesc] = useState(groupChat?.groupDescription || group?.groupDescription)
+    const [isPublic, setPublic] = useState(groupChat?.isPublic || group?.isPublic)
+    const [saved, setSaved] = useState(false)
     const [file, setFile] = useState(null);
     const fileRef = useRef(null)
 
     const handleSave = async () => {
         // groupApi.updateGroup({ name, desc, isPublic })
-        if(file){
+        if (file) {
             const formData = new FormData();
             formData.append("groupPicture", file);
             const uploadRes = await groupApi.uploadGroupPicture(groupChat._id, formData);
-            setGroupChat({...groupChat, groupPicture: uploadRes.data.groupPicture})
+            setGroupChat({ ...groupChat, groupPicture: uploadRes.data.groupPicture })
         }
         const response = await groupApi.updateGroupChat(groupChat._id, name, desc);
         setSaved(true)
         setTimeout(() => setSaved(false), 2500)
     }
 
-    const handleFileClick = () =>{
+    const handleFileClick = () => {
         fileRef.current.click();
     }
 
@@ -688,16 +691,16 @@ function EditView({ group, setView }) {
                         <div className="w-20 h-20 rounded-2xl overflow-hidden border-[2.5px] border-indigo-500/[0.45] shadow-[0_0_24px_rgba(99,102,241,0.2)] group-hover/avatar:opacity-70 transition-opacity">
                             <img src={groupChat && !file ? groupChat?.groupPicture : groupChat && file ? URL.createObjectURL(file) : ""} alt="" className="w-full h-full object-cover" />
                             <input
-                            ref={fileRef}
-                            onChange={(e)=>{
-                                setFile(e.target.files[0])
-                            }}
-                            className='hidden'
-                            type="file" />
+                                ref={fileRef}
+                                onChange={(e) => {
+                                    setFile(e.target.files[0])
+                                }}
+                                className='hidden'
+                                type="file" />
                         </div>
                         <div
-                        onClick={handleFileClick}
-                        className="absolute inset-0 rounded-2xl flex items-center justify-center bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+                            onClick={handleFileClick}
+                            className="absolute inset-0 rounded-2xl flex items-center justify-center bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity">
                             <Camera size={18} color="#fff" />
                         </div>
                     </div>
@@ -748,11 +751,10 @@ function EditView({ group, setView }) {
                 <div className="h-px bg-white/[0.06] mb-4" />
                 <button
                     onClick={handleSave}
-                    className={`w-full py-2.5 rounded-[11px] text-white text-sm font-semibold tracking-wide border-none cursor-pointer flex items-center justify-center gap-2 transition-all duration-200 hover:-translate-y-px active:scale-[0.97] ${
-                        saved
-                            ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_4px_14px_rgba(34,211,160,0.3)] hover:shadow-[0_4px_18px_rgba(34,211,160,0.45)]'
-                            : 'bg-gradient-to-br from-indigo-500 to-violet-500 shadow-[0_4px_14px_rgba(99,102,241,0.35)] hover:shadow-[0_4px_18px_rgba(99,102,241,0.5)]'
-                    }`}
+                    className={`w-full py-2.5 rounded-[11px] text-white text-sm font-semibold tracking-wide border-none cursor-pointer flex items-center justify-center gap-2 transition-all duration-200 hover:-translate-y-px active:scale-[0.97] ${saved
+                        ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_4px_14px_rgba(34,211,160,0.3)] hover:shadow-[0_4px_18px_rgba(34,211,160,0.45)]'
+                        : 'bg-gradient-to-br from-indigo-500 to-violet-500 shadow-[0_4px_14px_rgba(99,102,241,0.35)] hover:shadow-[0_4px_18px_rgba(99,102,241,0.5)]'
+                        }`}
                 >
                     {saved ? <><Check size={15} /> Saved!</> : 'Save Changes'}
                 </button>
