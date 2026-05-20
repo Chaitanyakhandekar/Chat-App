@@ -329,7 +329,7 @@ function Home() {
     const [message, setMessage] = React.useState("")
     const [query, setQuery] = React.useState("")
 
-    const [activePanel, setActivePanel] = useState(null)
+    const [activePanel, setActivePanel] = useState("chats")
 
     // ── Summary state ──────────────────────────────────────────────────
     const [summaryOpen, setSummaryOpen] = useState(false)

@@ -49,7 +49,7 @@ function Home() {
     const [query, setQuery] = React.useState("")
 
     // Panel state: null | 'notifications' | 'profile' | 'newGroup' | 'settings'
-    const [activePanel, setActivePanel] = useState(null)
+    const [activePanel, setActivePanel] = useState("chats")
 
     const { user } = userAuthStore()
     const { fetchRequests } = useRequest()

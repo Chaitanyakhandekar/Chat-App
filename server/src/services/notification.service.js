@@ -107,8 +107,24 @@ const getUserNotificationsService = async (userId) => {
             }
         },
         {
+            $lookup: {
+                from: "users",
+                localField: "sender",
+                foreignField: "_id",
+                as: "sender"
+            }
+        },
+        {
+            $addFields: {
+                sender: { $arrayElemAt: ["$sender", 0] }
+            }
+        },
+        {
             $project: {
-                readBy: 0
+                readBy: 0,
+                "sender.password": 0,
+                "sender.refreshToken": 0,
+                "sender.email": 0
             }
         }
     ])

@@ -126,7 +126,7 @@ function Notification({ activePanel, setActivePanel }) {
     if (!user?._id) return
     const response = await notificationApi.getMyNotifications()
     if (response.success) {
-      setNotifications(response.data || [])
+      setNotifications(response.data?.notifications || [])
     }
   }, [user?._id])
 
@@ -259,7 +259,7 @@ function Notification({ activePanel, setActivePanel }) {
                 onReject={() => handleRejectRequest(request._id)}
               />
             ))}
-            {notifications.length > 0 ? notifications : [].map(notif => (
+            {notifications.length > 0 && notifications.map(notif => (
               <NotificationCard
                 key={notif._id}
                 notification={notif}

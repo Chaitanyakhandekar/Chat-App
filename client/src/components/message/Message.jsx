@@ -210,11 +210,11 @@ function MessageContextMenu({ open, isSent, onAction, onClose, anchorRef }) {
     if (!open) return null
 
     const actions = [
-        { id: 'reply',   icon: Reply,   label: 'Reply',   always: true },
-        { id: 'copy',    icon: Copy,    label: 'Copy',    always: true },
+        { id: 'reply', icon: Reply, label: 'Reply', always: true },
+        { id: 'copy', icon: Copy, label: 'Copy', always: true },
         { id: 'forward', icon: Forward, label: 'Forward', always: true },
-        { id: 'info',    icon: Info,    label: 'Info',    onlySent: true },
-        { id: 'delete',  icon: Trash2,  label: 'Delete',  onlySent: true, danger: true },
+        { id: 'info', icon: Info, label: 'Info', onlySent: true },
+        { id: 'delete', icon: Trash2, label: 'Delete', onlySent: true, danger: true },
     ].filter(a => a.always || (a.onlySent && isSent))
 
     return (
@@ -275,7 +275,7 @@ function EmojiBar({ show, isSent, onPick }) {
 }
 
 /* ─── Reaction chips ─── */
-function ReactionChips({ reactions=[], isSent , msg }) {
+function ReactionChips({ reactions = [], isSent, msg }) {
     if (!reactions || reactions.length === 0) return null
     const grouped = reactions.reduce((acc, r) => {
         acc[r.emoji] = (acc[r.emoji] || 0) + 1
@@ -514,7 +514,7 @@ function MessageInfoModalGroup({ show, onClose, msg, seenBy }) {
                                             )}
                                             <div className="w-[18px] h-[18px] rounded-full bg-[#0e3d3a] flex items-center justify-center">
                                                 <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-                                                    <path d="M1 3.5L3.5 6L8 1" stroke="#34d399" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    <path d="M1 3.5L3.5 6L8 1" stroke="#34d399" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                                 </svg>
                                             </div>
                                         </div>
@@ -538,7 +538,7 @@ function MessageInfoModalGroup({ show, onClose, msg, seenBy }) {
 /* ─────────────────────────────────────────────────────────────
    MAIN Message component
 ───────────────────────────────────────────────────────────── */
-function Message({ msg, key, isGroupChat }) {
+function Message({ msg, key, isGroupChat, onReply = () => { } }) {
 
     const context = useContext(authContext)
     const { user } = userAuthStore()
@@ -588,7 +588,7 @@ function Message({ msg, key, isGroupChat }) {
     const [seenBy, setSeenBy] = useState([])
 
     // Derived: should we show the warning banner?
-    const showLinkWarning    = isSuspiciousLink    && !warningDismissed && !proceedAnyway && isLink
+    const showLinkWarning = isSuspiciousLink && !warningDismissed && !proceedAnyway && isLink
     const showMessageWarning = isSuspiciousMessage && !warningDismissed && !proceedAnyway && !isLink
 
     /* ── Sync reactions from updated message ── */
@@ -799,22 +799,22 @@ function Message({ msg, key, isGroupChat }) {
                     <div className="relative">
                         <EmojiBar show={showEmojiBar} isSent={isSent} onPick={handleEmojiPick} />
 
-             {/* Bubble */}
-                         <div
-                             ref={bubbleRef}
-                             className={[
-                                 'relative min-w-[72px] rounded-2xl overflow-hidden break-words whitespace-pre-wrap',
-                                 'shadow-md',
-                                 isSent
-                                     ? 'text-white rounded-br-md bg-gradient-to-br from-accent to-violet'
-                                     : 'bg-surface-600 text-text-primary rounded-bl-md border border-white/[0.06]',
-                                 msg.status === 'uploading' ? 'opacity-75' : '',
-                                 // Dim suspicious content that hasn't been explicitly unlocked
-                                 (isSuspiciousLink || isSuspiciousMessage) && !proceedAnyway && !warningDismissed
-                                     ? 'blur-[1.5px] pointer-events-none select-none'
-                                     : '',
-                             ].join(' ')}
-                         >
+                        {/* Bubble */}
+                        <div
+                            ref={bubbleRef}
+                            className={[
+                                'relative min-w-[72px] rounded-2xl overflow-hidden break-words whitespace-pre-wrap',
+                                'shadow-md',
+                                isSent
+                                    ? 'text-white rounded-br-md bg-gradient-to-br from-accent to-violet'
+                                    : 'bg-surface-600 text-text-primary rounded-bl-md border border-white/[0.06]',
+                                msg.status === 'uploading' ? 'opacity-75' : '',
+                                // Dim suspicious content that hasn't been explicitly unlocked
+                                (isSuspiciousLink || isSuspiciousMessage) && !proceedAnyway && !warningDismissed
+                                    ? 'blur-[1.5px] pointer-events-none select-none'
+                                    : '',
+                            ].join(' ')}
+                        >
                             {/* ── Reply Quote ── */}
                             {hasReply && (
                                 <div style={{ animation: 'replyQuoteIn 0.16s ease' }}>
