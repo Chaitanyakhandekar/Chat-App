@@ -186,7 +186,12 @@ function ChatCard({
                         </span>
                     ) : (
                         <span className="text-[11.5px] text-gray-400 truncate">
-                            {!chat?.isGroupChat && online ? 'Online' : ""}
+                            {
+                                newMessages > 0 ? <p className='text-purple-400'>{newMessages} new messages</p>
+                                    : !chat?.isGroupChat && online ? "Online"
+
+                                        : ""
+                            }
                         </span>
                         // <span className="text-[11.5px] text-gray-400 truncate">
                         //     {!chat?.isGroupChat && online ? 'Online' : !chat?.isGroupChat && !online ? `last active ${getTime(user?.lastActive)}` : ""}
@@ -196,7 +201,7 @@ function ChatCard({
 
                 {/* Time + unread badge + friend request */}
                 <div className="flex flex-col items-end gap-[5px] flex-shrink-0">
-                    {newMessages > 0 && (
+                    {/* {newMessages > 0 && (
                         <>
                             {time && (
                                 <span className="chat-card-time text-[10.5px] text-[#4a4e6a] tracking-[-0.3px]">
@@ -210,7 +215,7 @@ function ChatCard({
                                 {newMessages}
                             </div>
                         </>
-                    )}
+                    )} */}
 
                     {/* Send Friend Request Button - only in search mode for non-friends */}
                     {searchMode && user?.isFriend === false && (
