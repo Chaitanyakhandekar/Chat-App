@@ -109,6 +109,8 @@ export const messageHandler = (io, socket) => {
             })
         }
         else {
+            const populatedMessage = await Message.findById(newMessage._id).populate('sender', 'username name avtar')
+
             console.log("Emitting Message to Group Chat : ", data.chatId.toString())
             // io.to(newMessage.chatId.toString()).emit(socketEvents.NEW_MESSAGE, newMessage)     // Sending Message to Other user in Chat
 
@@ -116,15 +118,15 @@ export const messageHandler = (io, socket) => {
 
             for (let member of members){
                 if(member.toString() !== socket.user._id.toString()){
-                    socket.to(getUserSocket(member.toString())).emit(socketEvents.NEW_MESSAGE, newMessage)     // Sending Message to Other user in Chat
+                    socket.to(getUserSocket(member.toString())).emit(socketEvents.NEW_MESSAGE, populatedMessage)     // Sending Message to Other user in Chat
                 }
             }
 
             console.log("Emitting Message to User (TEMPID) : ", data.tempId)
             io.to(socket.user._id.toString()).emit(socketEvents.MESSAGE_SENT_SINGLE_CHAT, {       // Notifying Sender About Message Status as Sent
-                message: newMessage,
-                chatId: newMessage.chatId,
-                sentAt: newMessage.createdAt,
+                message: populatedMessage,
+                chatId: populatedMessage.chatId,
+                sentAt: populatedMessage.createdAt,
                 tempId: data.tempId
             })       
 
@@ -132,7 +134,7 @@ export const messageHandler = (io, socket) => {
             data?.chatId,
             {
                 $set:{
-                    lastMessage:newMessage,
+                    lastMessage:populatedMessage,
                     
                 }
             }

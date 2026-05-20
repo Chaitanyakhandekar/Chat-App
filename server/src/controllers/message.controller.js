@@ -90,7 +90,7 @@ const getGroupConversation = asyncHandler(async (req,res)=>{
         chatId:groupId
         
       }
-    )
+    ).populate('sender', 'username name avtar')
 
     if(!messages?.length){
         return res

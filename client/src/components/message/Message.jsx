@@ -579,7 +579,9 @@ function Message({ msg, key, isGroupChat, onReply = () => { } }) {
     const longPressTimer = useRef(null)
     const longPressTriggered = useRef(false)
 
-    const isSent = msg.sender === user._id
+    const senderId = typeof msg.sender === 'object' ? msg.sender?._id : msg.sender
+    const isSent = senderId === user._id
+    const senderName = typeof msg.sender === 'object' ? (msg.sender?.username || msg.sender?.name) : ''
     const hasImage = msg?.attachments?.length > 0
     const hasText = msg?.message && msg.message.trim() !== ""
     const hasReply = !!msg?.reply
@@ -610,7 +612,7 @@ function Message({ msg, key, isGroupChat, onReply = () => { } }) {
 
     /* ── Intersection observer (seen) ── */
     useEffect(() => {
-        if (msg.sender === user._id) return
+        if (senderId === user._id) return
         if (msg.status === "seen") return
         const observer = new IntersectionObserver(
             (entries) => {
@@ -712,7 +714,7 @@ function Message({ msg, key, isGroupChat, onReply = () => { } }) {
             messageId: msg._id,
             chatId: msg.chatId,
             emoji,
-            to: msg.sender === user._id ? "receiver" : "sender"
+            to: senderId === user._id ? "receiver" : "sender"
         })
         resetReaction()
     }
@@ -796,6 +798,11 @@ function Message({ msg, key, isGroupChat, onReply = () => { } }) {
 
                 {/* Bubble column */}
                 <div className={`flex flex-col ${isSent ? 'items-end' : 'items-start'} max-w-[65%]`}>
+                    {isGroupChat && !isSent && senderName && (
+                        <span className="text-[11px] font-semibold mb-[3px] ml-1 text-[#818cf8] leading-none">
+                            {senderName}
+                        </span>
+                    )}
                     <div className="relative">
                         <EmojiBar show={showEmojiBar} isSent={isSent} onPick={handleEmojiPick} />
 
