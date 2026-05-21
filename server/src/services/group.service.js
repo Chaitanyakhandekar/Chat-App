@@ -6,6 +6,10 @@ import { isUserExists } from "../utils/document existance check/user.js"
 import { Message } from "../models/message.model.js"
 import { isMemberAlreadyInGroup } from "../utils/document existance check/group.js"
 import { Chat } from "../models/chat.model.js"
+import { createNotificationService } from "./notification.service.js"
+import { getIO } from "../sockets/socketInstance.js"
+import { Notification } from "../models/notification.model.js"
+import { socketEvents } from "../constants/socketEvents.js"
 
 /**
  * @description Adds a new participant to an existing group chat.
@@ -43,6 +47,41 @@ const addMembertoGroupService = async (groupId, user, memberId) => {   // Admin 
 
     const groupMenbers = await getGroupMembers(groupId)
 
+     
+        const io = getIO()
+    
+    
+    
+        const notificationPayload = {
+            sender: user._id,
+            receivers: [memberId],
+            type: "group_add",
+            content: `${user.username} added you to the group ${groupChat.groupName}`,
+            entityId: null,
+            isGroupNotification: false,
+            renderUrl: `/chat/${groupChat._id}`
+        }
+    
+        console.log("NOTIFICATION ACCEPTED :: ", notificationPayload)
+    
+        const notification = await createNotificationService(user._id,
+            user._id,
+            notificationPayload.receivers, notificationPayload.type,
+            notificationPayload.entityId,
+            notificationPayload.isGroupNotification,
+            notificationPayload.content,
+            notificationPayload.renderUrl
+        )
+    
+        if (notification) {
+    
+            const populatedNotification = await Notification.findById(notification._id).populate("sender", "username avtar")
+    
+            if (populatedNotification) {
+                io.to(memberId.toString()).emit(socketEvents.NEW_NOTIFICATION, populatedNotification)
+            }
+    
+        }
 
     if (!groupMenbers || !groupMenbers.length) {
         throw new ApiError(500, "Error While Adding Member In Group.")

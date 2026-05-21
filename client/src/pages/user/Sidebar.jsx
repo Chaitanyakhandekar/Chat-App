@@ -131,11 +131,11 @@ function Sidebar({
 
         <div className="flex-1" />
 
-        <NavIconBtn
+        {/* <NavIconBtn
           icon={Settings}
           panel="settings"
           tooltip="Settings"
-        />
+        /> */}
 
         <NavIconBtn
           icon={User}
@@ -202,11 +202,11 @@ function Sidebar({
 
 
         {/* Settings */}
-        {activePanel === "settings" &&
+        {/* {activePanel === "settings" &&
           <SettingsPanel
             setActivePanel={setActivePanel}
           />
-        }
+        } */}
 
 
         {/* Chats */}

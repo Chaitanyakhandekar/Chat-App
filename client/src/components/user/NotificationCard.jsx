@@ -1,5 +1,6 @@
 import React from "react"
 import { UserPlus, AtSign, MessageCircle, ShieldCheck, Bell, Check, X } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 // ─── Config ────────────────────────────────────────────────────────────────────
 
@@ -118,6 +119,7 @@ function NotificationCard({ notification, senderInfo, onClick, onMarkRead, onAcc
   const { type, content, isRead, createdAt, renderUrl, status } = notification
   const config = NOTIFICATION_CONFIG[type] ?? NOTIFICATION_CONFIG.default
   const Icon = config.icon
+  const navigate = useNavigate()
 
   function handleMarkRead(e) {
     e.stopPropagation()
@@ -126,7 +128,11 @@ function NotificationCard({ notification, senderInfo, onClick, onMarkRead, onAcc
 
   return (
     <div
-      onClick={() => onClick?.(notification)}
+      onClick={() => {onClick?.(notification)
+        if(notification?.renderUrl){
+          navigate(notification.renderUrl)
+        }
+      }}
       style={{
         position: "relative",
         display: "flex",

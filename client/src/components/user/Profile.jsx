@@ -192,14 +192,14 @@ function MainView({ user, setActivePanel, setView }) {
                     <span>Edit Profile</span>
                     <ChevronRight size={13} color="#4a4e6a" className="ml-auto" />
                 </div>
-                <div className="action-row" onClick={() => setView('settings')}>
+                {/* <div className="action-row" onClick={() => setView('settings')}>
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
                         style={{ background: 'rgba(99,102,241,0.15)' }}>
                         <Settings size={13} color="#818cf8" />
                     </div>
                     <span>Account Settings</span>
                     <ChevronRight size={13} color="#4a4e6a" className="ml-auto" />
-                </div>
+                </div> */}
 
                 {/* Sign out pushed to bottom */}
                 <div

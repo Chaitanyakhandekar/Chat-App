@@ -3,6 +3,7 @@ import { X, Search } from 'lucide-react'
 import { userAuthStore } from '../../store/userStore'
 import { useGroupChatStore } from '../../store/useGroupChatStore'
 import { useGroup } from '../../hooks/useGroup'
+import { useNavigate } from 'react-router-dom'
 
 
 function CreateGroup({
@@ -15,11 +16,13 @@ function CreateGroup({
     const [groupName, setGroupName] = React.useState(null)
     const { participants, addParticipant, resetParticipant } = useGroupChatStore()
     const { createGroup } = useGroup()
+    const navigate = useNavigate()
 
     const handleCreateGroup = async () => {
 
         await createGroup(groupName, participants)
-        setActivePanel("newGroup")
+        setActivePanel("chats")
+        navigate("/")
     }
 
     React.useEffect(() => {

@@ -15,7 +15,8 @@ function ChatList({
     groupsOnly = false,
     searchUsers = () => { },
     createGroup = false,
-    activePanel = "chats"
+    activePanel = "chats",
+
 
 }) {
 
@@ -144,7 +145,7 @@ function ChatList({
 
                 {
                     createGroup && (
-                        <CreateGroup user={null} searchMode={false} createGroup={true} users={users} />
+                        <CreateGroup   users={users} setActivePanel={togglePanel} />
                     )
                 }
             </div>
