@@ -130,6 +130,29 @@ class MessageApi{
         }
     }
 
+    getChatAttachments = async (chatId) =>{
+        try {
+            const response = await axios.get(`${this.baseUrl}/attachments/${chatId}`,
+                {
+                    withCredentials:true
+                }
+            )
+             console.log("Chat Attachments response :: ",response.data)
+
+            return {
+                success:true,
+                data:response.data.data,
+                message:"Chat attachments retrieved successfully."
+            }
+        } catch (error) {
+            return{
+                success:false,
+                message:error.message,
+                error:error
+            }
+        }
+    }
+
 }
 
 export const messageApi = new MessageApi()

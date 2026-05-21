@@ -151,11 +151,38 @@ const getMessagesForSummary = async (chatId, limit = 30) =>{
 
 }
 
+/**
+ * @description Service for fetching conversation of group chat.
+ * @access every group member
+ * @param {ObjectId} groupId
+ */
+const getChatAttachmentsService = async (chatId) => {
+
+    const chat = await isChatExists(chatId)
+
+    const attachments = await Message.find({
+        chatId,
+        attachments: {
+            $exists: true,
+            $not: {$size: 0}
+        },
+        deleteForEveryone: {
+            $ne: true
+        }
+        }).select("attachments -attachments.public_id")
+
+        console.log("Attachments = ", attachments)
+
+    return attachments;
+  
+}
+
 
 export {
     deleteForMeService,
     deleteForEveryoneService,
     getLastChatMessage,
     getSeenMembersService,
-    getMessagesForSummary   
+    getMessagesForSummary  ,
+    getChatAttachmentsService 
 }

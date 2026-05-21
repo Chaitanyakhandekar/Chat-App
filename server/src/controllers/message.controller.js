@@ -245,11 +245,25 @@ const getSeenMembers = asyncHandler(async(req,res)=>{
         )
 })
 
+const getChatAttachments = asyncHandler(async(req,res)=>{
+
+    const chatId = req.params.id
+
+    const attachments = await getChatAttachmentsService(chatId)
+    
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200,attachments,"Attachments Feteched Successfully.")
+        )
+})  
+
 export {
     getConversation,
     uploadImage,
     getGroupConversation,
     deleteForMe,
     deleteForEveryone,
-    getSeenMembers
+    getSeenMembers,
+    getChatAttachments,
 }
