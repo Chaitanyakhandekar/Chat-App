@@ -16,6 +16,7 @@ import GroupInfo from ".././../components/user/GroupInfo.jsx"
 import { useGroupChatStore } from "../../store/useGroupChatStore.js"
 import Notification from "../../components/user/Notification.jsx"
 import { useChatStore } from "../../store/useChatStore.js"
+import { useNotification } from "../../hooks/useNotification.jsx"
 
 function Sidebar({
   activePanel,
@@ -37,20 +38,21 @@ function Sidebar({
   const { setNewGroupInfo, GroupInfo, newGroupNotication, setNewGroupNotification, resetParticipant, participants } = useGroupChatStore()
 
   const { updateNotificationsCount, universalInfo } = useChatStore()
+  const { markAllNotificationsAsRead } = useNotification()
 
 
   // Nav button
-  const NavIconBtn = ({ icon: Icon, panel, badge, tooltip }) => {
-    const active = activePanel === panel
-
-    return (
-      <button
-        onClick={() => {
+  const NavIconBtn = ({ icon: Icon, panel, badge, tooltip , onClick = () => {
           togglePanel(panel)
           resetParticipant()
           console.log("Clicked Panel :: ", panel)
           console.log("Clicked Panel :: ", participants)
-        }}
+        } }) => {
+    const active = activePanel === panel
+
+    return (
+      <button
+          onClick={onClick}
         title={tooltip}
         className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 group ${active ? 'bg-accent-glow' : 'hover:bg-white/[0.03]'
           }`}
@@ -110,6 +112,11 @@ function Sidebar({
         />
 
         <NavIconBtn
+          onClick={async() => {
+            await markAllNotificationsAsRead(universalInfo.notifications || 0)
+          togglePanel("notifications")
+          resetParticipant()
+          }}
           icon={Bell}
           panel="notifications"
           badge={universalInfo.notifications}

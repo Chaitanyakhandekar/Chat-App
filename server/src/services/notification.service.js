@@ -57,6 +57,12 @@ const createNotificationService = async (senderId, currentUserId, receivers = []
         throw new ApiError(404, "Error While Creating Notification.")
     }
 
+    for (const receiverId of receivers) {
+        const receiver = await isUserExists(receiverId)
+        receiver.isUnreadNotification = true
+        await receiver.save({validateBeforeSave: false})
+    }
+
     // if (newNotification.isGroupNotification) {
     //     return { newNotification, groupMembers };
     // }
@@ -82,9 +88,9 @@ const getUserNotificationsService = async (userId) => {
                         new mongoose.Types.ObjectId(userId)
                     ]
                 },
-                isRead: {
-                    $ne: true
-                }
+                // isRead: {
+                //     $ne: true
+                // }
             }
         },
         {
@@ -138,11 +144,31 @@ const getUserNotificationsService = async (userId) => {
         }
     })
 
+    // if(!user.isUnreadNotification ){
+    // return { notifications:[], count:0 };
+    // }
+    return { notifications, count }
 
-    return { notifications, count };
+}
+
+const markAllNotificationsAsReadService = async (userId,count)=>{
+
+    const user = await isUserExists(userId)
+
+    const notifications = await Notification.updateMany(
+        {
+            receivers: { $in: [user._id] },
+            isRead: { $ne: true }
+        },
+        { isRead: true }
+    )
+
+    return notifications
+
 }
 
 export {
     createNotificationService,
-    getUserNotificationsService
+    getUserNotificationsService,
+    markAllNotificationsAsReadService
 }

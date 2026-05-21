@@ -42,6 +42,10 @@ const userSchema = new mongoose.Schema({
     lastActive: {
         type: Date
     },
+    isUnreadNotification:{
+        type: Boolean,
+        default: false
+    },
     lastNotificationRead: {
         type: Date
     },
