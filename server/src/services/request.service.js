@@ -8,6 +8,7 @@ import { summarizeChat } from "./ai.service.js"
 import { getMessagesForSummary } from "./message.service.js"
 import { ApiError } from "../utils/apiUtils.js"
 import { Request } from "../models/request.model.js"
+import { Notification } from "../models/notification.model.js"
 import { createNotificationService } from "./notification.service.js"
 import { isRequestExists } from "../utils/document existance check/request.js"
 import { request } from "express"
@@ -133,6 +134,8 @@ const acceptRequestService = async (requestId, userId) => {
         renderUrl: ""
     }
 
+    console.log("NOTIFICATION ACCEPTED :: ", notificationPayload)
+
     const notification = await createNotificationService(userId,
         userId,
         notificationPayload.receivers, notificationPayload.type,
@@ -144,7 +147,11 @@ const acceptRequestService = async (requestId, userId) => {
 
     if (notification) {
 
-        io.to(request.sender.toString()).emit(socketEvents.NEW_NOTIFICATION, notification)
+        const populatedNotification = await Notification.findById(notification._id).populate("sender", "username avtar")
+
+        if (populatedNotification) {
+            io.to(request.sender.toString()).emit(socketEvents.NEW_NOTIFICATION, populatedNotification)
+        }
 
     }
 

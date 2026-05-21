@@ -27,6 +27,23 @@ class NotificationApi {
             }
         }
     }
+
+    markAllAsRead = async (count) => {
+        try {
+            const response = await axios.post(`${this.baseUrl}/mark-all-read`, { count }, { withCredentials: true })
+            console.log("Mark All Notifications As Read Response :: ", response.data)
+            return {
+                success: true,
+                message: response.data.message
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: error.response?.data?.message || error.message,
+                error: error
+            }
+        }
+    }
 }
 
 export const notificationApi = new NotificationApi();

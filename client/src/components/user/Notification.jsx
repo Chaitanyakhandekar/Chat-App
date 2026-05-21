@@ -100,6 +100,7 @@ import { socket } from "../../socket/socket"
 import { socketEvents } from "../../constants/socketEvents"
 import { useChatStore } from "../../store/useChatStore"
 import { useRequest } from "../../hooks/useRequest"
+import { useNotification } from "../../hooks/useNotification"
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
@@ -108,8 +109,9 @@ function Notification({ activePanel, setActivePanel }) {
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
   const user = userAuthStore((state) => state.user)
-  const { updateNotificationsCount, incrementNotificationCount } = useChatStore()
+  const { updateNotificationsCount, incrementNotificationCount,universalInfo } = useChatStore()
   const { acceptRequest, rejectRequest } = useRequest()
+  const { markAllNotificationsAsRead} = useNotification()
 
   // Fetch user requests
   const fetchRequests = useCallback(async () => {
@@ -126,14 +128,14 @@ function Notification({ activePanel, setActivePanel }) {
     if (!user?._id) return
     const response = await notificationApi.getMyNotifications()
     if (response.success) {
-      setNotifications(response.data || [])
+      setNotifications(response.data?.notifications || [])
     }
   }, [user?._id])
 
   // Update badge count whenever requests or notifications change
   useEffect(() => {
     const count = requests.filter(r => r.status === "pending").length + notifications.length
-    updateNotificationsCount(count)
+    updateNotificationsCount(universalInfo.notifications || 0)
   }, [requests, notifications])
 
   useEffect(() => {
@@ -142,12 +144,21 @@ function Notification({ activePanel, setActivePanel }) {
     })
   }, [fetchRequests, fetchNotifications])
 
+  const markNotificationsAsRead = async () => {
+     
+      await markAllNotificationsAsRead(universalInfo.notifications || 0)
+    }
+
   // Listen for new request socket event
   useEffect(() => {
     const handleNewRequest = (newRequest) => {
       console.log("New request received:", newRequest)
       setRequests(prev => [newRequest, ...prev])
     }
+
+    
+    markAllNotificationsAsRead()
+
 
     socket.on(socketEvents.NEW_REQUEST, handleNewRequest)
     return () => {
@@ -259,7 +270,7 @@ function Notification({ activePanel, setActivePanel }) {
                 onReject={() => handleRejectRequest(request._id)}
               />
             ))}
-            {notifications.length > 0 ? notifications : [].map(notif => (
+            {notifications.length > 0 && notifications.map(notif => (
               <NotificationCard
                 key={notif._id}
                 notification={notif}

@@ -23,7 +23,17 @@ export const useNotification = () => {
         if (response.success) {
             console.log("Notifications :: ", response.data)
             setRequests(response.data)
-            updateNotificationsCount(response.data.length)
+            updateNotificationsCount(response.data.count)
+        }
+        setLoading(false)
+    }
+
+    const markAllNotificationsAsRead = async (count) => {
+        setLoading(true)
+        const response = await notificationApi.markAllAsRead(count)
+        if (response.success) {
+            console.log("All notifications marked as read")
+            updateNotificationsCount(0)
         }
         setLoading(false)
     }
@@ -34,6 +44,7 @@ export const useNotification = () => {
         loading,
         setLoading,
         createGroup,
-        fetchNotifications
+        fetchNotifications,
+        markAllNotificationsAsRead
     }
 }

@@ -127,15 +127,30 @@ const ActionRow = ({ onClick, iconBg, icon, label, sublabel, right, danger }) =>
 // ═══════════════════════════════════════════════════════════════════════════
 function GroupInfo({ setActivePanel = () => { }, group = MOCK_GROUP, currentUserId = CURRENT_USER_ID }) {
     const [view, setView] = useState('main')
-    // const groupId = useParams().id
+    const [mediaData, setMediaData] = useState(null)
+    const [mediaLoading, setMediaLoading] = useState(false)
+    const groupId = group?._id
 
 
+
+    useEffect(() => {
+        if (!groupId) return
+        const fetchMedia = async () => {
+            setMediaLoading(true)
+            const res = await groupApi.getGroupMedia(groupId)
+            if (res.success) {
+                setMediaData(res.data)
+            }
+            setMediaLoading(false)
+        }
+        fetchMedia()
+    }, [groupId])
 
     return (
         <div className="flex flex-col h-full w-full bg-[#0e1018]">
-            {view === 'main' && <MainView group={group} currentUserId={currentUserId} setView={setView} setActivePanel={setActivePanel} />}
+            {view === 'main' && <MainView group={group} currentUserId={currentUserId} setView={setView} setActivePanel={setActivePanel} mediaData={mediaData} />}
             {view === 'members' && <MembersView group={group} currentUserId={currentUserId} setView={setView} />}
-            {view === 'media' && <MediaView group={group} setView={setView} />}
+            {view === 'media' && <MediaView group={group} setView={setView} mediaData={mediaData} mediaLoading={mediaLoading} />}
             {view === 'edit' && <EditView group={group} setView={setView} />}
         </div>
     )
@@ -144,13 +159,13 @@ function GroupInfo({ setActivePanel = () => { }, group = MOCK_GROUP, currentUser
 // ═══════════════════════════════════════════════════════════════════════════
 // MAIN VIEW
 // ═══════════════════════════════════════════════════════════════════════════
-function MainView({ group, currentUserId, setView, setActivePanel }) {
+function MainView({ group, currentUserId, setView, setActivePanel, mediaData }) {
     const [muted, setMuted] = useState(false)
     const [copied, setCopied] = useState(false)
     const isOwner = currentUserId === CURRENT_USER_ID
     const { setGroupChat, groupChat } = useGroupChatStore();
     const { currentChatId } = useChatStore()
-    const { leaveGroup } = useGroup()
+    const { leaveGroup, deleteGroup } = useGroup()
 
     const copyLink = () => {
         navigator.clipboard.writeText(`https://chat.app/invite/${groupChat._id}`)
@@ -160,6 +175,10 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
 
     const handleLeaveGroup = async () => {
         await leaveGroup(group?._id)
+    }
+
+    const handleDeleteGroup = async () => {
+        await deleteGroup(group?._id)
     }
 
     return (
@@ -230,8 +249,8 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
                     <div className="flex gap-2">
                         {[
                             { label: 'Members', value: group?.memberCount, dest: 'members' },
-                            { label: 'Media', value: group?.media?.length || 0, dest: 'media' },
-                            { label: 'Files', value: 24, dest: null },
+                            { label: 'Photos', value: mediaData?.photos?.length || 0, dest: 'media' },
+                            { label: 'Links', value: mediaData?.links?.length || 0, dest: 'media' },
                         ].map(s => (
                             <button
                                 key={s.label}
@@ -342,6 +361,7 @@ function MainView({ group, currentUserId, setView, setActivePanel }) {
                     />
                     {isOwner && (
                         <ActionRow
+                            onClick={handleDeleteGroup}
                             danger
                             icon={<Trash2 size={13} color="#f87171" />}
                             label="Delete Group"
@@ -578,13 +598,16 @@ function AddMemberModal({ onClose, onAdd, group }) {
 // ═══════════════════════════════════════════════════════════════════════════
 // MEDIA VIEW
 // ═══════════════════════════════════════════════════════════════════════════
-function MediaView({ group, setView }) {
+function MediaView({ group, setView, mediaData, mediaLoading }) {
     const [tab, setTab] = useState('photos')
     const tabs = [
         { id: 'photos', label: 'Photos', Icon: Image },
         { id: 'files', label: 'Files', Icon: FileText },
         { id: 'links', label: 'Links', Icon: Hash },
     ]
+
+    const photos = mediaData?.photos || []
+    const links = mediaData?.links || []
 
     return (
         <div className="flex flex-col h-full bg-[#0e1018]">
@@ -607,43 +630,56 @@ function MediaView({ group, setView }) {
             </div>
 
             <div className="flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#1a1d28_transparent] px-4 pb-4">
-                {tab === 'photos' && (
-                    <div className="grid grid-cols-3 gap-1.5 mt-1">
-                        {group?.media?.map((src, i) => (
-                            <div key={i} className="rounded-[8px] overflow-hidden aspect-square cursor-pointer border border-white/[0.06] hover:scale-[1.04] hover:opacity-85 transition-all duration-150">
-                                <img src={src} alt="" className="w-full h-full object-cover" />
-                            </div>
-                        ))}
-                    </div>
+                {mediaLoading ? (
+                    <div className="flex items-center justify-center h-full text-[13px] text-[#4a4e6a]">Loading...</div>
+                ) : tab === 'photos' && (
+                    photos.length > 0 ? (
+                        <div className="grid grid-cols-3 gap-1.5 mt-1">
+                            {photos.map((photo, i) => (
+                                <div key={photo.public_id || i} className="rounded-[8px] overflow-hidden aspect-square cursor-pointer border border-white/[0.06] hover:scale-[1.04] hover:opacity-85 transition-all duration-150">
+                                    <img src={photo.url} alt="" className="w-full h-full object-cover" />
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-40 text-[13px] text-[#4a4e6a] gap-2">
+                            <Image size={24} color="#4a4e6a" />
+                            No photos shared yet
+                        </div>
+                    )
                 )}
 
                 {tab === 'files' && (
-                    <div className="flex flex-col gap-2 mt-1">
-                        {['design_system_v2.fig', 'component_spec.pdf', 'assets.zip'].map((f, i) => (
-                            <div key={i} className="flex items-center gap-3 p-3 rounded-[11px] bg-white/[0.03] border border-white/[0.06]">
-                                <div className="w-8 h-8 rounded-[9px] flex items-center justify-center flex-shrink-0 bg-indigo-500/[0.15]">
-                                    <FileText size={14} color="#818cf8" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-[12.5px] font-semibold text-[#f1f2f7] truncate">{f}</p>
-                                    <p className="text-[11px] text-[#4a4e6a]">{(2.4 + i * 3.1).toFixed(1)} MB</p>
-                                </div>
-                            </div>
-                        ))}
+                    <div className="flex flex-col items-center justify-center h-40 text-[13px] text-[#4a4e6a] gap-2 mt-1">
+                        <FileText size={24} color="#4a4e6a" />
+                        No files shared yet
                     </div>
                 )}
 
                 {tab === 'links' && (
-                    <div className="flex flex-col gap-2 mt-1">
-                        {['figma.com/design/abc', 'notion.so/team/specs', 'github.com/org/repo'].map((l, i) => (
-                            <div key={i} className="flex items-center gap-3 p-3 rounded-[11px] bg-white/[0.03] border border-white/[0.06]">
-                                <div className="w-8 h-8 rounded-[9px] flex items-center justify-center flex-shrink-0 bg-emerald-400/[0.1]">
-                                    <Link2 size={14} color="#22d3a0" />
-                                </div>
-                                <p className="text-[12px] font-medium text-[#818cf8] truncate flex-1">{l}</p>
-                            </div>
-                        ))}
-                    </div>
+                    links.length > 0 ? (
+                        <div className="flex flex-col gap-2 mt-1">
+                            {links.map((link, i) => (
+                                <a
+                                    key={link.messageId + String(i)}
+                                    href={link.url.startsWith('http') ? link.url : `https://${link.url}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-3 p-3 rounded-[11px] bg-white/[0.03] border border-white/[0.06] hover:bg-indigo-500/[0.08] hover:border-indigo-500/20 transition-all"
+                                >
+                                    <div className="w-8 h-8 rounded-[9px] flex items-center justify-center flex-shrink-0 bg-emerald-400/[0.1]">
+                                        <Link2 size={14} color="#22d3a0" />
+                                    </div>
+                                    <p className="text-[12px] font-medium text-[#818cf8] truncate flex-1">{link.url}</p>
+                                </a>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-40 text-[13px] text-[#4a4e6a] gap-2 mt-1">
+                            <Hash size={24} color="#4a4e6a" />
+                            No links shared yet
+                        </div>
+                    )
                 )}
             </div>
         </div>

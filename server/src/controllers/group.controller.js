@@ -2,6 +2,7 @@ import mongoose, { isValidObjectId } from "mongoose";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError, ApiResponse } from "../utils/apiUtils.js";
 import { User } from "../models/user.model.js";
+import { Message } from "../models/message.model.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { sendVerificationToken } from "../services/sendVerificationToken.js";
@@ -16,7 +17,7 @@ import { validateAtleastOneField } from "../utils/fields validations/validateAtl
 import { isChatExists } from "../utils/document existance check/chat.js";
 import { getUserChatUsers, getUserChatUsersServer } from "./chat.controller.js";
 import { getUniqueMembers } from "../utils/getUniqueMembers.js";
-import { addMembertoGroupService, leaveGroupService, markMemberAsAdminService, unmarkMemberAsAdminService } from "../services/group.service.js";
+import { addMembertoGroupService, deleteGroupService, leaveGroupService, markMemberAsAdminService, unmarkMemberAsAdminService } from "../services/group.service.js";
 
 
 const getGroupMembers = asyncHandler(async (req, res) => {
@@ -294,6 +295,54 @@ const unmarkMemberAsAdmin = asyncHandler(async (req, res) => {
 
 })
 
+const getGroupMedia = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+        throw new ApiError(400, "Invalid GroupId")
+    }
+
+    const messages = await Message.find({
+        chatId: id,
+        deleteForEveryone: { $ne: true },
+        deletedFor: { $nin: [req.user._id] }
+    }).populate('sender', 'username name avtar').sort({ createdAt: -1 });
+
+    const photos = [];
+    const links = [];
+
+    for (const msg of messages) {
+        if (msg.attachments && msg.attachments.length > 0) {
+            for (const att of msg.attachments) {
+                photos.push({
+                    url: att.secure_url,
+                    public_id: att.public_id,
+                    messageId: msg._id,
+                    sender: msg.sender,
+                    createdAt: msg.createdAt
+                });
+            }
+        }
+
+        if (msg.message) {
+            const text = msg.message.toLowerCase();
+            if (text.includes('https:') || text.includes('http:') ||
+                text.includes('.com') || text.includes('.in') || text.includes('.dev')) {
+                links.push({
+                    url: msg.message,
+                    messageId: msg._id,
+                    sender: msg.sender,
+                    createdAt: msg.createdAt
+                });
+            }
+        }
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, { photos, links }, "Group media fetched successfully.")
+    )
+})
+
 const leaveGroup = asyncHandler(async (req, res) => {
 
     console.log("GROUP ID :: ", req.params.id)
@@ -308,6 +357,18 @@ const leaveGroup = asyncHandler(async (req, res) => {
 
 })
 
+const deleteGroup = asyncHandler(async (req, res) => {
+
+    const group = await deleteGroupService(req.params.id, req.user._id)
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, group, "Group deleted.")
+        )
+
+})
+
 export {
     getGroupMembers,
     updateGroupChat,
@@ -316,5 +377,7 @@ export {
     addMemberToGroup,
     markMemberAsAdmin,
     unmarkMemberAsAdmin,
-    leaveGroup
+    getGroupMedia,
+    leaveGroup,
+    deleteGroup
 }

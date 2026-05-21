@@ -17,7 +17,7 @@ import { isChatExists } from "../utils/document existance check/chat.js";
 import { getUserChatUsers, getUserChatUsersServer } from "./chat.controller.js";
 import { getUniqueMembers } from "../utils/getUniqueMembers.js";
 import { addMembertoGroupService, markMemberAsAdminService, unmarkMemberAsAdminService } from "../services/group.service.js";
-import { createNotificationService, getUserNotificationsService } from "../services/notification.service.js";
+import { createNotificationService, getUserNotificationsService, markAllNotificationsAsReadService } from "../services/notification.service.js";
 
 /**
  * @description Controller for Creating new notification
@@ -67,7 +67,29 @@ const getAllUserNotifications = asyncHandler(async (req, res) => {
 
 })
 
+const markAllNotificationsAsRead = asyncHandler(async(req,res)=>{
+
+   const count = req.body?.count || 0
+   
+    if(!count){
+         return res
+        .status(200)
+        .json(
+            new ApiResponse(200, null, "All notifications marked as read.")
+        )
+    }
+
+    const isMarked = await markAllNotificationsAsReadService(req.user._id,count)
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, null, "All notifications marked as read.")
+        )
+})
+
 export {
     getAllUserNotifications,
-    createNotification
+    createNotification,
+    markAllNotificationsAsRead
 }
