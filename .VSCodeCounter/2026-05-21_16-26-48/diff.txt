@@ -1,0 +1,174 @@
+Date : 2026-05-21 16:26:48
+Directory : f:\Coding\MERN Stack\Backend\Websockets\Chat App
+Total : 106 files,  15314 codes, 653 comments, 1524 blanks, all 17491 lines
+
+Languages
++----------------+------------+------------+------------+------------+------------+
+| language       | files      | code       | comment    | blank      | total      |
++----------------+------------+------------+------------+------------+------------+
+| JavaScript JSX |         28 |      6,115 |        411 |        760 |      7,286 |
+| JSON           |          5 |      5,850 |          0 |          2 |      5,852 |
+| JavaScript     |         65 |      2,840 |        241 |        636 |      3,717 |
+| Markdown       |          3 |        485 |          1 |        123 |        609 |
+| HTML           |          1 |         14 |          0 |          1 |         15 |
+| PostCSS        |          2 |          8 |          0 |          2 |         10 |
+| XML            |          2 |          2 |          0 |          0 |          2 |
++----------------+------------+------------+------------+------------+------------+
+
+Directories
++-------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                  | files      | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                     |        106 |     15,314 |        653 |      1,524 |     17,491 |
+| . (Files)                                                                                             |          3 |        484 |          1 |        118 |        603 |
+| client                                                                                                |         62 |     12,225 |        432 |      1,071 |     13,728 |
+| client (Files)                                                                                        |          9 |      4,651 |          2 |         16 |      4,669 |
+| client\public                                                                                         |          1 |          1 |          0 |          0 |          1 |
+| client\src                                                                                            |         52 |      7,573 |        430 |      1,055 |      9,058 |
+| client\src (Files)                                                                                    |          4 |         84 |          2 |         19 |        105 |
+| client\src\api                                                                                        |          6 |        804 |          5 |        120 |        929 |
+| client\src\assets                                                                                     |          1 |          1 |          0 |          0 |          1 |
+| client\src\components                                                                                 |         16 |      3,551 |        312 |        405 |      4,268 |
+| client\src\components\guards                                                                          |          2 |         24 |          0 |         12 |         36 |
+| client\src\components\message                                                                         |          5 |      1,357 |         64 |        122 |      1,543 |
+| client\src\components\user                                                                            |          9 |      2,170 |        248 |        271 |      2,689 |
+| client\src\constants                                                                                  |          1 |         32 |          0 |          1 |         33 |
+| client\src\context                                                                                    |          1 |         18 |          0 |          7 |         25 |
+| client\src\hooks                                                                                      |          3 |        129 |          6 |         32 |        167 |
+| client\src\pages                                                                                      |          6 |      2,341 |         91 |        299 |      2,731 |
+| client\src\pages\auth                                                                                 |          2 |        208 |         24 |         37 |        269 |
+| client\src\pages\user                                                                                 |          4 |      2,133 |         67 |        262 |      2,462 |
+| client\src\services                                                                                   |          2 |         14 |          1 |          0 |         15 |
+| client\src\socket                                                                                     |          8 |        153 |         12 |         75 |        240 |
+| client\src\socket (Files)                                                                             |          2 |         30 |          0 |         20 |         50 |
+| client\src\socket\handlers                                                                            |          6 |        123 |         12 |         55 |        190 |
+| client\src\store                                                                                      |          4 |        446 |          1 |         97 |        544 |
+| server                                                                                                |         41 |      2,605 |        220 |        335 |      3,160 |
+| server (Files)                                                                                        |          2 |      1,356 |          0 |          0 |      1,356 |
+| server\src                                                                                            |         39 |      1,249 |        220 |        335 |      1,804 |
+| server\src (Files)                                                                                    |          2 |          4 |          2 |          0 |          6 |
+| server\src\constants                                                                                  |          1 |          8 |          0 |         -1 |          7 |
+| server\src\controllers                                                                                |          6 |        353 |         85 |        102 |        540 |
+| server\src\models                                                                                     |          5 |        124 |          0 |         11 |        135 |
+| server\src\routes                                                                                     |          7 |         57 |          0 |          9 |         66 |
+| server\src\services                                                                                   |          7 |        476 |        114 |        140 |        730 |
+| server\src\sockets                                                                                    |          9 |        202 |         19 |         64 |        285 |
+| server\src\sockets\handler                                                                            |          4 |        116 |          1 |         33 |        150 |
+| server\src\sockets\services                                                                           |          2 |         36 |          7 |         11 |         54 |
+| server\src\sockets\utils                                                                              |          3 |         50 |         11 |         20 |         81 |
+| server\src\utils                                                                                      |          2 |         25 |          0 |         10 |         35 |
+| server\src\utils\document existance check                                                             |          2 |         25 |          0 |         10 |         35 |
++-------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-------------------------------------------------------------------------------------------------------+----------------+------------+------------+------------+------------+
+| filename                                                                                              | language       | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------------------------------+----------------+------------+------------+------------+------------+
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\README.md                                            | Markdown       |        144 |          1 |         45 |        190 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\README.md                                     | Markdown       |          9 |          0 |          8 |         17 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\eslint.config.js                              | JavaScript     |         28 |          0 |          2 |         30 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\index.html                                    | HTML           |         14 |          0 |          1 |         15 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\package-lock.json                             | JSON           |      4,450 |          0 |          1 |      4,451 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\package.json                                  | JSON           |         39 |          0 |          1 |         40 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\postcss.config.js                             | JavaScript     |          6 |          0 |          1 |          7 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\public\vite.svg                               | XML            |          1 |          0 |          0 |          1 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\App.css                                   | PostCSS        |          0 |          0 |          1 |          1 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\App.jsx                                   | JavaScript JSX |         59 |          2 |         14 |         75 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\api\chat.api.js                           | JavaScript     |        135 |          0 |         21 |        156 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\api\group.api.js                          | JavaScript     |        239 |          3 |         39 |        281 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\api\message.api.js                        | JavaScript     |        139 |          0 |         19 |        158 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\api\notification.api.js                   | JavaScript     |         40 |          0 |          9 |         49 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\api\request.api.js                        | JavaScript     |         74 |          0 |         13 |         87 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\api\user.api.js                           | JavaScript     |        177 |          2 |         19 |        198 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\assets\react.svg                          | XML            |          1 |          0 |          0 |          1 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\components\guards\ProtectedRoute.jsx      | JavaScript JSX |         12 |          0 |          7 |         19 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\components\guards\ProtectedRouteAuth.jsx  | JavaScript JSX |         12 |          0 |          5 |         17 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\components\message\FileUpload.jsx         | JavaScript JSX |         94 |          0 |         12 |        106 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\components\message\MediaPreview.jsx       | JavaScript JSX |        194 |          9 |         19 |        222 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\components\message\Message.jsx            | JavaScript JSX |        831 |         42 |         68 |        941 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\components\message\MessageInfoModel.jsx   | JavaScript JSX |        138 |          7 |         10 |        155 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\components\message\SingleFilePreview.jsx  | JavaScript JSX |        100 |          6 |         13 |        119 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\components\user\ChatCard.jsx              | JavaScript JSX |        214 |         22 |         23 |        259 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\components\user\ChatList.jsx              | JavaScript JSX |        129 |         10 |         16 |        155 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\components\user\ChatWindow.jsx            | JavaScript JSX |        161 |          8 |         20 |        189 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\components\user\CreateGroup.jsx           | JavaScript JSX |         87 |          0 |         13 |        100 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\components\user\GroupInfo.jsx             | JavaScript JSX |        647 |         75 |         80 |        802 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\components\user\Notification.jsx          | JavaScript JSX |        187 |         77 |         56 |        320 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\components\user\NotificationCard.jsx      | JavaScript JSX |        306 |         40 |         20 |        366 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\components\user\Profile.jsx               | JavaScript JSX |        407 |         16 |         36 |        459 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\components\user\Settings.jsx              | JavaScript JSX |         32 |          0 |          7 |         39 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\constants\socketEvents.js                 | JavaScript     |         32 |          0 |          1 |         33 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\context\AuthProvider.jsx                  | JavaScript JSX |         18 |          0 |          7 |         25 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\hooks\useGroup.jsx                        | JavaScript JSX |         36 |          0 |          7 |         43 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\hooks\useNotification.jsx                 | JavaScript JSX |         41 |          0 |          9 |         50 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\hooks\useRequest.jsx                      | JavaScript JSX |         52 |          6 |         16 |         74 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\index.css                                 | PostCSS        |          8 |          0 |          1 |          9 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\main.jsx                                  | JavaScript JSX |         17 |          0 |          3 |         20 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\pages\auth\Login.jsx                      | JavaScript JSX |         98 |         11 |         17 |        126 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\pages\auth\Register.jsx                   | JavaScript JSX |        110 |         13 |         20 |        143 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\pages\user\Chat.jsx                       | JavaScript JSX |        930 |         29 |         93 |      1,052 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\pages\user\GroupInfoMain.jsx              | JavaScript JSX |        541 |         14 |         70 |        625 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\pages\user\Home.jsx                       | JavaScript JSX |        457 |         14 |         61 |        532 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\pages\user\Sidebar.jsx                    | JavaScript JSX |        205 |         10 |         38 |        253 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\services\getTime.js                       | JavaScript     |          7 |          1 |          0 |          8 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\services\isThisLink.js                    | JavaScript     |          7 |          0 |          0 |          7 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\socket\handlers\chat.handler.js           | JavaScript     |         13 |          0 |          5 |         18 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\socket\handlers\error.handler.js          | JavaScript     |          6 |          1 |          1 |          8 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\socket\handlers\group.handler.js          | JavaScript     |         19 |          0 |          8 |         27 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\socket\handlers\message.handler.js        | JavaScript     |         55 |          9 |         32 |         96 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\socket\handlers\notification.handler.js   | JavaScript     |         10 |          0 |          6 |         16 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\socket\handlers\onlineStatus.handler.js   | JavaScript     |         20 |          2 |          3 |         25 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\socket\socket.js                          | JavaScript     |          5 |          0 |          5 |         10 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\socket\socketListeners.js                 | JavaScript     |         25 |          0 |         15 |         40 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\store\useAssetsStore.js                   | JavaScript     |         18 |          0 |          8 |         26 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\store\useChatStore.js                     | JavaScript     |        345 |          0 |         66 |        411 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\store\useGroupChatStore.js                | JavaScript     |         58 |          0 |         13 |         71 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\src\store\userStore.js                        | JavaScript     |         25 |          1 |         10 |         36 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\tailwind.config.js                            | JavaScript     |         95 |          1 |          0 |         96 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\vercel.json                                   | JSON           |          5 |          0 |          0 |          5 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\client\vite.config.js                                | JavaScript     |          5 |          1 |          2 |          8 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\package-lock.json                             | JSON           |      1,353 |          0 |          0 |      1,353 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\package.json                                  | JSON           |          3 |          0 |          0 |          3 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\constants\socketEvents.js                 | JavaScript     |          8 |          0 |         -1 |          7 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\controllers\chat.controller.js            | JavaScript     |         11 |          0 |          6 |         17 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\controllers\group.controller.js           | JavaScript     |         62 |          0 |         15 |         77 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\controllers\message.controller.js         | JavaScript     |         50 |         45 |         24 |        119 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\controllers\notification.controller.js    | JavaScript     |         67 |         11 |         17 |         95 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\controllers\request.controller.js         | JavaScript     |         54 |         28 |         24 |        106 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\controllers\user.controller.js            | JavaScript     |        109 |          1 |         16 |        126 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\index.js                                  | JavaScript     |          0 |          2 |          0 |          2 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\models\chat.model.js                      | JavaScript     |          4 |          0 |          0 |          4 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\models\message.model.js                   | JavaScript     |         16 |          0 |          2 |         18 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\models\notification.model.js              | JavaScript     |         47 |          0 |          5 |         52 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\models\request.model.js                   | JavaScript     |         47 |          0 |          4 |         51 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\models\user.model.js                      | JavaScript     |         10 |          0 |          0 |         10 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\routes\chat.route.js                      | JavaScript     |          2 |          0 |          0 |          2 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\routes\group.route.js                     | JavaScript     |          6 |          0 |          0 |          6 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\routes\message.route.js                   | JavaScript     |          8 |          0 |          1 |          9 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\routes\notification.route.js              | JavaScript     |         13 |          0 |          4 |         17 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\routes\ping.route.js                      | JavaScript     |         11 |          0 |          1 |         12 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\routes\request.route.js                   | JavaScript     |         15 |          0 |          3 |         18 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\routes\user.route.js                      | JavaScript     |          2 |          0 |          0 |          2 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\server.js                                 | JavaScript     |          4 |          0 |          0 |          4 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\services\ai.service.js                    | JavaScript     |         40 |          0 |         10 |         50 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\services\chat.services.js                 | JavaScript     |         40 |         14 |         12 |         66 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\services\generateOTP.js                   | JavaScript     |         -2 |          2 |          0 |          0 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\services\group.service.js                 | JavaScript     |         27 |         12 |         15 |         54 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\services\message.service.js               | JavaScript     |        119 |         33 |         36 |        188 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\services\notification.service.js          | JavaScript     |        122 |         27 |         25 |        174 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\services\request.service.js               | JavaScript     |        130 |         26 |         42 |        198 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\sockets\handler\disconnect.handler.js     | JavaScript     |          9 |          0 |          1 |         10 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\sockets\handler\message.handler.js        | JavaScript     |         99 |          1 |         29 |        129 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\sockets\handler\onlineStatus.handler.js   | JavaScript     |          7 |          0 |          3 |         10 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\sockets\handler\onlineStatusAfterLogin.js | JavaScript     |          1 |          0 |          0 |          1 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\sockets\services\group.service.js         | JavaScript     |         22 |          7 |          5 |         34 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\sockets\services\message.service.js       | JavaScript     |         14 |          0 |          6 |         20 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\sockets\utils\getGroupMembers.js          | JavaScript     |          0 |          5 |          0 |          5 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\sockets\utils\getUserGroups.js            | JavaScript     |         38 |          6 |         15 |         59 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\sockets\utils\isGroupChat.js              | JavaScript     |         12 |          0 |          5 |         17 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\utils\document existance check\message.js | JavaScript     |         13 |          0 |          4 |         17 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\server\src\utils\document existance check\request.js | JavaScript     |         12 |          0 |          6 |         18 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\system_design.md                                     | Markdown       |        332 |          0 |         70 |        402 |
+| f:\Coding\MERN Stack\Backend\Websockets\Chat App\test.js                                              | JavaScript     |          8 |          0 |          3 |         11 |
+| Total                                                                                                 |                |     15,314 |        653 |      1,524 |     17,491 |
++-------------------------------------------------------------------------------------------------------+----------------+------------+------------+------------+------------+

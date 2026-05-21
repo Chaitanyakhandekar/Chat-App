@@ -19,7 +19,7 @@ function CreateGroup({
     const handleCreateGroup = async () => {
 
         await createGroup(groupName, participants)
-        setActivePanel("chats")
+        setActivePanel("newGroup")
     }
 
     React.useEffect(() => {
