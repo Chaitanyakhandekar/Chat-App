@@ -26,10 +26,18 @@ export const useGroup = () => {
     navigate("/")
   }
 
+  const deleteGroup = async (groupId) => {
+    setLoading(true)
+    const deleteResponse = await groupApi.deleteGroup(groupId)
+    removeChat(groupId)
+    navigate("/")
+  }
+
   return {
     loading,
     setLoading,
     createGroup,
-    leaveGroup
+    leaveGroup,
+    deleteGroup
   }
 }

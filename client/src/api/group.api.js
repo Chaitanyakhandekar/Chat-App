@@ -209,6 +209,24 @@ class GroupApi {
         }
     }
 
+    getGroupMedia = async (groupId) => {
+        try {
+            const response = await axios.get(`${this.baseUrl}/media/${groupId}`, {
+                withCredentials: true
+            })
+            return {
+                success: true,
+                data: response.data.data,
+                message: response.data.message
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message
+            }
+        }
+    }
+
     leaveGroup = async (groupId) => {
         try {
 
@@ -234,8 +252,30 @@ class GroupApi {
             }
         }
     }
+
+    deleteGroup = async (groupId) => {
+        try {
+
+
+            const response = await axios.delete(`${this.baseUrl}/delete/${groupId}`, {
+                withCredentials: true
+            })
+
+            console.log("Delete Group Response:", response.data)
+
+            return {
+                success: true,
+                data: response.data.data,
+                message: "Group deleted."
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message,
+                error: error
+            }
+        }
+    }
 }
-
-
 
 export const groupApi = new GroupApi();

@@ -5,6 +5,7 @@ import { isChatExists } from "../utils/document existance check/chat.js"
 import { isUserExists } from "../utils/document existance check/user.js"
 import { Message } from "../models/message.model.js"
 import { isMemberAlreadyInGroup } from "../utils/document existance check/group.js"
+import { Chat } from "../models/chat.model.js"
 
 /**
  * @description Adds a new participant to an existing group chat.
@@ -147,10 +148,40 @@ const leaveGroupService = async (groupId, userId) => {
 
 }
 
+/**
+ * @description service for deleting group by creator
+ * @param {ObjectId} groupId
+ * @param {ObjectId} userId
+ * @returns success message
+ */
+const deleteGroupService = async (groupId, userId) => {
+    
+    const group = await isChatExists(groupId)
+
+    const user = await isUserExists(userId)
+
+    if(group.createdBy.toString() !== user._id.toString()){
+        throw new ApiError(403, "Only group creator can delete the group.")
+    }
+
+    const deleteResult = await Chat.findByIdAndDelete(groupId)
+
+    if(!deleteResult){
+        throw new ApiError(500, "Error while deleting the group.")
+    }
+
+    return {
+        success: true,
+        message: "Group deleted successfully."
+    }
+    
+}
+
 
 export {
     addMembertoGroupService,
     markMemberAsAdminService,
     unmarkMemberAsAdminService,
-    leaveGroupService
+    leaveGroupService,
+    deleteGroupService
 }

@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import { isChatExists } from "../utils/document existance check/chat.js"
 
 export const adminPermission = asyncHandler(async(req,res,next)=>{
-   const {groupId} = req.body
+   const groupId = req.body?.groupId || req.params?.id
 
    if(!groupId){
     throw new ApiError(400,"GroupId is Required")
