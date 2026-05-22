@@ -12,6 +12,7 @@ import { requestApi } from '../../api/request.api.js';
 import { UserPlus, Check } from 'lucide-react';
 import { useRequest } from '../../hooks/useRequest.jsx';
 import { getTime } from '../../services/getTime.js';
+import { groupApi } from '../../api/group.api.js';
 
 
 const { addMessage, currentChatId, setCurrentChatId, setUserMessages, chatUsersInfo, onlineStatus, resetNewMessagesCount, setIsGroupChat } = useChatStore.getState();
@@ -78,7 +79,8 @@ function ChatCard({
         context.setCurrentChatUser(user);
         let response;
         if (groupId) {
-            response = await messageApi.getGroupConversation(groupId)
+            console.log("Getting Group Conversation Messages for Group ID :: ", groupId)
+            response = await groupApi.getConversation(groupId)
         }
         else {
             response = await messageApi.getConversation(user._id)
