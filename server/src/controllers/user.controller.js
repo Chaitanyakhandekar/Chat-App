@@ -875,20 +875,75 @@ const getAllUsers = asyncHandler(async (req, res) => {
     new ApiResponse(200, users1, "All Users Fetched Successfully.")
   )
 })
-
-
 const authMe = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id).select("-password -refreshToken");
 
-  if (!user) {
-    throw new ApiError(404, "User Not Found")
+  const { accessToken, refreshToken } = req.cookies;
+
+  try {
+
+    const decodedToken = jwt.verify(accessToken, process.env.JWT_ACCESS_SECRET || "efdernog34n345n723445nr45n6fv9e5jfjd3dddwe8her")
+
+    const user = await User.findById(decodedToken._id).select("-password")
+
+    if (!user) {
+      throw new ApiError(401, "Unauthorize User.")
+    }
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, user, "Authorize User.")
+      )
+
+  } catch (error) {
+
+    if (!refreshToken) {
+      throw new ApiError(401, "Unauthorize User.")
+    }
+
+    try {
+
+      const decodedRefreshToken = jwt.verify(refreshToken, process.env.JWT_ACCESS_SECRET || "efdernog34n345n723445nr45n6fv9e5jfjd3dddwe8her")
+
+      const user = await User.findById(decodedRefreshToken._id).select("-password")
+
+      if (!user) {
+        throw new ApiError(401, "Unauthorize User.")
+      }
+
+      if (user.refreshToken !== refreshToken) {
+        throw new ApiError(401, "Unauthorize User.")
+      }
+
+      const tokens = generateTokens(user)
+
+      user.refreshToken = tokens.refreshToken
+      await user.save({ validateBeforeSave: false })
+
+      return res
+        .status(200)
+        .cookie("accessToken", tokens.accessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+          maxAge: 24 * 60 * 60 * 1000 // 1 day
+        })
+        .cookie("refreshToken", tokens.refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+          maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        })
+        .json(
+          new ApiResponse(200, user, "Authorize User.")
+        )
+
+    } catch (err) {
+      throw new ApiError(401, "Unauthorize User.")
+    }
+
   }
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(200, user, "User Fetched Successfully.")
-    )
 })
 
 const searchUsers = asyncHandler(async (req, res) => {

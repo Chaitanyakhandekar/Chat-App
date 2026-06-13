@@ -30,7 +30,7 @@ import { upload } from '../middlewares/multer.middleware.js';
 const router = Router();
 
 router.route("/register").post(registerUser, sendVerificationToken)
-router.route("/auth-me").get(userAuth, authMe)
+router.route("/auth-me").get(authMe)
 router.route("/chat-partners").get(userAuth, getOnlinePartners)
 router.route("/login").post(loginUser)
 router.route("/logout").get(userAuth, logoutUser)
