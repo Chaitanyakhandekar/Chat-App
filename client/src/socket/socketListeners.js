@@ -17,6 +17,10 @@ export const initializeSocketListeners = () => {
 
     socket.on(socketEvents.CONNECT, () => {    // Listener for successful connection to the socket server
         console.log("Connected to socket server");
+        const user = userAuthStore.getState().user;
+        if (user) {
+            socket.emit(socketEvents.USER_LOGGED_IN);
+        }
     });
 
     socket.on(socketEvents.DISCONNECT, () => {     // Listener for disconnection from the socket server

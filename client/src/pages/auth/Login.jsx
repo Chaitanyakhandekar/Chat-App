@@ -34,7 +34,11 @@ function Login() {
             authData.login(response.data);
             setUser1(response.data)
             console.log("User set in context:", response.data);
-            socket.emit(socketEvents.USER_LOGGED_IN)
+            if (!socket.connected) {
+                socket.connect();
+            } else {
+                socket.emit(socketEvents.USER_LOGGED_IN)
+            }
             navigate('/home')
         }
         console.log("Login response:", response);

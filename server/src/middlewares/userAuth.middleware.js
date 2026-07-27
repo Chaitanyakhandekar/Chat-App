@@ -30,11 +30,11 @@ const userAuth = asyncHandler(async (req,res,next)=>{
         decodedToken = jwt.verify(accessToken,process.env.JWT_ACCESS_SECRET)
 
     } catch (error) {
-        throw new ApiError(500,"Error While Decoding AccessToken")
+        throw new ApiError(401,"Error While Decoding AccessToken")
     }
 
     if(!decodedToken){
-        throw new ApiError(500,"No Decoded Token Found")
+        throw new ApiError(401,"No Decoded Token Found")
     }
 
     // console.log("Decoded Token in Auth Middleware : ",decodedToken);

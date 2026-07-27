@@ -881,7 +881,7 @@ const authMe = asyncHandler(async (req, res) => {
 
   try {
 
-    const decodedToken = jwt.verify(accessToken, process.env.JWT_ACCESS_SECRET || "efdernog34n345n723445nr45n6fv9e5jfjd3dddwe8her")
+        const decodedToken = jwt.verify(accessToken, process.env.JWT_ACCESS_SECRET)
 
     const user = await User.findById(decodedToken._id).select("-password")
 
@@ -903,7 +903,7 @@ const authMe = asyncHandler(async (req, res) => {
 
     try {
 
-      const decodedRefreshToken = jwt.verify(refreshToken, process.env.JWT_ACCESS_SECRET || "efdernog34n345n723445nr45n6fv9e5jfjd3dddwe8her")
+      const decodedRefreshToken = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || process.env.JWT_ACCESS_SECRET)
 
       const user = await User.findById(decodedRefreshToken._id).select("-password")
 

@@ -243,7 +243,9 @@ const getUserChats = asyncHandler(async (req, res) => {
     // console.log("User Chats : ",userChats);
 
     if (!userChats.length) {
-        throw new ApiError(500, "Server Error While Fetching User Chats.")
+        return res.status(200).json(
+            new ApiResponse(200, [], "No Chats Found.")
+        )
     }
 
     return res.status(200).json(
@@ -258,6 +260,7 @@ const getChatById = asyncHandler(async (req, res) => {
     }
 
     const chat = await Chat.findById(chatId)
+        .populate('participants', 'username name avtar lastActive')
 
     if (!chat) {
         throw new ApiError(404, "Chat not found.")

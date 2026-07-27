@@ -135,16 +135,14 @@ function MainView({ user, setActivePanel, setView }) {
     const navigate = useNavigate()
 
     const handleSignOut = async () => {
-        const response = await userApi.logoutUser();
-        console.log("Logout Response:", response);
-        if(response.success){
-            logout();
-            socket.disconnect()
-            navigate('/login');
-
-        } else {
-            console.error("Logout failed:", response.message);
+        try {
+            await userApi.logoutUser();
+        } catch (error) {
+            console.error("Logout API failed:", error);
         }
+        logout();
+        socket.disconnect();
+        navigate('/login');
     }
 
     return (

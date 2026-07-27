@@ -53,5 +53,5 @@ app.use("/api/notifications", notificationRouter)
 //     console.log(`Server listening on port ${PORT}`);
 // });
 
-export { httpServer };
+export { httpServer, app };
 

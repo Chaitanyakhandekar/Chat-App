@@ -58,6 +58,45 @@ export const useChatStore = create(
                 }))
             ),
 
+            // ── Pagination ──────────────────────────────────────────
+            paginationMeta: {},
+
+            setPaginationMeta: (chatId, meta) => {
+                set((state) => ({
+                    paginationMeta: {
+                        ...state.paginationMeta,
+                        [chatId]: {
+                            ...(state.paginationMeta[chatId] || {}),
+                            ...meta
+                        }
+                    }
+                }))
+            },
+
+            setLoadingMore: (chatId, isLoading) => {
+                set((state) => ({
+                    paginationMeta: {
+                        ...state.paginationMeta,
+                        [chatId]: {
+                            ...(state.paginationMeta[chatId] || {}),
+                            isLoadingMore: isLoading
+                        }
+                    }
+                }))
+            },
+
+            prependMessages: (chatId, messages) => {
+                set((state) => ({
+                    userMessages: {
+                        ...state.userMessages,
+                        [chatId]: [
+                            ...messages,
+                            ...(state.userMessages[chatId] || [])
+                        ]
+                    }
+                }))
+            },
+
             replaceMessage: (chatId, tempId, message) => {
                 set((state) => ({
                     userMessages: {

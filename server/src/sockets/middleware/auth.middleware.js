@@ -14,13 +14,11 @@ export const auth = async (socket,next)=>{
             process.env.JWT_ACCESS_SECRET,
         )
     } catch (error) {
-        socket.disconnect();
+        return socket.disconnect();
     }
 
-    // console.log("Decoded Token in Socket Middleware : ",decodedToken);
-
     if(!decodedToken){
-        socket.disconnect();
+        return socket.disconnect();
     }
 
 
