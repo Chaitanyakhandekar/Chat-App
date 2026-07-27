@@ -168,9 +168,9 @@ export const useChatStore = create(
                 })
             },
 
-            removeChat: (chatId)=>{
-                set((state)=>({
-                    userChats: state.userChats.filter(chat=>chat._id !== chatId)
+            removeChat: (chatId) => {
+                set((state) => ({
+                    userChats: state.userChats.filter(chat => chat._id !== chatId)
                 }))
             },
 
@@ -371,7 +371,7 @@ export const useChatStore = create(
                 })
             },
 
-            currentPreviewFile: {},
+            currentPreviewFile: null,
 
             setCurrentPreviewFile: (file) => {
                 set({

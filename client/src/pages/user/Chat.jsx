@@ -440,6 +440,10 @@ function Home() {
         if (!chat) return
         const chatId = chat._id
 
+        console.log("DEBUG loadMessages start for chat:", chatId)
+        console.log("DEBUG chat.participants:", chat.participants)
+        console.log("DEBUG user._id:", user?._id)
+
         if (chat.isGroupChat) {
             const response = await groupApi.getConversation(chatId)
             if (response?.data?.data) {
@@ -451,9 +455,11 @@ function Home() {
                 setPaginationMeta(chatId, { hasMore: !!hasMore, nextCursor, isLoadingMore: false })
             }
         } else {
-            const otherParticipant = chat.participants?.find(p => p._id !== user._id) || chat.participants?.[0]
+            const otherParticipant = chat.participants?.find(p => p._id !== user?._id) || chat.participants?.[0]
+            console.log("DEBUG otherParticipant:", otherParticipant)
             if (otherParticipant?._id) {
                 const response = await messageApi.getConversation(otherParticipant._id)
+                console.log("DEBUG msg api response data:", response?.data)
                 if (response?.data?.data) {
                     const payload = response.data.data
                     const msgs = payload.messages || payload
@@ -816,6 +822,19 @@ function Home() {
             return () => clearTimeout(timer)
         }
     }, [currentChatId, chatLoading])
+
+    useEffect(() => {
+        // Blob URLs / File objects don't survive a reload — always reset on mount
+        setCurrentPreviewFile(null)
+        if (currentChatId) resetMediaFiles(currentChatId)
+
+        getAllUsers();
+        console.log("Media Files: ", mediaFiles[currentChatId]);
+
+        const container = chatContainerRef.current;
+        if (!container) return;
+
+    }, [])
 
     const searchUsers = async (query) => {
         setQuery(query);
