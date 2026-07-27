@@ -823,18 +823,6 @@ function Home() {
         }
     }, [currentChatId, chatLoading])
 
-    useEffect(() => {
-        // Blob URLs / File objects don't survive a reload — always reset on mount
-        setCurrentPreviewFile(null)
-        if (currentChatId) resetMediaFiles(currentChatId)
-
-        getAllUsers();
-        console.log("Media Files: ", mediaFiles[currentChatId]);
-
-        const container = chatContainerRef.current;
-        if (!container) return;
-
-    }, [])
 
     const searchUsers = async (query) => {
         setQuery(query);
