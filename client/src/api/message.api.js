@@ -5,12 +5,15 @@ class MessageApi{
         this.baseUrl = `${import.meta.env.VITE_ENV === "production" ? import.meta.env.VITE_BACKEND_URL_PROD : import.meta.env.VITE_BACKEND_URL}/api/messages`
     }
 
-    getConversation = async (otherUserId) =>{
+    getConversation = async (otherUserId, before = null) =>{
         try {
             console.log("Messages in Conversation :: ")
+            const params = {}
+            if (before) params.before = before
             const response = await axios.get(`${this.baseUrl}/convo/${otherUserId}`,
                 {
-                    withCredentials:true
+                    withCredentials:true,
+                    params
                 }
             )
 

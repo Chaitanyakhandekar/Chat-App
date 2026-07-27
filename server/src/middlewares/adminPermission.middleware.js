@@ -16,12 +16,15 @@ export const adminPermission = asyncHandler(async(req,res,next)=>{
     }
 
     
-    if(group?.isGroupChat)
-        console.log("Checking ::::::::::::::::::::::::::::::::::::",group.admins , " user ",req.user._id)
-        if(group.admins.some(a => a.toString() === req.user._id.toString())){
-            console.log("Checking ::::::::::::::::::::::::::::::::::::")
-            req.group = group
-            next()
-        }
+    if(!group?.isGroupChat){
+        throw new ApiError(400,"Not a group chat")
     }
+
+    if(group.admins.some(a => a.toString() === req.user._id.toString())){
+        req.group = group
+        next()
+    } else {
+        throw new ApiError(403,"You are not an admin of this group")
+    }
+}
 })

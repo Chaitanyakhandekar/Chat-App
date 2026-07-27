@@ -69,12 +69,15 @@ class GroupApi {
         }
     }
 
-    getConversation = async (groupId) => {
+    getConversation = async (groupId, before = null) => {
         try {
             console.log("Messages in Conversation :: ")
+            const params = {}
+            if (before) params.before = before
             const response = await axios.get(`${this.baseUrl}/convo/${groupId}`,
                 {
-                    withCredentials: true
+                    withCredentials: true,
+                    params
                 }
             )
 

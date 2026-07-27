@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useCallback } from 'react'
 import ChatCard from '../../components/user/ChatCard.jsx'
 import { useEffect } from 'react'
 import { userApi } from '../../api/user.api.js'
@@ -10,6 +10,7 @@ import {
     Send,
     MoveDown,
     ArrowDownCircleIcon,
+    ArrowLeft,
     Search,
     Zap,
     Bell,
@@ -26,6 +27,7 @@ import {
     ChevronDown,
     Copy,
     Check,
+    Loader2,
 } from 'lucide-react'
 import Swal from 'sweetalert2';
 import Message from '../../components/message/Message.jsx'
@@ -47,6 +49,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import Sidebar from './Sidebar.jsx'
 import { useGroupChatStore } from '../../store/useGroupChatStore.js'
 import { getTime } from '../../services/getTime.js'
+import { groupApi } from '../../api/group.api.js'
 
 // ── Dummy summary generator (replace with real API call later) ──────────────
 const DUMMY_SUMMARY = {
@@ -379,7 +382,12 @@ function Home() {
         isReplying,
         setIsReplying,
         messageBeingReplied,
-        setMessageBeingReplied
+        setMessageBeingReplied,
+        setUserMessages,
+        paginationMeta,
+        setPaginationMeta,
+        setLoadingMore,
+        prependMessages
     } = useChatStore()
 
     const { setGroupChat, groupChat, currentGroupParticipants, setCurrentGroupParticipants } = useGroupChatStore();
@@ -395,11 +403,24 @@ function Home() {
     const messageEndRef = useRef(null);
     const chatContainerRef = useRef(null)
     const inputRef = useRef(null)
+    const topSentinelRef = useRef(null)
     const [isAtBottom, setIsAtBottom] = React.useState(true);
     const isMedia = mediaFiles[currentChatId || paramChatId]?.length > 0
     const [showSidebar, setShowSidebar] = useState(true)
     const [groupsOnly, setGroupsOnly] = useState(false)
     const navigate = useNavigate()
+    const [chatLoading, setChatLoading] = useState(true)
+    const chatRestoredRef = useRef(false)
+
+    // Safety: if context.currentChatUser never gets set after loading finishes, navigate away
+    useEffect(() => {
+        if (!chatLoading && paramChatId && !context.currentChatUser) {
+            const timeout = setTimeout(() => {
+                if (!context.currentChatUser) navigate('/')
+            }, 5000)
+            return () => clearTimeout(timeout)
+        }
+    }, [chatLoading, paramChatId, context.currentChatUser])
 
     const totalUnread = Object.values(chatUsersInfo).reduce((sum, c) => sum + (c?.newMessages || 0), 0)
 
@@ -411,13 +432,126 @@ function Home() {
         })
     }
 
+    const setCurrentChatId = useChatStore(state => state.setCurrentChatId)
+    const setIsGroupChat = useChatStore(state => state.setIsGroupChat)
+
+    // ── Load messages with pagination ─────────────────────────────────
+    const loadMessages = async (chat) => {
+        if (!chat) return
+        const chatId = chat._id
+
+        console.log("DEBUG loadMessages start for chat:", chatId)
+        console.log("DEBUG chat.participants:", chat.participants)
+        console.log("DEBUG user._id:", user?._id)
+
+        if (chat.isGroupChat) {
+            const response = await groupApi.getConversation(chatId)
+            if (response?.data?.data) {
+                const payload = response.data.data
+                const msgs = payload.messages || payload
+                const hasMore = payload.hasMore ?? false
+                const nextCursor = payload.nextCursor ?? null
+                setUserMessages(chatId, Array.isArray(msgs) ? msgs : [])
+                setPaginationMeta(chatId, { hasMore: !!hasMore, nextCursor, isLoadingMore: false })
+            }
+        } else {
+            const otherParticipant = chat.participants?.find(p => p._id !== user?._id) || chat.participants?.[0]
+            console.log("DEBUG otherParticipant:", otherParticipant)
+            if (otherParticipant?._id) {
+                const response = await messageApi.getConversation(otherParticipant._id)
+                console.log("DEBUG msg api response data:", response?.data)
+                if (response?.data?.data) {
+                    const payload = response.data.data
+                    const msgs = payload.messages || payload
+                    const hasMore = payload.hasMore ?? false
+                    const nextCursor = payload.nextCursor ?? null
+                    setUserMessages(chatId, Array.isArray(msgs) ? msgs : [])
+                    setPaginationMeta(chatId, { hasMore: !!hasMore, nextCursor, isLoadingMore: false })
+                }
+            }
+        }
+    }
+
+    const applyChatFromData = async (chat) => {
+        if (!chat) return false
+
+        setCurrentChatId(chat._id)
+
+        if (chat.isGroupChat) {
+            setIsGroupChat(true)
+            setGroupChat(chat)
+            const otherParticipant = chat.participants?.find(p => p._id !== user._id) || chat.participants?.[0]
+            context.setCurrentChatUser(otherParticipant)
+        } else {
+            setIsGroupChat(chat.isGroupChat)
+            const otherParticipant = chat.participants?.find(p => p._id !== user._id) || chat.participants?.[0]
+            context.setCurrentChatUser(otherParticipant)
+        }
+
+        await loadMessages(chat)
+
+        setScrollToBottomInChat(true)
+        return true
+    }
+
+    const restoreChatFromUrl = async (chats) => {
+        if (!paramChatId) {
+            setChatLoading(false)
+            return
+        }
+        if (chatRestoredRef.current) {
+            setChatLoading(false)
+            return
+        }
+        chatRestoredRef.current = true
+
+        const chat = chats.find(c => c._id === paramChatId)
+        if (chat) {
+            await applyChatFromData(chat)
+            setChatLoading(false)
+            return
+        }
+
+        try {
+            const response = await chatApi.getChatById(paramChatId)
+            if (response.success && response.data) {
+                await applyChatFromData(response.data)
+            }
+        } catch { }
+        setChatLoading(false)
+    }
+
     const getAllUsers = async () => {
-        const response = await chatApi.getUserChats();
-        if (response.success) {
-            setUsers(response.data);
-            loadUnreadMessages(response.data)
-            setChatUsersInfo(response.data)
-            console.log("All users fetched:", response.data);
+        try {
+            const response = await chatApi.getUserChats();
+            if (response.success) {
+                setUsers(response.data);
+                loadUnreadMessages(response.data)
+                setChatUsersInfo(response.data)
+                await restoreChatFromUrl(response.data)
+                console.log("All users fetched:", response.data);
+            } else {
+                if (paramChatId) {
+                    try {
+                        const response = await chatApi.getChatById(paramChatId)
+                        if (response.success && response.data) {
+                            await applyChatFromData(response.data)
+                        }
+                    } catch { }
+                }
+                setChatLoading(false)
+            }
+        } catch (error) {
+            console.error("Failed to fetch chats:", error)
+            if (paramChatId) {
+                try {
+                    const response = await chatApi.getChatById(paramChatId)
+                    if (response.success && response.data) {
+                        await applyChatFromData(response.data)
+                    }
+                } catch { }
+            }
+            setChatLoading(false)
         }
     }
 
@@ -521,6 +655,70 @@ function Home() {
         container.scrollTop = container.scrollHeight;
     };
 
+    // ── Infinite scroll: load older messages ──────────────────────────
+    const loadOlderMessages = useCallback(async () => {
+        const activeChatId = currentChatId || paramChatId
+        if (!activeChatId) return
+        const meta = paginationMeta[activeChatId]
+        if (!meta?.hasMore || meta?.isLoadingMore) return
+
+        setLoadingMore(activeChatId, true)
+
+        const container = chatContainerRef.current
+        const prevScrollHeight = container?.scrollHeight || 0
+
+        try {
+            const chatState = useChatStore.getState()
+            const chat = chatState.userChats.find(c => c._id === activeChatId)
+            let response
+
+            if (isGroupChat) {
+                response = await groupApi.getConversation(activeChatId, meta.nextCursor)
+            } else {
+                const otherParticipant = chat?.participants?.find(p => p._id !== user._id) || context.currentChatUser
+                if (otherParticipant?._id) {
+                    response = await messageApi.getConversation(otherParticipant._id, meta.nextCursor)
+                }
+            }
+
+            if (response?.data?.data) {
+                const { messages: olderMsgs, hasMore, nextCursor } = response.data.data
+                if (olderMsgs?.length > 0) {
+                    prependMessages(activeChatId, olderMsgs)
+
+                    // Restore scroll position
+                    requestAnimationFrame(() => {
+                        if (container) {
+                            const newScrollHeight = container.scrollHeight
+                            container.scrollTop = newScrollHeight - prevScrollHeight
+                        }
+                    })
+                }
+                setPaginationMeta(activeChatId, { hasMore: !!hasMore, nextCursor: nextCursor || null, isLoadingMore: false })
+            } else {
+                setLoadingMore(activeChatId, false)
+            }
+        } catch (error) {
+            console.error("Error loading older messages:", error)
+            setLoadingMore(activeChatId, false)
+        }
+    }, [currentChatId, paramChatId, paginationMeta, isGroupChat])
+
+    // ── Socket reconnect: re-fetch messages on reconnection ──────────
+    useEffect(() => {
+        const handleReconnect = () => {
+            console.log("Socket reconnected, re-fetching messages...")
+            const activeChatId = currentChatId || paramChatId
+            if (activeChatId && context.currentChatUser) {
+                const chatState = useChatStore.getState()
+                const chat = chatState.userChats.find(c => c._id === activeChatId)
+                if (chat) loadMessages(chat)
+            }
+        }
+        socket.on('connect', handleReconnect)
+        return () => socket.off('connect', handleReconnect)
+    }, [currentChatId, paramChatId])
+
     useEffect(() => {
         if (isReplying && inputRef.current) {
             inputRef.current.focus()
@@ -547,11 +745,31 @@ function Home() {
         return () => container.removeEventListener("scroll", handleScroll);
     }, [])
 
+    // ── Infinite scroll observer ─────────────────────────────────────
     useEffect(() => {
-        if (!isAtBottom) {
-            scrollToBottom()
+        const sentinel = topSentinelRef.current
+        if (!sentinel) return
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    loadOlderMessages()
+                }
+            },
+            { root: chatContainerRef.current, threshold: 0.1 }
+        )
+
+        observer.observe(sentinel)
+        return () => observer.disconnect()
+    }, [loadOlderMessages, currentChatId])
+
+    useEffect(() => {
+        if (isAtBottom) {
+            requestAnimationFrame(() => {
+                scrollToBottom();
+            });
         }
-    }, [setIsAtBottom])
+    }, [isAtBottom])
 
     useEffect(() => {
         if (activePanel !== "newGroup") {
@@ -575,16 +793,48 @@ function Home() {
     useEffect(() => {
         console.log("Scroll to bottom in chat:", scrollToBottomInChat);
         if (scrollToBottomInChat) {
-            scrollToBottom();
+            requestAnimationFrame(() => {
+                scrollToBottom();
+            });
             setScrollToBottomInChat(false);
         }
     }, [scrollToBottomInChat])
+
+    useEffect(() => {
+        if (isAtBottom && messages[currentChatId]?.length > 0) {
+            requestAnimationFrame(() => {
+                scrollToBottom();
+            });
+        }
+    }, [messages[currentChatId]?.length])
 
     // Reset summary when chat changes
     useEffect(() => {
         setSummaryData(null)
         setSummaryOpen(false)
     }, [currentChatId])
+
+    // Scroll to latest message every time user opens/switches a chat
+    useEffect(() => {
+        if (currentChatId && messages[currentChatId]?.length > 0) {
+            // Delay ensures DOM has rendered the messages
+            const timer = setTimeout(() => scrollToBottom(), 150)
+            return () => clearTimeout(timer)
+        }
+    }, [currentChatId, chatLoading])
+
+    useEffect(() => {
+        // Blob URLs / File objects don't survive a reload — always reset on mount
+        setCurrentPreviewFile(null)
+        if (currentChatId) resetMediaFiles(currentChatId)
+
+        getAllUsers();
+        console.log("Media Files: ", mediaFiles[currentChatId]);
+
+        const container = chatContainerRef.current;
+        if (!container) return;
+
+    }, [])
 
     const searchUsers = async (query) => {
         setQuery(query);
@@ -759,6 +1009,47 @@ function Home() {
         )
     }
 
+    // ── Loading skeleton ─────────────────────────────────────────────
+    const ChatSkeleton = () => (
+        <div className="relative z-[1] flex flex-col w-full h-full">
+            {/* Skeleton header */}
+            <div className="flex items-center gap-3 h-16 px-4 md:px-6 border-b border-white/[0.06] bg-surface-800/90">
+                <div className="w-10 h-10 rounded-full skeleton-pulse" style={{ background: 'rgba(99,102,241,0.15)' }} />
+                <div className="flex flex-col gap-1.5 flex-1">
+                    <div className="w-28 h-3 rounded skeleton-pulse" style={{ background: 'rgba(255,255,255,0.08)' }} />
+                    <div className="w-16 h-2.5 rounded skeleton-pulse" style={{ background: 'rgba(255,255,255,0.05)' }} />
+                </div>
+            </div>
+            {/* Skeleton messages */}
+            <div className="flex-1 px-4 md:px-6 pt-6 flex flex-col gap-3">
+                {[0.4, 0.7, 0.35, 0.55, 0.6, 0.3].map((w, i) => (
+                    <div key={i} className={`flex ${i % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
+                        <div
+                            className="rounded-2xl skeleton-pulse"
+                            style={{
+                                width: `${w * 100}%`,
+                                maxWidth: 280,
+                                height: 40 + (i % 3) * 12,
+                                background: i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(99,102,241,0.1)',
+                                animationDelay: `${i * 0.12}s`,
+                            }}
+                        />
+                    </div>
+                ))}
+            </div>
+            {/* Skeleton footer */}
+            <div className="flex items-center gap-3 h-20 px-4 md:px-5 border-t border-white/[0.06]">
+                <div className="flex-1 h-11 rounded-2xl skeleton-pulse" style={{ background: 'rgba(255,255,255,0.04)' }} />
+                <div className="w-11 h-11 rounded-xl skeleton-pulse" style={{ background: 'rgba(99,102,241,0.15)' }} />
+            </div>
+        </div>
+    )
+
+    // ── Loading more spinner at top ──────────────────────────────────
+    const activeChatId = currentChatId || paramChatId
+    const isLoadingMore = paginationMeta[activeChatId]?.isLoadingMore
+    const hasMore = paginationMeta[activeChatId]?.hasMore
+
     return (
         <>
             <style>{`
@@ -832,6 +1123,21 @@ function Home() {
                     0%, 100% { opacity: 0.4; }
                     50% { opacity: 0.8; }
                 }
+
+                /* Infinite scroll spinner */
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+                .loading-spinner {
+                    animation: spin 0.8s linear infinite;
+                }
+
+                /* Mobile-optimized message bubbles */
+                @media (max-width: 767px) {
+                    .msg-bubble-wrapper {
+                        max-width: 82% !important;
+                    }
+                }
             `}</style>
 
             {/* Root */}
@@ -859,37 +1165,49 @@ function Home() {
                     <div className="absolute -top-24 -right-24 w-[400px] h-[400px] rounded-full pointer-events-none z-0 bg-accent/5 blur-[80px]" />
                     <div className="absolute -bottom-20 left-[10%] w-[300px] h-[300px] rounded-full pointer-events-none z-0 bg-violet/5 blur-[80px]" />
 
-                    {context.currentChatUser ? (
+                    {(chatLoading || (paramChatId && !context.currentChatUser)) ? (
+                        <ChatSkeleton />
+                    ) : context.currentChatUser ? (
                         <>
-                            {/* Nav */}
+                            {/* Nav — mobile-optimized with back button */}
                             <nav
-                                className="sticky top-0 z-10 flex items-center gap-3.5 h-16 px-6 border-b border-white/[0.06] bg-surface-800/90 backdrop-blur-xl">
+                                className="sticky top-0 z-10 flex items-center gap-2 md:gap-3.5 h-14 md:h-16 px-3 md:px-6 border-b border-white/[0.06] bg-surface-800/90 backdrop-blur-xl">
+
+                                {/* Back button — mobile only */}
+                                <button
+                                    onClick={() => navigate('/')}
+                                    className="md:hidden flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-150 active:scale-90"
+                                    style={{ background: 'rgba(255,255,255,0.05)' }}
+                                >
+                                    <ArrowLeft size={18} color="#818cf8" />
+                                </button>
+
                                 {/* Left: avatar + name — clickable for group info */}
                                 <div
                                     title={isGroupChat ? 'Group Info' : "User Profile"}
                                     onClick={handleChatInfoClick}
-                                    className="flex items-center gap-3.5 flex-1 min-w-0 cursor-pointer"
+                                    className="flex items-center gap-2.5 md:gap-3.5 flex-1 min-w-0 cursor-pointer"
                                 >
-                                    <div className="relative w-10 h-10 flex-shrink-0">
+                                    <div className="relative w-8 h-8 md:w-10 md:h-10 flex-shrink-0">
                                         <img
                                             src={
                                                 isGroupChat && groupChat?.groupPicture ? groupChat.groupPicture :
                                                     !isGroupChat && context.currentChatUser?.avtar ? context.currentChatUser.avtar : `https://api.dicebear.com/7.x/shapes/svg?seed=${context.currentChatUser._id}&scale=90`
                                             }
                                             alt=""
-                                            className="w-10 h-10 rounded-full object-cover border-2 border-white/[0.07]"
+                                            className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border-2 border-white/[0.07]"
                                         />
                                         {!isGroupChat && onlineStatus[context.currentChatUser._id] && (
-                                            <div className="online-pulse absolute bottom-[1px] right-[1px] w-2.5 h-2.5 rounded-full bg-success border-2 border-surface-800"
+                                            <div className="online-pulse absolute bottom-[1px] right-[1px] w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-success border-2 border-surface-800"
                                                 style={{ boxShadow: '0 0 8px #22d3a0' }} />
                                         )}
                                     </div>
                                     <div className="flex flex-col min-w-0">
-                                        <span className="text-[15px] font-semibold tracking-tight text-text-primary truncate">
+                                        <span className="text-[13px] md:text-[15px] font-semibold tracking-tight text-text-primary truncate">
                                             {(!isGroupChat && context.currentChatUser?.username) || (isGroupChat ? groupChat?.groupName : "Unknown User")}
                                         </span>
                                         {chatUsersInfo[currentChatId]?.typing ? (
-                                            <span className="flex items-center gap-1 text-xs text-success font-medium">
+                                            <span className="flex items-center gap-1 text-[11px] md:text-xs text-success font-medium">
                                                 <span className="flex gap-0.5 items-center">
                                                     <span className="typing-dot w-[3px] h-[3px] rounded-full bg-success inline-block" />
                                                     <span className="typing-dot w-[3px] h-[3px] rounded-full bg-success inline-block" />
@@ -901,14 +1219,14 @@ function Home() {
                                                             {typer.username || 'Unknown User'} {index < chatUsersInfo[currentChatId].typers.length - 1 ? ', ' : ' '}
                                                         </span>
                                                     ))}
-                                                typing...
+                                                typing
                                             </span>
                                         ) : (
                                             !isGroupChat ?
-                                                <span className="text-xs text-gray-400">
+                                                <span className="text-[11px] md:text-xs text-gray-400 truncate">
                                                     {onlineStatus[context.currentChatUser._id] ? 'Online' : !onlineStatus[context.currentChatUser._id] ? `last active ${getTime(context?.currentChatUser?.lastActive)}` : 'Offline'}
                                                 </span>
-                                                : <span className="text-xs text-gray-400">
+                                                : <span className="text-[11px] md:text-xs text-gray-400">
 
                                                 </span>
 
@@ -942,8 +1260,36 @@ function Home() {
                                     {/* Messages */}
                                     <div
                                         ref={chatContainerRef}
-                                        className="flex-1 overflow-y-auto md:px-6 pt-6 pb-2 z-[1] custom-scroll"
+                                        className="flex-1 overflow-y-auto px-2 md:px-6 pt-4 md:pt-6 pb-2 z-[1] custom-scroll"
                                     >
+                                        {/* Top sentinel for infinite scroll */}
+                                        <div ref={topSentinelRef} className="h-1 w-full" />
+
+                                        {/* Loading older messages spinner */}
+                                        {isLoadingMore && (
+                                            <div className="flex items-center justify-center py-4">
+                                                <div className="flex items-center gap-2 px-4 py-2 rounded-full"
+                                                    style={{
+                                                        background: 'rgba(99,102,241,0.08)',
+                                                        border: '1px solid rgba(99,102,241,0.18)',
+                                                    }}>
+                                                    <Loader2 size={14} className="loading-spinner" color="#818cf8" />
+                                                    <span className="text-[11px] font-medium" style={{ color: '#818cf8' }}>Loading older messages…</span>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* "No more messages" indicator */}
+                                        {!hasMore && messages[currentChatId]?.length > 0 && !isLoadingMore && (
+                                            <div className="flex items-center justify-center py-3 mb-2">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-px w-12 bg-gradient-to-r from-transparent to-white/[0.08]" />
+                                                    <span className="text-[11px] font-medium text-[#3a3e58]">Beginning of conversation</span>
+                                                    <div className="h-px w-12 bg-gradient-to-l from-transparent to-white/[0.08]" />
+                                                </div>
+                                            </div>
+                                        )}
+
                                         {messages[currentChatId]?.map((msg) => (
                                             <Message
                                                 key={msg._id}
@@ -955,7 +1301,7 @@ function Home() {
                                         {!isAtBottom && (
                                             <button
                                                 onClick={scrollToBottom}
-                                                className="fixed z-20 bottom-24 right-8 w-9 h-9 flex items-center justify-center rounded-full bg-accent border-none cursor-pointer transition-all duration-150 hover:-translate-y-0.5"
+                                                className="fixed z-20 bottom-24 right-4 md:right-8 w-10 h-10 md:w-9 md:h-9 flex items-center justify-center rounded-full bg-accent border-none cursor-pointer transition-all duration-150 hover:-translate-y-0.5 active:scale-90"
                                                 style={{ boxShadow: '0 4px 16px rgba(99,102,241,0.4)' }}
                                             >
                                                 <ArrowDownCircleIcon size={18} className="text-white" />
@@ -975,13 +1321,13 @@ function Home() {
 
                                     {/* ── FOOTER ── */}
                                     <footer
-                                        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
+                                        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)" }}
                                         className="z-10 flex flex-col border-t border-white/[0.06] bg-surface-800/90 backdrop-blur-xl"
                                     >
                                         <ReplyPreviewStrip />
 
-                                        <div className="flex items-center gap-3 h-20 px-5">
-                                            <div className={`msg-input-wrap flex flex-1 items-center gap-2 bg-surface-700 border border-white/[0.06] rounded-2xl px-1 pr-1.5 transition-all duration-200 ${isReplying ? 'msg-input-wrap-replying' : ''}`}>
+                                        <div className="flex items-center gap-2 md:gap-3 h-16 md:h-20 px-3 md:px-5">
+                                            <div className={`msg-input-wrap flex flex-1 items-center gap-1 md:gap-2 bg-surface-700 border border-white/[0.06] rounded-2xl px-1 pr-1.5 transition-all duration-200 ${isReplying ? 'msg-input-wrap-replying' : ''}`}>
                                                 <div className="flex items-center px-1 text-text-dim flex-shrink-0">
                                                     <FileUpload />
                                                 </div>
@@ -1002,13 +1348,14 @@ function Home() {
                                                             ? `Reply to ${messageBeingReplied?.sender === user._id ? 'yourself' : context.currentChatUser?.username}…`
                                                             : "Type a message…"
                                                     }
-                                                    className="flex-1 bg-transparent border-none outline-none text-text-primary text-sm py-3.5 px-2 placeholder-text-dim"
+                                                    className="flex-1 bg-transparent border-none outline-none text-text-primary text-[14px] md:text-sm py-3 md:py-3.5 px-1.5 md:px-2 placeholder-text-dim"
+                                                    style={{ minHeight: '44px' }}
                                                 />
                                             </div>
                                             <button
                                                 onClick={handleSend}
-                                                className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-xl border-none cursor-pointer transition-all duration-150 hover:-translate-y-0.5 hover:scale-[1.04] active:scale-95"
-                                                style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 14px rgba(99,102,241,0.4)' }}
+                                                className="flex-shrink-0 flex items-center justify-center w-11 h-11 md:w-11 md:h-11 rounded-xl border-none cursor-pointer transition-all duration-150 hover:-translate-y-0.5 hover:scale-[1.04] active:scale-95"
+                                                style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 14px rgba(99,102,241,0.4)', minWidth: '44px', minHeight: '44px' }}
                                             >
                                                 <Send size={18} className="text-white" />
                                             </button>

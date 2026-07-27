@@ -12,7 +12,7 @@ import { sendEmail } from "../services/brevoMail.service.js";
 import { Message } from "../models/message.model.js";
 import { validObjectId } from "../utils/isValidObjectId.js";
 import { assertRequiredFields } from "../utils/fields validations/assertRequiredFields.js";
-import { deleteForEveryoneService, deleteForMeService, getSeenMembersService } from "../services/message.service.js";
+import { deleteForEveryoneService, deleteForMeService, getSeenMembersService, getChatAttachmentsService } from "../services/message.service.js";
 import { getIO } from "../sockets/socketInstance.js";
 import { socketEvents } from "../constants/socketEvents.js";
 
@@ -31,40 +31,39 @@ const getConversation = asyncHandler(async (req,res)=>{
         throw new ApiError(400,"Other User Id is Required.")
     }
 
-    const messages = await Message.find(
-      {
-          $or:[
-            {
-                sender:id,
-                receiver:otherUserId
-            },
-            {
-                sender:otherUserId,
-                receiver:id
-            },
-            
-        ],
-            deletedFor: {
-                $nin: [req.user._id]
-            },
-            deleteForEveryone: {
-                $ne: true
-            }
-      }
-    )
+    const limit = Math.min(parseInt(req.query.limit) || 40, 100)
+    const before = req.query.before || null
 
-    if(!messages?.length){
-        return res
-            .status(200)
-            .json(
-                new ApiResponse(200,[],"No Messages Found in this Conversation.")
-            )
+    const filter = {
+        $or:[
+            { sender: id, receiver: otherUserId },
+            { sender: otherUserId, receiver: id },
+        ],
+        deletedFor: { $nin: [req.user._id] },
+        deleteForEveryone: { $ne: true }
     }
+
+    if (before && mongoose.isValidObjectId(before)) {
+        filter._id = { $lt: new mongoose.Types.ObjectId(before) }
+    }
+
+    // Fetch limit+1 to check if there are more messages
+    const messages = await Message.find(filter)
+        .sort({ _id: -1 })
+        .limit(limit + 1)
+
+    const hasMore = messages.length > limit
+    if (hasMore) messages.pop()
+
+    // Reverse to chronological order (oldest first)
+    messages.reverse()
+
+    const nextCursor = hasMore && messages.length > 0 ? messages[0]._id : null
 
     return res
         .status(200)
         .json(
-            new ApiResponse(200,messages,"Messages Fetch Successfully.")
+            new ApiResponse(200, { messages, hasMore, nextCursor }, "Messages Fetch Successfully.")
         )
     
 })
@@ -84,26 +83,31 @@ const getGroupConversation = asyncHandler(async (req,res)=>{
         throw new ApiError(400,"Other User Id is Required.")
     }
 
-    const messages = await Message.find(
-      {
-        
-        chatId:groupId
-        
-      }
-    ).populate('sender', 'username name avtar')
+    const limit = Math.min(parseInt(req.query.limit) || 40, 100)
+    const before = req.query.before || null
 
-    if(!messages?.length){
-        return res
-            .status(200)
-            .json(
-                new ApiResponse(200,[],"No Messages Found in this Conversation.")
-            )
+    const filter = { chatId: groupId }
+
+    if (before && mongoose.isValidObjectId(before)) {
+        filter._id = { $lt: new mongoose.Types.ObjectId(before) }
     }
+
+    const messages = await Message.find(filter)
+        .populate('sender', 'username name avtar')
+        .sort({ _id: -1 })
+        .limit(limit + 1)
+
+    const hasMore = messages.length > limit
+    if (hasMore) messages.pop()
+
+    messages.reverse()
+
+    const nextCursor = hasMore && messages.length > 0 ? messages[0]._id : null
 
     return res
         .status(200)
         .json(
-            new ApiResponse(200,messages,"Messages Fetch Successfully.")
+            new ApiResponse(200, { messages, hasMore, nextCursor }, "Messages Fetch Successfully.")
         )
     
 })
@@ -177,8 +181,12 @@ const replyToMessage = asyncHandler(async (req,res)=>{
     const messageReply = await Message.create({
         message:replyMessage,
         chatId,
-        sender:""
+        sender: req.user?._id || ""
     })
+
+    return res.status(201).json(
+        new ApiResponse(201, messageReply, "Reply sent successfully.")
+    )
 
 })
 

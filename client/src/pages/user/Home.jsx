@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useCallback } from 'react'
 import ChatCard from '../../components/user/ChatCard.jsx'
 import { useEffect } from 'react'
 import { userApi } from '../../api/user.api.js'
@@ -19,7 +19,8 @@ import {
     Plus,
     LogOut,
     X,
-    ChevronRight
+    ChevronRight,
+    Loader2
 } from 'lucide-react'
 import Swal from 'sweetalert2';
 import Message from '../../components/message/Message.jsx'
@@ -78,7 +79,12 @@ function Home() {
         removeMessage,
         resetMediaFiles,
         setCurrentPreviewFile,
-        currentPreviewFile
+        currentPreviewFile,
+        isGroupChat,
+        paginationMeta,
+        setPaginationMeta,
+        setLoadingMore,
+        prependMessages
     } = useChatStore()
 
     const {
@@ -90,6 +96,7 @@ function Home() {
     const isTypingRef = useRef(false);
     const messageEndRef = useRef(null);
     const chatContainerRef = useRef(null)
+    const topSentinelRef = useRef(null)
     const [isAtBottom, setIsAtBottom] = React.useState(true);
     const isMedia = mediaFiles[currentChatId]?.length > 0
     const [showSidebar, setShowSidebar] = useState(true)
@@ -199,6 +206,53 @@ function Home() {
         container.scrollTop = container.scrollHeight;
     };
 
+    // ── Infinite scroll: load older messages ──────────────────────────
+    const loadOlderMessages = useCallback(async () => {
+        if (!currentChatId) return
+        const meta = paginationMeta[currentChatId]
+        if (!meta?.hasMore || meta?.isLoadingMore) return
+
+        setLoadingMore(currentChatId, true)
+
+        const container = chatContainerRef.current
+        const prevScrollHeight = container?.scrollHeight || 0
+
+        try {
+            const chatState = useChatStore.getState()
+            const chat = chatState.userChats.find(c => c._id === currentChatId)
+            let response
+
+            if (isGroupChat) {
+                const { groupApi } = await import('../../api/group.api.js')
+                response = await groupApi.getConversation(currentChatId, meta.nextCursor)
+            } else {
+                const otherParticipant = chat?.participants?.find(p => p._id !== user._id) || context.currentChatUser
+                if (otherParticipant?._id) {
+                    response = await messageApi.getConversation(otherParticipant._id, meta.nextCursor)
+                }
+            }
+
+            if (response?.data?.data) {
+                const { messages: olderMsgs, hasMore, nextCursor } = response.data.data
+                if (olderMsgs?.length > 0) {
+                    prependMessages(currentChatId, olderMsgs)
+                    requestAnimationFrame(() => {
+                        if (container) {
+                            const newScrollHeight = container.scrollHeight
+                            container.scrollTop = newScrollHeight - prevScrollHeight
+                        }
+                    })
+                }
+                setPaginationMeta(currentChatId, { hasMore: !!hasMore, nextCursor: nextCursor || null, isLoadingMore: false })
+            } else {
+                setLoadingMore(currentChatId, false)
+            }
+        } catch (error) {
+            console.error("Error loading older messages:", error)
+            setLoadingMore(currentChatId, false)
+        }
+    }, [currentChatId, paginationMeta, isGroupChat])
+
     useEffect(() => {
         if (user) {
             console.log("Emitting GET_ONLINE_STATUS for user:", user._id);
@@ -225,11 +279,31 @@ function Home() {
         return () => container.removeEventListener("scroll", handleScroll);
     }, [])
 
+    // ── Infinite scroll observer ─────────────────────────────────────
     useEffect(() => {
-        if (!isAtBottom) {
-            scrollToBottom()
+        const sentinel = topSentinelRef.current
+        if (!sentinel) return
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    loadOlderMessages()
+                }
+            },
+            { root: chatContainerRef.current, threshold: 0.1 }
+        )
+
+        observer.observe(sentinel)
+        return () => observer.disconnect()
+    }, [loadOlderMessages, currentChatId])
+
+    useEffect(() => {
+        if (isAtBottom) {
+            requestAnimationFrame(() => {
+                scrollToBottom();
+            });
         }
-    }, [setIsAtBottom])
+    }, [isAtBottom])
 
     useEffect(() => {
         if (activePanel !== "newGroup") {
@@ -371,6 +445,13 @@ function Home() {
                 }
                 .notif-item:hover { background: rgba(99,102,241,0.07); }
                 .notif-item.unread { border-color: rgba(99,102,241,0.14); background: rgba(99,102,241,0.06); }
+
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+                .loading-spinner {
+                    animation: spin 0.8s linear infinite;
+                }
             `}</style>
 
             {/* Root */}
@@ -452,6 +533,34 @@ function Home() {
                                                 ref={chatContainerRef}
                                                 className="flex-1 overflow-y-auto px-6 pt-6 pb-2 z-[1] custom-scroll"
                                             >
+                                                {/* Top sentinel for infinite scroll */}
+                                                <div ref={topSentinelRef} className="h-1 w-full" />
+
+                                                {/* Loading older messages spinner */}
+                                                {paginationMeta[currentChatId]?.isLoadingMore && (
+                                                    <div className="flex items-center justify-center py-4">
+                                                        <div className="flex items-center gap-2 px-4 py-2 rounded-full"
+                                                            style={{
+                                                                background: 'rgba(99,102,241,0.08)',
+                                                                border: '1px solid rgba(99,102,241,0.18)',
+                                                            }}>
+                                                            <Loader2 size={14} className="loading-spinner" color="#818cf8" />
+                                                            <span className="text-[11px] font-medium" style={{ color: '#818cf8' }}>Loading older messages…</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* "No more messages" indicator */}
+                                                {paginationMeta[currentChatId]?.hasMore === false && messages[currentChatId]?.length > 0 && !paginationMeta[currentChatId]?.isLoadingMore && (
+                                                    <div className="flex items-center justify-center py-3 mb-2">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="h-px w-12 bg-gradient-to-r from-transparent to-white/[0.08]" />
+                                                            <span className="text-[11px] font-medium text-[#3a3e58]">Beginning of conversation</span>
+                                                            <div className="h-px w-12 bg-gradient-to-l from-transparent to-white/[0.08]" />
+                                                        </div>
+                                                    </div>
+                                                )}
+
                                                 {messages[currentChatId]?.map((msg) => (
                                                     <Message key={msg._id} msg={msg} />
                                                 ))}

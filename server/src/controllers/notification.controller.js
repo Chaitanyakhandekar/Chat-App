@@ -35,7 +35,7 @@ const createNotification = asyncHandler(async (req, res) => {
         renderUrl
     } = req.body
 
-    const newNotification = await createNotificationService(req.user._id, req.user._id, receiverId, type, entityId, isGroupChatNotification, content, renderUrl)
+    const newNotification = await createNotificationService(req.user._id, req.user._id, [receiverId], type, entityId, isGroupChatNotification, content, renderUrl)
 
     // Emit Socket Event Here
     if (isGroupChatNotification) {

@@ -230,10 +230,12 @@ function GroupInfoMain() {
     }, [])
 
     useEffect(() => {
-        if (!isAtBottom) {
-            scrollToBottom()
+        if (isAtBottom) {
+            requestAnimationFrame(() => {
+                scrollToBottom();
+            });
         }
-    }, [setIsAtBottom])
+    }, [isAtBottom])
 
     useEffect(() => {
         if (activePanel !== "newGroup") {

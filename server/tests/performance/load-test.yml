@@ -1,0 +1,41 @@
+# K6 Load Test Configuration
+# Run with: k6 run tests/performance/k6-script.js
+#
+# For distributed load testing:
+# k6 run --vus 100 --duration 5m tests/performance/k6-script.js
+# k6 run --vus 500 --duration 3m tests/performance/k6-script.js
+# k6 run --vus 1000 --duration 2m tests/performance/k6-script.js
+
+name: Chat App Load Test
+description: >
+  Simulates realistic user behavior: register, login, fetch chats, fetch profile.
+  Tests system under 100, 500, and 1000 concurrent users.
+
+scenarios:
+  ramping_load:
+    executor: ramping-arrival-rate
+    startRate: 10
+    timeUnit: 1s
+    preAllocatedVUs: 100
+    maxVUs: 1000
+    stages:
+      - target: 50
+        duration: 1m
+      - target: 100
+        duration: 2m
+      - target: 200
+        duration: 2m
+      - target: 500
+        duration: 2m
+      - target: 0
+        duration: 1m
+
+thresholds:
+  http_req_duration:
+    - threshold: p(95) < 3000
+      abortOnFail: true
+    - threshold: avg < 1000
+  http_req_failed:
+    - threshold: rate < 0.05
+  http_reqs:
+    - threshold: rate > 100

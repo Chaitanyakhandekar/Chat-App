@@ -58,6 +58,45 @@ export const useChatStore = create(
                 }))
             ),
 
+            // ── Pagination ──────────────────────────────────────────
+            paginationMeta: {},
+
+            setPaginationMeta: (chatId, meta) => {
+                set((state) => ({
+                    paginationMeta: {
+                        ...state.paginationMeta,
+                        [chatId]: {
+                            ...(state.paginationMeta[chatId] || {}),
+                            ...meta
+                        }
+                    }
+                }))
+            },
+
+            setLoadingMore: (chatId, isLoading) => {
+                set((state) => ({
+                    paginationMeta: {
+                        ...state.paginationMeta,
+                        [chatId]: {
+                            ...(state.paginationMeta[chatId] || {}),
+                            isLoadingMore: isLoading
+                        }
+                    }
+                }))
+            },
+
+            prependMessages: (chatId, messages) => {
+                set((state) => ({
+                    userMessages: {
+                        ...state.userMessages,
+                        [chatId]: [
+                            ...messages,
+                            ...(state.userMessages[chatId] || [])
+                        ]
+                    }
+                }))
+            },
+
             replaceMessage: (chatId, tempId, message) => {
                 set((state) => ({
                     userMessages: {
@@ -129,9 +168,9 @@ export const useChatStore = create(
                 })
             },
 
-            removeChat: (chatId)=>{
-                set((state)=>({
-                    userChats: state.userChats.filter(chat=>chat._id !== chatId)
+            removeChat: (chatId) => {
+                set((state) => ({
+                    userChats: state.userChats.filter(chat => chat._id !== chatId)
                 }))
             },
 
@@ -332,7 +371,7 @@ export const useChatStore = create(
                 })
             },
 
-            currentPreviewFile: {},
+            currentPreviewFile: null,
 
             setCurrentPreviewFile: (file) => {
                 set({
