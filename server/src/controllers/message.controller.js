@@ -10,11 +10,13 @@ import { deleteFileFromCloudinary, uploadFileOnCloudinary } from "../services/cl
 import { generateOTP } from "../services/generateOTP.js";
 import { sendEmail } from "../services/brevoMail.service.js";
 import { Message } from "../models/message.model.js";
+import { Chat } from "../models/chat.model.js";
 import { validObjectId } from "../utils/isValidObjectId.js";
 import { assertRequiredFields } from "../utils/fields validations/assertRequiredFields.js";
 import { deleteForEveryoneService, deleteForMeService, getSeenMembersService, getChatAttachmentsService } from "../services/message.service.js";
 import { getIO } from "../sockets/socketInstance.js";
 import { socketEvents } from "../constants/socketEvents.js";
+import { getUserSocket } from "../sockets/soketsMap.js";
 
 
 /**
@@ -266,6 +268,76 @@ const getChatAttachments = asyncHandler(async(req,res)=>{
         )
 })  
 
+/**
+ * @description Controller for clearing chat history for the user.
+ * @access single chat / group chat members
+ * @method DELETE
+ * @param id (chatId)
+ */
+const clearChat = asyncHandler(async(req,res)=>{
+    const chatId = req.params.id;
+    const userId = req.user._id;
+
+    if (!validObjectId(chatId)) {
+        throw new ApiError(400, "Invalid ChatId.");
+    }
+
+    await Message.updateMany(
+        { chatId: chatId, deletedFor: { $ne: userId } },
+        { $addToSet: { deletedFor: userId } }
+    );
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, null, "Chat Cleared Successfully.")
+        )
+})
+
+/**
+ * @description Controller for clearing chat history for everyone.
+ * @access single chat / group chat members
+ * @method DELETE
+ * @param id (chatId)
+ */
+const clearChatForEveryone = asyncHandler(async(req,res)=>{
+    const chatId = req.params.id;
+
+    if (!validObjectId(chatId)) {
+        throw new ApiError(400, "Invalid ChatId.");
+    }
+
+    await Message.updateMany(
+        { chatId: chatId },
+        { $set: { deleteForEveryone: true } }
+    );
+
+    await Chat.findByIdAndUpdate(chatId, {
+        $unset: { lastMessage: 1 }
+    })
+
+    const chat = await Chat.findById(chatId)
+    if (chat && chat.participants) {
+        try {
+            const io = getIO()
+            chat.participants.forEach((participantId) => {
+                const targetSocketId = getUserSocket(participantId.toString())
+                if (targetSocketId && io) {
+                    io.to(targetSocketId).emit(socketEvents.CLEAR_CHAT_FOR_EVERYONE, { chatId })
+                }
+            })
+        } catch(e) {
+            console.error("Socket emit failed in clearChatForEveryone", e)
+        }
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, null, "Chat Cleared for Everyone Successfully.")
+        )
+})
+
 export {
     getConversation,
     uploadImage,
@@ -274,4 +346,6 @@ export {
     deleteForEveryone,
     getSeenMembers,
     getChatAttachments,
+    clearChat,
+    clearChatForEveryone
 }

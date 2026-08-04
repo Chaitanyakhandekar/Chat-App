@@ -156,6 +156,53 @@ class MessageApi{
         }
     }
 
+    clearChat = async (chatId) =>{
+        try {
+            const response = await axios.delete(`${this.baseUrl}/clear/${chatId}`,
+                {
+                    withCredentials:true
+                }
+            )
+             console.log("Clear chat response :: ",response.data)
+
+            return {
+                success:true,
+                data:response.data.data,
+                message:"Chat cleared successfully."
+            }
+        } catch (error) {
+            return{
+                success:false,
+                message:error.message,
+                error:error
+            }
+        }
+    }
+
+    clearChatForEveryone = async (chatId) =>{
+        try {
+            const response = await axios.delete(`${this.baseUrl}/clear-everyone/${chatId}`,
+                {
+                    withCredentials:true
+                }
+            )
+             console.log("Clear chat for everyone response :: ",response.data)
+
+            return {
+                success:true,
+                data:response.data.data,
+                message:"Chat cleared for everyone successfully."
+            }
+        } catch (error) {
+            return{
+                success:false,
+                message:error.message,
+                error:error
+            }
+        }
+    }
+
+
 }
 
 export const messageApi = new MessageApi()

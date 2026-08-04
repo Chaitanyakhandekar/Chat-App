@@ -28,6 +28,8 @@ import {
     Copy,
     Check,
     Loader2,
+    MoreVertical,
+    Trash2
 } from 'lucide-react'
 import Swal from 'sweetalert2';
 import Message from '../../components/message/Message.jsx'
@@ -338,6 +340,58 @@ function Home() {
     const [summaryOpen, setSummaryOpen] = useState(false)
     const [summaryLoading, setSummaryLoading] = useState(false)
     const [summaryData, setSummaryData] = useState(null)
+
+    // ── Menu state ──────────────────────────────────────────────────
+    const [menuOpen, setMenuOpen] = useState(false)
+
+    const handleClearForMe = async () => {
+        setMenuOpen(false)
+        const activeChatId = currentChatId || paramChatId
+        if (!activeChatId) return
+
+        const result = await Swal.fire({
+            title: 'Clear for me?',
+            text: "This will delete all messages for you in this chat.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#f87171',
+            cancelButtonColor: '#4a4e6a',
+            confirmButtonText: 'Yes, clear for me'
+        })
+
+        if (result.isConfirmed) {
+            const response = await messageApi.clearChat(activeChatId)
+            if (response.success) {
+                setUserMessages(activeChatId, [])
+            }
+        }
+    }
+
+    const handleClearForEveryone = async () => {
+        setMenuOpen(false)
+        const activeChatId = currentChatId || paramChatId
+        if (!activeChatId) return
+
+        const result = await Swal.fire({
+            title: 'Clear for Everyone?',
+            text: "This will delete all messages for both participants in real-time.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#4a4e6a',
+            confirmButtonText: 'Yes, clear for everyone'
+        })
+
+        if (result.isConfirmed) {
+            if (socket) {
+                socket.emit(socketEvents.CLEAR_CHAT_FOR_EVERYONE, { chatId: activeChatId })
+            }
+            const response = await messageApi.clearChatForEveryone(activeChatId)
+            if (response.success) {
+                setUserMessages(activeChatId, [])
+            }
+        }
+    }
 
     const handleSummarize = async () => {
         setSummaryOpen(true)
@@ -1129,7 +1183,7 @@ function Home() {
             `}</style>
 
             {/* Root */}
-            <div className="flex h-[100dvh] bg-surface-900 text-text-primary overflow-hidden">
+            <div className="flex h-[100dvh] w-full bg-surface-900 text-text-primary overflow-hidden fixed inset-0">
 
                 {/* ── SIDEBAR ── */}
                 <Sidebar
@@ -1147,7 +1201,7 @@ function Home() {
                 />
 
                 {/* ── MAIN CHAT WINDOW ── */}
-                <div className="relative flex flex-col flex-1 h-full bg-surface-800 overflow-hidden md:flex">
+                <div className="relative flex flex-col flex-1 h-full max-h-full bg-surface-800 overflow-hidden md:flex">
 
                     {/* Ambient orbs */}
                     <div className="absolute -top-24 -right-24 w-[400px] h-[400px] rounded-full pointer-events-none z-0 bg-accent/5 blur-[80px]" />
@@ -1159,7 +1213,7 @@ function Home() {
                         <>
                             {/* Nav — mobile-optimized with back button */}
                             <nav
-                                className="sticky top-0 z-10 flex items-center gap-2 md:gap-3.5 h-14 md:h-16 px-3 md:px-6 border-b border-white/[0.06] bg-surface-800/90 backdrop-blur-xl">
+                                className="flex-shrink-0 sticky top-0 z-20 flex items-center gap-2 md:gap-3.5 h-14 md:h-16 px-3 md:px-6 border-b border-white/[0.06] bg-surface-800/90 backdrop-blur-xl">
 
                                 {/* Back button — mobile only */}
                                 <button
@@ -1223,15 +1277,51 @@ function Home() {
                                     </div>
                                 </div>
 
-                                {/* Right: Summarize button */}
-                                <button
-                                    className="summarize-btn"
-                                    onClick={handleSummarize}
-                                    title="Summarize conversation"
-                                >
-                                    <Sparkles size={13} className="sparkle-icon" />
-                                    <span className="hidden sm:inline">Summarize</span>
-                                </button>
+                                {/* Right: Chat Menu */}
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setMenuOpen(!menuOpen)}
+                                        className="flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-150 hover:bg-white/[0.05]"
+                                        title="Chat options"
+                                    >
+                                        <MoreVertical size={18} color="#818cf8" />
+                                    </button>
+
+                                    {menuOpen && (
+                                        <>
+                                            <div
+                                                className="fixed inset-0 z-40"
+                                                onClick={() => setMenuOpen(false)}
+                                            />
+                                            <div className="absolute right-0 top-12 w-52 py-2 bg-surface-900 border border-white/[0.06] rounded-xl shadow-xl z-50 overflow-hidden">
+                                                <button
+                                                    onClick={() => {
+                                                        setMenuOpen(false)
+                                                        handleSummarize()
+                                                    }}
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-primary hover:bg-white/[0.04] transition-colors"
+                                                >
+                                                    <Sparkles size={16} className="text-accent-light" />
+                                                    AI Summary
+                                                </button>
+                                                <button
+                                                    onClick={handleClearForMe}
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-white/[0.04] transition-colors"
+                                                >
+                                                    <Trash2 size={16} className="text-text-dim" />
+                                                    Clear for Me
+                                                </button>
+                                                <button
+                                                    onClick={handleClearForEveryone}
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-400/10 transition-colors border-t border-white/[0.04]"
+                                                >
+                                                    <Trash2 size={16} />
+                                                    Clear for Everyone
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
                             </nav>
 
                             {isMedia ? (
@@ -1278,7 +1368,7 @@ function Home() {
                                             </div>
                                         )}
 
-                                        {messages[currentChatId]?.map((msg) => (
+                                        {(Array.isArray(messages[currentChatId]) ? messages[currentChatId] : []).map((msg) => (
                                             <Message
                                                 key={msg._id}
                                                 msg={msg}
@@ -1310,7 +1400,7 @@ function Home() {
                                     {/* ── FOOTER ── */}
                                     <footer
                                         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)" }}
-                                        className="z-10 flex flex-col border-t border-white/[0.06] bg-surface-800/90 backdrop-blur-xl"
+                                        className="flex-shrink-0 z-20 flex flex-col border-t border-white/[0.06] bg-surface-800/90 backdrop-blur-xl"
                                     >
                                         <ReplyPreviewStrip />
 

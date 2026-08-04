@@ -41,7 +41,7 @@ export const useChatStore = create(
                 set((state) => ({
                     userMessages: {
                         ...state.userMessages,
-                        [chatId]: messages
+                        [chatId]: Array.isArray(messages) ? messages : (messages?.messages || [])
                     }
                 }))
             ),
@@ -51,7 +51,7 @@ export const useChatStore = create(
                     userMessages: {
                         ...state.userMessages,
                         [chatId]: [
-                            ...state.userMessages[chatId] || [],
+                            ...(Array.isArray(state.userMessages[chatId]) ? state.userMessages[chatId] : []),
                             message
                         ]
                     }
@@ -91,7 +91,7 @@ export const useChatStore = create(
                         ...state.userMessages,
                         [chatId]: [
                             ...messages,
-                            ...(state.userMessages[chatId] || [])
+                            ...(Array.isArray(state.userMessages[chatId]) ? state.userMessages[chatId] : [])
                         ]
                     }
                 }))
@@ -102,7 +102,7 @@ export const useChatStore = create(
                     userMessages: {
                         ...state.userMessages,
                         [chatId]:
-                            state.userMessages[chatId].map((chat) => (
+                            (Array.isArray(state.userMessages[chatId]) ? state.userMessages[chatId] : []).map((chat) => (
                                 chat._id === tempId ? message : chat
                             ))
 
@@ -114,7 +114,7 @@ export const useChatStore = create(
                 set((state) => ({
                     userMessages: {
                         ...state.userMessages,
-                        [chatId]: state.userMessages[chatId].filter(message => message._id !== messageId)
+                        [chatId]: (Array.isArray(state.userMessages[chatId]) ? state.userMessages[chatId] : []).filter(message => message._id !== messageId)
                     }
                 }))
             },

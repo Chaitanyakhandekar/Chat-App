@@ -13,6 +13,25 @@ import { getUserChatPartners } from "../sockets/utils/getUserChatPartners.js";
 import { getIO } from "../sockets/socketInstance.js";
 import { socketEvents } from "../constants/socketEvents.js";
 import { getUserSocket } from "../sockets/soketsMap.js";
+import { Notification } from "../models/notification.model.js";
+
+const getDeviceInfo = (req) => {
+  const userAgent = req.headers['user-agent'] || ''
+  let device = "Unknown Device"
+  if (userAgent.includes("Windows")) device = "Windows PC"
+  else if (userAgent.includes("Macintosh")) device = "Mac"
+  else if (userAgent.includes("iPhone")) device = "iPhone"
+  else if (userAgent.includes("Android")) device = "Android Device"
+  else if (userAgent.includes("Linux")) device = "Linux PC"
+  
+  let browser = ""
+  if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) browser = "Chrome"
+  else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) browser = "Safari"
+  else if (userAgent.includes("Firefox")) browser = "Firefox"
+  else if (userAgent.includes("Edg")) browser = "Edge"
+
+  return browser ? `${device} (${browser})` : device
+}
 
 dotenv.config({ path: "./.env" })
 
@@ -102,20 +121,55 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const isCorrect = await user.isCorrectPassword(password)
 
+  const device = getDeviceInfo(req)
+
   if (!isCorrect) {
+    try {
+      const notification = await Notification.create({
+        sender: user._id,
+        receivers: [user._id],
+        type: "security",
+        content: `Failed login attempt detected from ${device}. If this wasn't you, please secure your account.`,
+        isRead: false
+      })
+      user.isUnreadNotification = true
+      await user.save({ validateBeforeSave: false })
+
+      const io = getIO()
+      const userSocketId = getUserSocket(user._id.toString())
+      if (userSocketId && io) {
+        const populatedNotification = await Notification.findById(notification._id).populate("sender", "username avtar")
+        io.to(userSocketId).emit(socketEvents.NEW_NOTIFICATION, populatedNotification)
+      }
+    } catch (err) {
+      console.error("Error creating failed login security notification:", err)
+    }
+
     return res.status(200).json(
       new ApiResponse(400, [], "Invalid Credentials", false)
     )
-    //
-
   }
 
-  // if (!user.isVerified) {
-  //   return res.status(403).json(
-  //     new ApiResponse(403, {isVerified: user.isVerified}, "Email is not verified! Please verify your email to login.")
-  //   )
-  // }
+  // Create notification for successful login
+  try {
+    const notification = await Notification.create({
+      sender: user._id,
+      receivers: [user._id],
+      type: "security",
+      content: `New login detected from ${device}.`,
+      isRead: false
+    })
+    user.isUnreadNotification = true
 
+    const io = getIO()
+    const userSocketId = getUserSocket(user._id.toString())
+    if (userSocketId && io) {
+      const populatedNotification = await Notification.findById(notification._id).populate("sender", "username avtar")
+      io.to(userSocketId).emit(socketEvents.NEW_NOTIFICATION, populatedNotification)
+    }
+  } catch (err) {
+    console.error("Error creating successful login security notification:", err)
+  }
 
   const { accessToken, refreshToken } = generateTokens(user)
 

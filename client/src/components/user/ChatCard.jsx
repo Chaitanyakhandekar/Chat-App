@@ -86,7 +86,17 @@ function ChatCard({
             response = await messageApi.getConversation(user._id)
         }
         console.log(" Messages :: ", response?.data?.data)
-        setUserMessages(chatId, response?.data?.data)
+        const payload = response?.data?.data
+        const msgs = Array.isArray(payload) ? payload : (payload?.messages || [])
+        setUserMessages(chatId, msgs)
+        if (payload && !Array.isArray(payload)) {
+            const { setPaginationMeta } = useChatStore.getState()
+            setPaginationMeta(chatId, {
+                hasMore: !!payload.hasMore,
+                nextCursor: payload.nextCursor || null,
+                isLoadingMore: false
+            })
+        }
     }
 
     const isThisGroupChat = () => {

@@ -6,7 +6,9 @@ import {
      deleteForMe,
      deleteForEveryone,
      getSeenMembers,
-          getChatAttachments
+          getChatAttachments,
+     clearChat,
+     clearChatForEveryone
      } from "../controllers/message.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -21,4 +23,6 @@ router.route("/for-everyone/:id").delete(userAuth,deleteForEveryone)
 router.route("/seen-by/:id").get(userAuth,getSeenMembers)
 router.route("/upload-images").post(userAuth, upload.array("images",5) , uploadImage)
 router.route("/attachments/:id").get(userAuth,getChatAttachments)
+router.route("/clear/:id").delete(userAuth, clearChat)
+router.route("/clear-everyone/:id").delete(userAuth, clearChatForEveryone)
 export default router;
