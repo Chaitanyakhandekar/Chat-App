@@ -41,7 +41,9 @@ const createNotificationService = async (senderId, currentUserId, receivers = []
         throw new ApiError(400, "No receivers found")
     }
 
-    receivers = receivers.filter(id => id.toString() !== senderId.toString())
+    if (type !== "security" && type !== "notify") {
+        receivers = receivers.filter(id => id.toString() !== senderId.toString())
+    }
 
     const newNotification = await Notification.create({
         sender: sender._id,

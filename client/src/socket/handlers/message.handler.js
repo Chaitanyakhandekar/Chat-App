@@ -92,4 +92,12 @@ export const messageHandler = (socket) => {
         console.log("Reaction Received from socket server:", reaction)
         replaceMessage(reaction.chatId,reaction._id,reaction)
     })
+
+    socket.on(socketEvents.CLEAR_CHAT_FOR_EVERYONE, (data) => {
+        console.log("Chat cleared for everyone received:", data)
+        const { setUserMessages } = useChatStore.getState()
+        if (data?.chatId) {
+            setUserMessages(data.chatId, [])
+        }
+    })
 }

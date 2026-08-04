@@ -367,5 +367,37 @@ export const messageHandler = (io, socket) => {
         io.to(getUserSocket(to.toString())).emit(socketEvents.REACT_MESSAGE_SINGLE_CHAT, reaction)
 
     })
+
+    socket.on(socketEvents.CLEAR_CHAT_FOR_EVERYONE, async (data, ack) => {
+        const { chatId } = data
+        if (!chatId) return
+
+        try {
+            await Message.updateMany(
+                { chatId: chatId },
+                { $set: { deleteForEveryone: true } }
+            )
+
+            await Chat.findByIdAndUpdate(chatId, {
+                $unset: { lastMessage: 1 }
+            })
+
+            const chat = await Chat.findById(chatId)
+            if (chat && chat.participants) {
+                chat.participants.forEach((participantId) => {
+                    const targetSocketId = getUserSocket(participantId.toString())
+                    if (targetSocketId) {
+                        io.to(targetSocketId).emit(socketEvents.CLEAR_CHAT_FOR_EVERYONE, { chatId })
+                    }
+                })
+            }
+
+            if (typeof ack === 'function') {
+                ack({ success: true })
+            }
+        } catch (error) {
+            console.error("Error clearing chat for everyone:", error)
+        }
+    })
 }
 

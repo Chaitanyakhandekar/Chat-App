@@ -455,7 +455,7 @@ function Home() {
             `}</style>
 
             {/* Root */}
-            <div className="flex h-[100dvh] bg-surface-900 text-text-primary overflow-hidden">
+            <div className="flex h-[100dvh] w-full bg-surface-900 text-text-primary overflow-hidden fixed inset-0">
 
                 {/* ── SIDEBAR ── */}
                 <Sidebar
@@ -471,7 +471,7 @@ function Home() {
                     searchUsers={searchUsers}
                 />
                 {/* ── MAIN CHAT WINDOW ── */}
-                <div className="relative flex flex-col flex-1 h-full bg-surface-800 overflow-hidden hidden md:flex">
+                <div className="relative flex flex-col flex-1 h-full max-h-full bg-surface-800 overflow-hidden hidden md:flex">
 
                     {/* Ambient orbs */}
                     <div className="absolute -top-24 -right-24 w-[400px] h-[400px] rounded-full pointer-events-none z-0 bg-accent/5 blur-[80px]" />
@@ -480,7 +480,7 @@ function Home() {
                     {context.currentChatUser ? (
                         <>
                             {/* Nav */}
-                            <nav className="sticky top-0 z-10 flex items-center gap-3.5 h-16 px-6 border-b border-white/[0.06] bg-surface-800/90 backdrop-blur-xl">
+                            <nav className="flex-shrink-0 sticky top-0 z-20 flex items-center gap-3.5 h-16 px-6 border-b border-white/[0.06] bg-surface-800/90 backdrop-blur-xl">
                                 <div className="relative w-10 h-10 flex-shrink-0">
                                     <img
                                         src={context.currentChatUser.avtar}
@@ -561,7 +561,7 @@ function Home() {
                                                     </div>
                                                 )}
 
-                                                {messages[currentChatId]?.map((msg) => (
+                                                {(Array.isArray(messages[currentChatId]) ? messages[currentChatId] : []).map((msg) => (
                                                     <Message key={msg._id} msg={msg} />
                                                 ))}
 
@@ -589,7 +589,7 @@ function Home() {
                                             {/* Footer */}
                                             <footer
                                                 style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
-                                                className="z-10 flex items-center gap-3 h-20 px-5 border-t border-white/[0.06] bg-surface-800/90 backdrop-blur-xl">
+                                                className="flex-shrink-0 z-20 flex items-center gap-3 h-20 px-5 border-t border-white/[0.06] bg-surface-800/90 backdrop-blur-xl">
                                                 <div className="msg-input-wrap flex flex-1 items-center gap-2 bg-surface-700 border border-white/[0.06] rounded-2xl px-1 pr-1.5 transition-all duration-200">
                                                     <div className="flex items-center px-1 text-text-dim flex-shrink-0">
                                                         <FileUpload />

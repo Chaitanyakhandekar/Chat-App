@@ -28,6 +28,7 @@ export const socketEvents = {
     NEW_NOTIFICATION: "new_notification",
     NEW_REQUEST: "new_request",
     ACCEPT_REQUEST: "accept_request",
-    REJECT_REQUEST: "reject_request"
+    REJECT_REQUEST: "reject_request",
+    CLEAR_CHAT_FOR_EVERYONE: "clear_chat_for_everyone"
 
 };

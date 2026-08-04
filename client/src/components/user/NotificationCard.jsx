@@ -35,6 +35,12 @@ const NOTIFICATION_CONFIG = {
     bg: "rgba(124,229,196,0.12)",
     label: "Friend Request",
   },
+  security: {
+    icon: ShieldCheck,
+    color: "#f87171",          // red accent
+    bg: "rgba(248,113,113,0.12)",
+    label: "Security Alert",
+  },
   default: {
     icon: Bell,
     color: "#c4c6e7",
