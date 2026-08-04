@@ -41,7 +41,6 @@ function Sidebar({
   const { markAllNotificationsAsRead } = useNotification()
 
 
-  // Nav button
   const NavIconBtn = ({ icon: Icon, panel, badge, tooltip , onClick = () => {
           togglePanel(panel)
           resetParticipant()
@@ -88,10 +87,43 @@ function Sidebar({
     )
   }
 
+  const MobileNavBtn = ({ icon: Icon, panel, badge, label, onClick = () => {
+    togglePanel(panel)
+    resetParticipant()
+  } }) => {
+    const active = activePanel === panel
+
+    return (
+      <button
+        onClick={onClick}
+        className={`relative flex flex-col items-center justify-center w-16 h-[52px] rounded-2xl transition-all duration-300 ${active ? '' : 'hover:bg-white/[0.02]'}`}
+      >
+        <div className={`relative flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-300 ${active ? 'bg-accent/10' : ''}`}
+          style={{
+            boxShadow: active ? '0 0 12px rgba(99,102,241,0.15)' : 'none',
+            border: active ? '1px solid rgba(99,102,241,0.25)' : '1px solid transparent'
+          }}
+        >
+          <Icon size={20} className={`transition-all duration-300 ${active ? 'text-accent-light scale-110' : 'text-text-dim/80'}`} />
+          {badge > 0 && (
+            <span className="absolute -top-1 -right-1 flex items-center justify-center w-[16px] h-[16px] rounded-full text-[8px] font-bold text-white shadow-lg"
+              style={{ background: "linear-gradient(135deg,#6366f1,#8b5cf6)", border: "2px solid #1a1d28" }}
+            >
+              {badge > 9 ? "9+" : badge}
+            </span>
+          )}
+        </div>
+        <span className={`text-[9px] font-medium mt-1 transition-colors duration-300 ${active ? 'text-accent-light' : 'text-text-dim/60'}`}>
+          {label}
+        </span>
+      </button>
+    )
+  }
+
   return (
     <>
-      {/* ICON RAIL */}
-      <div className={`${hideOnMobile ? 'hidden md:flex' : 'flex'} flex-col items-center gap-1.5 w-[62px] min-w-[62px] h-[100dvh] bg-surface-900 border-r border-white/[0.05] pt-5 pb-4 z-30`}>
+      {/* DESKTOP ICON RAIL */}
+      <div className="hidden md:flex flex-col items-center gap-1.5 w-[62px] min-w-[62px] h-[100dvh] bg-surface-900 border-r border-white/[0.05] pt-5 pb-4 z-30">
 
         <div
           className="flex items-center justify-center w-10 h-10 rounded-xl mb-4 shadow-lg"
@@ -131,12 +163,6 @@ function Sidebar({
 
         <div className="flex-1" />
 
-        {/* <NavIconBtn
-          icon={Settings}
-          panel="settings"
-          tooltip="Settings"
-        /> */}
-
         <NavIconBtn
           icon={User}
           panel="profile"
@@ -147,7 +173,7 @@ function Sidebar({
 
 
       {/* SIDEBAR PANEL */}
-      <div className={`${hideOnMobile ? 'hidden md:flex' : 'flex'} relative flex flex-col w-full md:w-[300px] md:min-w-[280px] h-screen bg-surface-800 border-r border-white/[0.06]`}>
+      <div className={`${hideOnMobile ? 'hidden md:flex' : 'flex'} relative flex flex-col w-full md:w-[300px] md:min-w-[280px] h-[100dvh] pb-[68px] md:pb-0 bg-surface-800 border-r border-white/[0.06]`}>
 
         {/* Top gradient accent */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent opacity-60" />
@@ -246,6 +272,39 @@ function Sidebar({
         )}
 
       </div>
+
+      {/* MOBILE BOTTOM NAV */}
+      {!hideOnMobile && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 h-[68px] bg-surface-900/95 backdrop-blur-xl border-t border-white/[0.05] z-[100] flex items-center justify-around px-2 shadow-[0_-4px_24px_rgba(0,0,0,0.2)]"
+             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+          <MobileNavBtn
+            icon={MessageCircle}
+            panel="chats"
+            label="Chats"
+          />
+          <MobileNavBtn
+            onClick={async () => {
+              await markAllNotificationsAsRead(universalInfo.notifications || 0)
+              togglePanel("notifications")
+              resetParticipant()
+            }}
+            icon={Bell}
+            panel="notifications"
+            badge={universalInfo.notifications}
+            label="Alerts"
+          />
+          <MobileNavBtn
+            icon={Users}
+            panel="newGroup"
+            label="Groups"
+          />
+          <MobileNavBtn
+            icon={User}
+            panel="profile"
+            label="Profile"
+          />
+        </div>
+      )}
     </>
   )
 }
