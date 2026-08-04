@@ -208,9 +208,12 @@ const getUserChats = asyncHandler(async (req, res) => {
                                 $and: [
                                     { $eq: ["$chatId", "$$chatId"] },
                                     { $eq: ["$receiver", "$$userId"] },
-                                    { $eq: ["$status", "sent"] }
+                                    { $eq: ["$status", "sent"] },
+                                    { $ne: ["$deleteForEveryone", true] }
                                 ]
-                            }
+                            },
+
+
                         },
 
                     },
