@@ -3,16 +3,12 @@ import {
   MessageCircle,
   Bell,
   Users,
-  Settings,
   User,
-  Zap,
-  X
+  MessageSquare,
 } from "lucide-react"
 
 import Profile from "../../components/user/Profile.jsx"
-import SettingsPanel from "../../components/user/Settings.jsx"
 import ChatList from "./../../components/user/ChatList.jsx"
-import GroupInfo from ".././../components/user/GroupInfo.jsx"
 import { useGroupChatStore } from "../../store/useGroupChatStore.js"
 import Notification from "../../components/user/Notification.jsx"
 import { useChatStore } from "../../store/useChatStore.js"
@@ -24,10 +20,7 @@ function Sidebar({
   query,
   setQuery,
   users,
-  setShowSidebar,
   chatUsersInfo,
-  totalUnread,
-  user,
   hideOnMobile = false,
   searchUsers = () => { },
   paramChatId = null
@@ -35,85 +28,70 @@ function Sidebar({
 
   const togglePanel = (panel) =>
     setActivePanel(prev => prev === panel ? null : panel)
-  const { setNewGroupInfo, GroupInfo, newGroupNotication, setNewGroupNotification, resetParticipant, participants } = useGroupChatStore()
+  const { newGroupNotication, resetParticipant } = useGroupChatStore()
 
-  const { updateNotificationsCount, universalInfo } = useChatStore()
+  const { universalInfo } = useChatStore()
   const { markAllNotificationsAsRead } = useNotification()
 
 
-  const NavIconBtn = ({ icon: Icon, panel, badge, tooltip , onClick = () => {
-          togglePanel(panel)
-          resetParticipant()
-          console.log("Clicked Panel :: ", panel)
-          console.log("Clicked Panel :: ", participants)
-        } }) => {
+  const NavIconBtn = ({ icon, panel, badge, tooltip, onClick = () => {
+    togglePanel(panel)
+    resetParticipant()
+  } }) => {
+    const Icon = icon
     const active = activePanel === panel
 
     return (
       <button
-          onClick={onClick}
+        onClick={onClick}
         title={tooltip}
-        className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 group ${active ? 'bg-accent-glow' : 'hover:bg-white/[0.03]'
-          }`}
-        style={{
-          border: active
-            ? "1px solid rgba(99,102,241,0.4)"
-            : "1px solid transparent",
-          boxShadow: active
-            ? "0 0 16px rgba(99,102,241,0.18)"
-            : "none"
-        }}
+        aria-label={tooltip}
+        className={`relative flex items-center justify-center w-10 h-10 rounded-sm transition-colors duration-150 group
+          ${active
+            ? 'bg-accent/15 text-accent-light border border-accent/30'
+            : 'text-text-muted hover:bg-surface-hover hover:text-text-secondary border border-transparent'}`}
       >
-        <Icon
-          size={18}
-          className={active ? 'text-accent-light' : 'text-text-dim'}
-        />
+        <Icon size={19} strokeWidth={active ? 2.2 : 1.8} />
 
         {badge > 0 && (
-          <span className="absolute -top-1 -right-1 flex items-center justify-center w-[18px] h-[18px] rounded-full text-[9px] font-bold text-white"
-            style={{
-              background:
-                "linear-gradient(135deg,#6366f1,#8b5cf6)"
-            }}
-          >
+          <span className="absolute -top-1 -right-1 flex items-center justify-center w-[18px] h-[18px] rounded-full text-[9px] font-bold text-white bg-accent shadow-sm">
             {badge > 9 ? "9+" : badge}
           </span>
         )}
 
-        <span className="absolute left-full ml-2.5 px-2 py-1 text-[11px] font-medium text-text-secondary bg-surface-700 border border-white/[0.08] rounded-lg whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+        <span className="absolute left-full ml-3 px-2.5 py-1 text-xs font-medium text-text-primary bg-surface-700 border border-border rounded-sm whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50 shadow-panel">
           {tooltip}
         </span>
       </button>
     )
   }
 
-  const MobileNavBtn = ({ icon: Icon, panel, badge, label, onClick = () => {
+  const MobileNavBtn = ({ icon, panel, badge, label, onClick = () => {
     togglePanel(panel)
     resetParticipant()
   } }) => {
+    const Icon = icon
     const active = activePanel === panel
 
     return (
       <button
         onClick={onClick}
-        className={`relative flex flex-col items-center justify-center w-16 h-[52px] rounded-2xl transition-all duration-300 ${active ? '' : 'hover:bg-white/[0.02]'}`}
+        aria-label={label}
+        className="relative flex flex-col items-center justify-center w-16 h-14 rounded-sm transition-colors duration-150"
       >
-        <div className={`relative flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-300 ${active ? 'bg-accent/10' : ''}`}
-          style={{
-            boxShadow: active ? '0 0 12px rgba(99,102,241,0.15)' : 'none',
-            border: active ? '1px solid rgba(99,102,241,0.25)' : '1px solid transparent'
-          }}
-        >
-          <Icon size={20} className={`transition-all duration-300 ${active ? 'text-accent-light scale-110' : 'text-text-dim/80'}`} />
+        <div className="relative flex items-center justify-center w-8 h-8">
+          <Icon
+            size={20}
+            strokeWidth={active ? 2.2 : 1.8}
+            className={`transition-colors duration-150 ${active ? 'text-accent-light' : 'text-text-muted'}`}
+          />
           {badge > 0 && (
-            <span className="absolute -top-1 -right-1 flex items-center justify-center w-[16px] h-[16px] rounded-full text-[8px] font-bold text-white shadow-lg"
-              style={{ background: "linear-gradient(135deg,#6366f1,#8b5cf6)", border: "2px solid #1a1d28" }}
-            >
+            <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-bold text-white bg-accent">
               {badge > 9 ? "9+" : badge}
             </span>
           )}
         </div>
-        <span className={`text-[9px] font-medium mt-1 transition-colors duration-300 ${active ? 'text-accent-light' : 'text-text-dim/60'}`}>
+        <span className={`text-[10px] font-medium mt-0.5 transition-colors duration-150 ${active ? 'text-accent-light font-semibold' : 'text-text-muted'}`}>
           {label}
         </span>
       </button>
@@ -123,18 +101,10 @@ function Sidebar({
   return (
     <>
       {/* DESKTOP ICON RAIL */}
-      <div className="hidden md:flex flex-col items-center gap-1.5 w-[62px] min-w-[62px] h-[100dvh] bg-surface-900 border-r border-white/[0.05] pt-5 pb-4 z-30">
+      <div className="hidden md:flex flex-col items-center gap-2 w-[60px] min-w-[60px] h-[100dvh] bg-surface-900 border-r border-border pt-4 pb-4 z-30">
 
-        <div
-          className="flex items-center justify-center w-10 h-10 rounded-xl mb-4 shadow-lg"
-          style={{
-            background:
-              "linear-gradient(135deg,#6366f1,#8b5cf6)",
-            boxShadow:
-              "0 4px 14px rgba(99,102,241,0.45)"
-          }}
-        >
-          <Zap size={18} className="text-white" />
+        <div className="flex items-center justify-center w-10 h-10 rounded-sm mb-3 bg-accent">
+          <MessageSquare size={18} className="text-white" />
         </div>
 
         <NavIconBtn
@@ -144,10 +114,10 @@ function Sidebar({
         />
 
         <NavIconBtn
-          onClick={async() => {
+          onClick={async () => {
             await markAllNotificationsAsRead(universalInfo.notifications || 0)
-          togglePanel("notifications")
-          resetParticipant()
+            togglePanel("notifications")
+            resetParticipant()
           }}
           icon={Bell}
           panel="notifications"
@@ -173,10 +143,7 @@ function Sidebar({
 
 
       {/* SIDEBAR PANEL */}
-      <div className={`${hideOnMobile ? 'hidden md:flex' : 'flex'} relative flex flex-col w-full md:w-[300px] md:min-w-[280px] h-[100dvh] pb-[68px] md:pb-0 bg-surface-800 border-r border-white/[0.06]`}>
-
-        {/* Top gradient accent */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent opacity-60" />
+      <div className={`${hideOnMobile ? 'hidden md:flex' : 'flex'} relative flex flex-col w-full md:w-[320px] md:min-w-[300px] h-[100dvh] pb-[60px] md:pb-0 bg-surface-800 border-r border-border`}>
 
         {/* Notifications */}
         {activePanel === "notifications" &&
@@ -204,7 +171,7 @@ function Sidebar({
             query={query}
             setQuery={setQuery}
             users={users}
-            setShowSidebar={setShowSidebar}
+
             groupsOnly={true}
             paramChatId={paramChatId}
             searchUsers={searchUsers}
@@ -218,21 +185,13 @@ function Sidebar({
             query={query}
             setQuery={setQuery}
             users={users}
-            setShowSidebar={setShowSidebar}
+
             groupsOnly={true}
             paramChatId={paramChatId}
             searchUsers={searchUsers}
             createGroup={true}
           />
         )}
-
-
-        {/* Settings */}
-        {/* {activePanel === "settings" &&
-          <SettingsPanel
-            setActivePanel={setActivePanel}
-          />
-        } */}
 
 
         {/* Chats */}
@@ -245,7 +204,7 @@ function Sidebar({
               query={query}
               setQuery={setQuery}
               users={users}
-              setShowSidebar={setShowSidebar}
+
               groupsOnly={false}
               paramChatId={paramChatId}
               searchUsers={searchUsers}
@@ -263,7 +222,7 @@ function Sidebar({
             query={query}
             setQuery={setQuery}
             users={users}
-            setShowSidebar={setShowSidebar}
+
             groupsOnly={true}
             paramChatId={paramChatId}
             searchUsers={searchUsers}
@@ -275,8 +234,8 @@ function Sidebar({
 
       {/* MOBILE BOTTOM NAV */}
       {!hideOnMobile && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 h-[68px] bg-surface-900/95 backdrop-blur-xl border-t border-white/[0.05] z-[100] flex items-center justify-around px-2 shadow-[0_-4px_24px_rgba(0,0,0,0.2)]"
-             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="md:hidden fixed bottom-0 left-0 right-0 h-[60px] bg-surface-900 border-t border-border z-[100] flex items-center justify-around px-2"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
           <MobileNavBtn
             icon={MessageCircle}
             panel="chats"
