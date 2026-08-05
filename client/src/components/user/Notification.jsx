@@ -47,6 +47,10 @@ function Notification({ setActivePanel }) {
   useEffect(() => {
     Promise.all([fetchRequests(), fetchNotifications()]).then(() => {
       setLoading(false)
+      // Clear unread highlight once the panel has been viewed
+      markAllNotificationsAsRead()
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+      setRequests(prev => prev.map(r => ({ ...r, isRead: true })))
     })
   }, [fetchRequests, fetchNotifications])
 
@@ -56,8 +60,6 @@ function Notification({ setActivePanel }) {
       setRequests(prev => [newRequest, ...prev])
       incrementNotificationCount(1)
     }
-
-    markAllNotificationsAsRead()
 
     socket.on(socketEvents.NEW_REQUEST, handleNewRequest)
     return () => {
@@ -151,7 +153,7 @@ function Notification({ setActivePanel }) {
                 notification={{
                   _id: request._id,
                   type: "friend_request",
-                  isRead: request.status !== "pending",
+                  isRead: request.isRead || request.status !== "pending",
                   content: `${request.sender?.username || "Someone"} sent you a friend request`,
                   createdAt: request.createdAt,
                   sender: request.sender,
