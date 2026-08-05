@@ -7,88 +7,88 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Sora', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Menlo', 'monospace'],
+      },
+      fontSize: {
+        '2xs':  ['10px', { lineHeight: '1.3' }],
+        'xs':   ['11px', { lineHeight: '1.4' }],
+        'sm':   ['13px', { lineHeight: '1.5' }],
+        'base': ['14px', { lineHeight: '1.6' }],
+        'md':   ['15px', { lineHeight: '1.5' }],
+        'lg':   ['18px', { lineHeight: '1.4' }],
+        'xl':   ['22px', { lineHeight: '1.3' }],
       },
       colors: {
+        /* ── Background / Surfaces ── */
+        background: '#090a0f',
         surface: {
-          900: '#0a0b0f',
-          800: '#0e1018',
-          700: '#1a1d28',
-          600: '#1e2133',
-          500: '#252840',
+          900: '#0d0f17',
+          800: '#121520',
+          700: '#1a1e2e',
+          600: '#23283c',
+          hover: '#1e2235',
         },
+        border: 'rgba(255,255,255,0.07)',
+
+        /* ── Text ── */
+        text: {
+          primary:   '#f1f3f9',
+          secondary: '#a0a5b8',
+          muted:     '#5e647e',
+          dim:       '#5e647e',
+        },
+
+        /* ── Single Accent System ── */
         accent: {
           DEFAULT: '#6366f1',
-          light: '#818cf8',
-          dark: '#4f46e5',
-          glow: 'rgba(99,102,241,0.15)',
+          hover:   '#4f46e5',
+          light:   '#818cf8',
+          dark:    '#4338ca',
+          subtle:  'rgba(99,102,241,0.12)',
         },
-        violet: {
-          DEFAULT: '#8b5cf6',
-          light: '#a78bfa',
-        },
-        text: {
-          primary: '#f1f2f7',
-          secondary: '#c4c6e7',
-          muted: '#6b7280',
-          dim: '#4a4e6a',
-        },
-        success: '#22d3a0',
-        warning: '#fbbf24',
-        danger: '#f87171',
+
+        /* ── Semantics ── */
+        success: '#22c55e',
+        warning: '#f59e0b',
+        danger:  '#ef4444',
+      },
+      borderRadius: {
+        'xs':   '4px',
+        'sm':   '8px',
+        'md':   '12px',
+        'lg':   '16px',
+        'xl':   '20px',
+        'full': '9999px',
+      },
+      boxShadow: {
+        'subtle':  '0 1px 2px rgba(0,0,0,0.2)',
+        'panel':   '0 8px 24px rgba(0,0,0,0.35)',
+        'overlay': '0 16px 48px rgba(0,0,0,0.5)',
       },
       animation: {
-        'fade-in': 'fadeIn 0.2s ease both',
-        'slide-up': 'slideUp 0.3s ease both',
-        'slide-down': 'slideDown 0.3s ease both',
-        'scale-in': 'scaleIn 0.15s ease both',
-        'pulse-dot': 'pulseDot 2s ease-in-out infinite',
-        'typing-blink': 'typingBlink 1.2s infinite',
-        'float': 'float 3s ease-in-out infinite',
-        'msg-in': 'msgIn 0.2s ease both',
-        'ctx-in': 'ctxIn 0.15s cubic-bezier(0.16,1,0.3,1) both',
+        'fade-in':  'fadeIn 0.2s cubic-bezier(0.16,1,0.3,1) both',
+        'scale-in': 'scaleIn 0.18s cubic-bezier(0.16,1,0.3,1) both',
+        'slide-up': 'slideUp 0.22s cubic-bezier(0.16,1,0.3,1) both',
+        'ctx-in':   'ctxIn 0.15s cubic-bezier(0.16,1,0.3,1) both',
       },
       keyframes: {
         fadeIn: {
-          '0%': { opacity: '0' },
+          '0%':   { opacity: '0' },
           '100%': { opacity: '1' },
         },
-        slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(16px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-        slideDown: {
-          '0%': { opacity: '0', transform: 'translateY(-16px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
         scaleIn: {
-          '0%': { opacity: '0', transform: 'scale(0.93) translateY(-4px)' },
-          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+          '0%':   { opacity: '0', transform: 'scale(0.94)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
         },
-        pulseDot: {
-          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-          '50%': { opacity: '0.7', transform: 'scale(1.15)' },
-        },
-        typingBlink: {
-          '0%, 80%, 100%': { opacity: '0.2' },
-          '40%': { opacity: '1' },
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-8px)' },
-        },
-        msgIn: {
-          '0%': { opacity: '0', transform: 'translateY(6px)' },
+        slideUp: {
+          '0%':   { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         ctxIn: {
-          '0%': { opacity: '0', transform: 'scale(0.93) translateY(-4px)' },
+          '0%':   { opacity: '0', transform: 'scale(0.94) translateY(-4px)' },
           '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
         },
-      },
-      backdropBlur: {
-        xs: '2px',
       },
     },
   },

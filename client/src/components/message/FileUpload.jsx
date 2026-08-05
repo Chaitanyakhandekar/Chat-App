@@ -8,7 +8,7 @@ function FileUpload({
 }) {
 
     const fileInputRef = useRef(null)
-    const { addMediaFile, mediaFiles, currentChatId } = useChatStore()
+    const { addMediaFile, currentChatId } = useChatStore()
     const { selectFile, toggleSlectFile } = useAssetsStore()
 
     const handleClick = () => {
@@ -19,7 +19,6 @@ function FileUpload({
         const files = e.target.files
 
         Array.from(files).forEach((file) => {
-            console.log("FILE FOR URL :: ", file)
             addMediaFile(currentChatId, {
                 file,
                 preview: URL.createObjectURL(file),
@@ -28,13 +27,8 @@ function FileUpload({
             })
         })
 
-        console.log('File Selected :: ', e.target.files)
         e.target.value = null
     }
-
-    useEffect(() => {
-        console.log("Media Files :: ", mediaFiles)
-    }, [mediaFiles])
 
     useEffect(() => {
         if (selectFile) {
@@ -45,51 +39,22 @@ function FileUpload({
 
     return (
         <>
-            <style>{`
-                .fu-paperclip-btn {
-                    width: 34px;
-                    height: 34px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-radius: 10px;
-                    cursor: pointer;
-                    color: #4a4e6a;
-                    transition: color 0.18s, background 0.18s;
-                    flex-shrink: 0;
-                }
-
-                .fu-paperclip-btn:hover {
-                    color: #818cf8;
-                    background: rgba(99,102,241,0.1);
-                }
-
-                .fu-plus-btn {
-                    width: 100%;
-                    height: 100%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    color: #4a4e6a;
-                    transition: color 0.18s, background 0.18s;
-                }
-
-                .fu-plus-btn:hover {
-                    color: #818cf8;
-                    background: rgba(99,102,241,0.1);
-                }
-            `}</style>
-
             {UploadIcon === "plus" ? (
-                <div className="fu-plus-btn" onClick={handleClick}>
+                <button
+                    type="button"
+                    className="btn-icon w-8 h-8 rounded-md"
+                    onClick={handleClick}
+                >
                     <Plus size={18} />
-                </div>
+                </button>
             ) : (
-                <div className="fu-paperclip-btn" onClick={handleClick}>
+                <button
+                    type="button"
+                    className="btn-icon w-8 h-8 rounded-md"
+                    onClick={handleClick}
+                >
                     <Paperclip size={18} />
-                </div>
+                </button>
             )}
 
             <input

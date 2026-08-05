@@ -1,96 +1,4 @@
-// import { X } from 'lucide-react'
-// import React from 'react'
-
-// function Notification({activePanel,setActivePanel,chatUsersInfo,newGroupNotication}) {
-
-//              return <div className="slide-in-panel flex flex-col h-full">
-
-//                 <div className="flex items-center justify-between px-5 pt-6 pb-4">
-//                   <span className="text-[15px] font-bold">
-//                     Notifications
-//                   </span>
-
-//                   <button
-//                     onClick={() => setActivePanel(null)}
-//                   >
-//                     <X size={16}/>
-//                   </button>
-//                 </div>
-
-//                 <div className="panel-divider"/>
-
-//                 <div className="flex-1 overflow-y-auto px-3 custom-scroll">
-
-//                   {Object.entries(chatUsersInfo)
-//                     .filter(([,c]) => c?.newMessages > 0)
-//                     .map(([chatId, info]) => {
-
-//                       const chat =
-//                         users?.find(
-//                           c => c._id === chatId
-//                         )
-
-//                       if(!chat) return null
-
-//                       const otherUser =
-//                         chat.participants[0]._id === user._id
-//                           ? chat.participants[1]
-//                           : chat.participants[0]
-
-//                       return (
-//                         <div
-//                           key={chatId}
-//                           className="notif-item unread"
-//                           onClick={() =>
-//                             setActivePanel(null)
-//                           }
-//                         >
-
-//                           <img
-//                             src={otherUser.avtar}
-//                             className="w-9 h-9 rounded-full"
-//                           />
-
-//                           <div>
-//                             {otherUser.username}
-//                           </div>
-
-//                         </div>
-//                       )
-
-//                     })}
-
-//                   {
-//                     newGroupNotication &&
-//                     <div className="notif-item unread">
-//                       <img
-//                         src={""}
-//                         className="w-9 h-9 rounded-full"
-//                       />
-//                       <div
-//                         className="text-sm font-medium text-[#c4c6e7]"
-//                       >
-//                         {"User1 Added you to "}
-//                       </div>
-//                     </div>
-//                   }
-
-//                 </div>
-
-//               </div>
-
-// }
-
-// export default Notification
-
-
-
-
-
-
-
-
-import { X } from "lucide-react"
+import { X, Bell } from "lucide-react"
 import React, { useState, useEffect, useCallback } from "react"
 import NotificationCard from "./NotificationCard"
 import { requestApi } from "../../api/request.api"
@@ -101,17 +9,16 @@ import { socketEvents } from "../../constants/socketEvents"
 import { useChatStore } from "../../store/useChatStore"
 import { useRequest } from "../../hooks/useRequest"
 import { useNotification } from "../../hooks/useNotification"
+import { EmptyState } from "../ui/index.js"
 
-// ─── Component ─────────────────────────────────────────────────────────────────
-
-function Notification({ activePanel, setActivePanel }) {
+function Notification({ setActivePanel }) {
   const [requests, setRequests] = useState([])
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
   const user = userAuthStore((state) => state.user)
-  const { updateNotificationsCount, incrementNotificationCount,universalInfo } = useChatStore()
-  const { acceptRequest, rejectRequest } = useRequest()
-  const { markAllNotificationsAsRead} = useNotification()
+  const { updateNotificationsCount, incrementNotificationCount, universalInfo } = useChatStore()
+  const { acceptRequest } = useRequest()
+  const { markAllNotificationsAsRead } = useNotification()
 
   // Fetch user requests
   const fetchRequests = useCallback(async () => {
@@ -134,7 +41,6 @@ function Notification({ activePanel, setActivePanel }) {
 
   // Update badge count whenever requests or notifications change
   useEffect(() => {
-    const count = requests.filter(r => r.status === "pending").length + notifications.length
     updateNotificationsCount(universalInfo.notifications || 0)
   }, [requests, notifications])
 
@@ -144,21 +50,14 @@ function Notification({ activePanel, setActivePanel }) {
     })
   }, [fetchRequests, fetchNotifications])
 
-  const markNotificationsAsRead = async () => {
-     
-      await markAllNotificationsAsRead(universalInfo.notifications || 0)
-    }
-
   // Listen for new request socket event
   useEffect(() => {
     const handleNewRequest = (newRequest) => {
-      console.log("New request received:", newRequest)
       setRequests(prev => [newRequest, ...prev])
+      incrementNotificationCount(1)
     }
 
-    
     markAllNotificationsAsRead()
-
 
     socket.on(socketEvents.NEW_REQUEST, handleNewRequest)
     return () => {
@@ -169,8 +68,13 @@ function Notification({ activePanel, setActivePanel }) {
   // Listen for new notification socket event
   useEffect(() => {
     const handleNewNotification = (notification) => {
-      console.log("New notification received:", notification)
-      setNotifications(prev => [notification, ...prev])
+      if (!notification) return
+      // Friend requests are emitted as raw request docs (no content/isRead)
+      if (notification.type === "DIRECT_CHAT_REQUEST" || (!notification.content && notification.status)) {
+        setRequests(prev => [notification, ...prev])
+      } else {
+        setNotifications(prev => [{ ...notification, isRead: false }, ...prev])
+      }
       incrementNotificationCount(1)
     }
 
@@ -180,12 +84,11 @@ function Notification({ activePanel, setActivePanel }) {
     }
   }, [])
 
-  const unreadCount = requests.filter(r => r.status === "pending").length + notifications.length
+  const unreadCount = requests.filter(r => r.status === "pending").length + notifications.filter(n => !n.isRead).length
 
   // Handle accepting a request
   const handleAcceptRequest = async (requestId) => {
     await acceptRequest(requestId)
-    console.log("Accept request:", requestId)
     setRequests(prev =>
       prev.map(r => r._id === requestId ? { ...r, status: "accepted" } : r)
     )
@@ -193,8 +96,6 @@ function Notification({ activePanel, setActivePanel }) {
 
   // Handle rejecting a request
   const handleRejectRequest = async (requestId) => {
-    // TODO: Implement reject request API call when backend adds the endpoint
-    console.log("Reject request:", requestId)
     setRequests(prev =>
       prev.map(r => r._id === requestId ? { ...r, status: "rejected" } : r)
     )
@@ -209,44 +110,39 @@ function Notification({ activePanel, setActivePanel }) {
   }
 
   return (
-    <div className="slide-in-panel flex flex-col h-full">
+    <div className="flex flex-col h-full bg-surface-800">
 
-      {/* ── Header ── */}
-      <div className="flex items-center justify-between px-5 pt-6 pb-4">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 pt-5 pb-3">
         <div className="flex items-center gap-2">
-          <span className="text-[15px] font-bold">Friend Requests</span>
+          <span className="text-md font-semibold text-text-primary tracking-tight">Friend Requests</span>
           {unreadCount > 0 && (
-            <span
-              style={{
-                background: "rgba(124,131,229,0.2)",
-                color: "#7c83e5",
-                fontSize: 10,
-                fontWeight: 600,
-                padding: "2px 7px",
-                borderRadius: 20,
-                letterSpacing: "0.02em",
-              }}
-            >
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-accent-subtle text-accent-light">
               {unreadCount}
             </span>
           )}
         </div>
 
-        <button onClick={() => setActivePanel(null)}>
-          <X size={16} />
+        <button onClick={() => setActivePanel(null)} className="btn-icon w-7 h-7">
+          <X size={15} />
         </button>
       </div>
 
-      <div className="panel-divider" />
+      <div className="h-px bg-border mx-4" />
 
-      {/* ── Notification list ── */}
-      <div className="flex-1 overflow-y-auto px-2 custom-scroll">
+      {/* Notification list */}
+      <div className="flex-1 overflow-y-auto px-2 pt-2 custom-scroll">
         {loading ? (
-          <div className="flex items-center justify-center h-full" style={{ color: "rgba(196,198,231,0.3)", fontSize: 13 }}>
+          <div className="flex items-center justify-center h-full text-sm text-text-muted">
             Loading...
           </div>
         ) : requests.length === 0 && notifications.length === 0 ? (
-          <EmptyState />
+          <EmptyState
+            icon={Bell}
+            title="You're all caught up!"
+            description="Friend requests and notifications will appear here."
+            className="h-full"
+          />
         ) : (
           <>
             {requests.map(request => (
@@ -285,34 +181,6 @@ function Notification({ activePanel, setActivePanel }) {
         )}
       </div>
 
-    </div>
-  )
-}
-
-// ─── Empty state ───────────────────────────────────────────────────────────────
-
-function EmptyState() {
-  return (
-    <div
-      className="flex flex-col items-center justify-center h-full gap-3"
-      style={{ color: "rgba(196,198,231,0.3)", fontSize: 13, paddingBottom: 40 }}
-    >
-      <div
-        style={{
-          width: 44,
-          height: 44,
-          borderRadius: "50%",
-          background: "rgba(196,198,231,0.06)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(196,198,231,0.3)">
-          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
-        </svg>
-      </div>
-      <span>You&apos;re all caught up!</span>
     </div>
   )
 }

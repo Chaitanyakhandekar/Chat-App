@@ -10,11 +10,7 @@ import { useGroupChatStore } from '../../store/useGroupChatStore'
 import { useRef } from 'react'
 import { useEffect } from 'react'
 import { groupApi } from '../../api/group.api'
-import { useParams } from 'react-router-dom'
 import { userAuthStore } from '../../store/userStore'
-import { chatApi } from '../../api/chat.api'
-import { socket } from '../../socket/socket'
-import { socketEvents } from '../../constants/socketEvents'
 import Swal from "sweetalert2"
 import { useGroup } from '../../hooks/useGroup'
 
@@ -28,28 +24,6 @@ const MOCK_MEMBERS = [
     { _id: '6', username: 'priya_s', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=priya', role: 'member', online: true },
 ]
 
-
-
-// const {
-//         userSearch,
-//         setUserSearch,
-//         setChatUsersInfo,
-//         chatUsersInfo,
-//         emitedTyping,
-//         toogleEmitedTyping,
-//         onlineStatus,
-//         incrementNewMessagesCount,
-//         incrementNewMessagesCountByN,
-//         resetNewMessagesCount,
-//         mediaFiles,
-//         removeMessage,
-//         resetMediaFiles,
-//         setCurrentPreviewFile,
-//         currentPreviewFile,
-//         isGroupChat,
-//         groupChat,
-//     } = useChatStore()
-
 const MOCK_GROUP = {}
 
 const CURRENT_USER_ID = '1'
@@ -57,12 +31,12 @@ const CURRENT_USER_ID = '1'
 // ─── Role Badge ────────────────────────────────────────────────────────────
 const RoleBadge = ({ role }) => {
     if (role === 'owner') return (
-        <span className="inline-flex items-center gap-[3px] text-[9.5px] font-bold tracking-[0.4px] px-[7px] py-[2px] rounded-full bg-yellow-400/[0.13] text-yellow-400 border border-yellow-400/25">
+        <span className="inline-flex items-center gap-[3px] text-2xs font-bold tracking-[0.4px] px-[7px] py-[2px] rounded-full bg-warning/15 text-warning border border-warning/25">
             <Crown size={9} strokeWidth={2.5} /> Owner
         </span>
     )
     if (role === 'admin') return (
-        <span className="inline-flex items-center gap-[3px] text-[9.5px] font-bold tracking-[0.4px] px-[7px] py-[2px] rounded-full bg-indigo-500/[0.15] text-[#818cf8] border border-indigo-500/[0.28]">
+        <span className="inline-flex items-center gap-[3px] text-2xs font-bold tracking-[0.4px] px-[7px] py-[2px] rounded-full bg-accent/15 text-accent-light border border-accent/30">
             <Shield size={9} strokeWidth={2.5} /> Admin
         </span>
     )
@@ -73,7 +47,7 @@ const RoleBadge = ({ role }) => {
 const Toggle = ({ on, toggle }) => (
     <div
         onClick={toggle}
-        className={`relative w-9 h-5 rounded-full cursor-pointer flex-shrink-0 transition-all duration-200 ${on ? 'bg-gradient-to-br from-indigo-500 to-violet-500' : 'bg-white/10'
+        className={`relative w-9 h-5 rounded-full cursor-pointer flex-shrink-0 transition-all duration-200 ${on ? 'bg-accent' : 'bg-surface-600'
             }`}
     >
         <div className={`absolute top-[2px] left-[2px] w-4 h-4 rounded-full bg-white shadow-md transition-transform duration-200 ${on ? 'translate-x-4' : 'translate-x-0'}`} />
@@ -86,20 +60,20 @@ const SubHeader = ({ title, onBack, action }) => (
         <div className="flex items-center gap-3 px-5 pt-6 pb-4">
             <button
                 onClick={onBack}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-[#4a4e6a] hover:text-[#818cf8] hover:bg-white/[0.05] transition-all"
+                className="w-7 h-7 flex items-center justify-center rounded-sm text-text-muted hover:text-accent-light hover:bg-surface-hover transition-all"
             >
                 <ChevronLeft size={16} />
             </button>
-            <span className="text-[15px] font-bold tracking-tight text-[#f1f2f7]">{title}</span>
+            <span className="text-md font-bold tracking-tight text-text-primary">{title}</span>
             {action && <div className="ml-auto">{action}</div>}
         </div>
-        <div className="h-px bg-white/[0.06] mx-5" />
+        <div className="h-px bg-border mx-5" />
     </>
 )
 
 // ─── Section label ─────────────────────────────────────────────────────────
 const SectionLabel = ({ children, danger }) => (
-    <p className={`text-[10px] font-semibold tracking-[1px] uppercase px-3 pb-[5px] mt-[10px] ${danger ? 'text-red-400' : 'text-[#4a4e6a]'}`}>
+    <p className={`text-2xs font-semibold tracking-[1px] uppercase px-3 pb-[5px] mt-[10px] ${danger ? 'text-danger' : 'text-text-muted'}`}>
         {children}
     </p>
 )
@@ -108,15 +82,15 @@ const SectionLabel = ({ children, danger }) => (
 const ActionRow = ({ onClick, iconBg, icon, label, sublabel, right, danger }) => (
     <div
         onClick={onClick}
-        className={`flex items-center gap-[10px] px-3 py-[10px] rounded-[10px] cursor-pointer transition-colors duration-150 ${danger ? 'hover:bg-red-400/[0.06]' : 'hover:bg-white/[0.05] active:bg-indigo-500/[0.08]'
+        className={`flex items-center gap-[10px] px-3 py-[10px] rounded-md cursor-pointer transition-colors duration-150 ${danger ? 'hover:bg-danger/10' : 'hover:bg-surface-hover active:bg-accent/15'
             }`}
     >
-        <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${iconBg || (danger ? 'bg-red-400/10' : 'bg-indigo-500/[0.15]')}`}>
+        <div className={`w-7 h-7 rounded-sm flex items-center justify-center flex-shrink-0 ${iconBg || (danger ? 'bg-danger/10' : 'bg-accent/15')}`}>
             {icon}
         </div>
         <div className="flex flex-col min-w-0">
-            <span className={`text-[13.5px] font-medium ${danger ? 'text-red-400' : 'text-[#c4c6d8]'}`}>{label}</span>
-            {sublabel && <span className={`text-[11px] font-normal ${danger ? 'text-red-400/50' : 'text-[#4a4e6a]'}`}>{sublabel}</span>}
+            <span className={`text-sm font-medium ${danger ? 'text-danger' : 'text-text-secondary'}`}>{label}</span>
+            {sublabel && <span className={`text-xs font-normal ${danger ? 'text-danger/50' : 'text-text-muted'}`}>{sublabel}</span>}
         </div>
         {right && <div className="ml-auto flex-shrink-0">{right}</div>}
     </div>
@@ -130,8 +104,6 @@ function GroupInfo({ setActivePanel = () => { }, group = MOCK_GROUP, currentUser
     const [mediaData, setMediaData] = useState(null)
     const [mediaLoading, setMediaLoading] = useState(false)
     const groupId = group?._id
-
-
 
     useEffect(() => {
         if (!groupId) return
@@ -147,10 +119,10 @@ function GroupInfo({ setActivePanel = () => { }, group = MOCK_GROUP, currentUser
     }, [groupId])
 
     return (
-        <div className="flex flex-col h-full w-full bg-[#0e1018]">
+        <div className="flex flex-col h-full w-full bg-surface-800">
             {view === 'main' && <MainView group={group} currentUserId={currentUserId} setView={setView} setActivePanel={setActivePanel} mediaData={mediaData} />}
             {view === 'members' && <MembersView group={group} currentUserId={currentUserId} setView={setView} />}
-            {view === 'media' && <MediaView group={group} setView={setView} mediaData={mediaData} mediaLoading={mediaLoading} />}
+            {view === 'media' && <MediaView setView={setView} mediaData={mediaData} mediaLoading={mediaLoading} />}
             {view === 'edit' && <EditView group={group} setView={setView} />}
         </div>
     )
@@ -163,8 +135,7 @@ function MainView({ group, currentUserId, setView, setActivePanel, mediaData }) 
     const [muted, setMuted] = useState(false)
     const [copied, setCopied] = useState(false)
     const isOwner = currentUserId === CURRENT_USER_ID
-    const { setGroupChat, groupChat } = useGroupChatStore();
-    const { currentChatId } = useChatStore()
+    const { groupChat } = useGroupChatStore();
     const { leaveGroup, deleteGroup } = useGroup()
 
     const copyLink = () => {
@@ -182,32 +153,32 @@ function MainView({ group, currentUserId, setView, setActivePanel, mediaData }) 
     }
 
     return (
-        <div className="flex flex-col h-full bg-[#0e1018]">
+        <div className="flex flex-col h-full bg-surface-800">
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-6 pb-4">
-                <span className="text-[15px] font-bold tracking-tight text-[#f1f2f7]">Group Info</span>
+                <span className="text-md font-bold tracking-tight text-text-primary">Group Info</span>
                 <button
                     onClick={() => setActivePanel(null)}
-                    className="w-7 h-7 flex items-center justify-center rounded-lg text-[#4a4e6a] hover:text-[#818cf8] hover:bg-white/[0.05] transition-all"
+                    className="w-7 h-7 flex items-center justify-center rounded-sm text-text-muted hover:text-accent-light hover:bg-surface-hover transition-all"
                 >
                     <X size={15} />
                 </button>
             </div>
-            <div className="h-px bg-white/[0.06] mx-5" />
+            <div className="h-px bg-border mx-5" />
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#1a1d28_transparent]">
+            <div className="flex-1 overflow-y-auto custom-scroll">
 
                 {/* Avatar + info block */}
                 <div className="flex flex-col items-center gap-3 px-5 pt-5 pb-4">
                     <div className="relative">
-                        <div className="w-20 h-20 rounded-2xl overflow-hidden border-[2.5px] border-indigo-500/[0.45] shadow-[0_0_28px_rgba(99,102,241,0.2)]">
+                        <div className="w-20 h-20 rounded-lg overflow-hidden border-[2.5px] border-accent/50 shadow-panel">
                             <img src={groupChat?.groupPicture || group?.name} alt={group?.name} className="w-full h-full object-cover" />
                         </div>
                         {isOwner && (
                             <button
                                 onClick={() => setView('edit')}
-                                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center border-[1.5px] border-[#0e1018] bg-gradient-to-br from-indigo-500 to-violet-500 hover:scale-110 transition-transform"
+                                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center border-[1.5px] border-surface-800 bg-accent hover:scale-110 transition-transform"
                             >
                                 <Camera size={11} color="#fff" />
                             </button>
@@ -216,29 +187,29 @@ function MainView({ group, currentUserId, setView, setActivePanel, mediaData }) 
 
                     <div className="text-center">
                         <div className="flex items-center gap-2 justify-center">
-                            <p className="text-[16px] font-bold text-[#f1f2f7] tracking-tight">{group?.name}</p>
+                            <p className="text-lg font-bold text-text-primary tracking-tight">{group?.name}</p>
                             {isOwner && (
-                                <button onClick={() => setView('edit')} className="text-[#4a4e6a] hover:text-[#818cf8] transition-colors">
+                                <button onClick={() => setView('edit')} className="text-text-muted hover:text-accent-light transition-colors">
                                     <Edit3 size={13} />
                                 </button>
                             )}
                         </div>
-                        <p className="text-[11.5px] text-[#4a4e6a] mt-0.5">{group?.memberCount} members · Created {group?.createdAt}</p>
+                        <p className="text-xs text-text-muted mt-0.5">{group?.memberCount} members · Created {group?.createdAt}</p>
                     </div>
 
                     {group?.description && (
-                        <p className="text-center text-[12px] text-[#6b7099] leading-relaxed px-2">{group?.description}</p>
+                        <p className="text-center text-xs text-text-dim leading-relaxed px-2">{group?.description}</p>
                     )}
 
                     {/* Privacy pill */}
                     <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${group?.isPublic
-                        ? 'bg-emerald-400/[0.08] border-emerald-400/20'
-                        : 'bg-indigo-500/[0.08] border-indigo-500/20'
+                        ? 'bg-success/10 border-success/20'
+                        : 'bg-accent/10 border-accent/20'
                         }`}>
                         {group?.isPublic
-                            ? <Globe size={11} color="#22d3a0" />
+                            ? <Globe size={11} color="#22c55e" />
                             : <Lock size={11} color="#818cf8" />}
-                        <span className={`text-[11px] font-semibold ${group?.isPublic ? 'text-[#22d3a0]' : 'text-[#818cf8]'}`}>
+                        <span className={`text-xs font-semibold ${group?.isPublic ? 'text-success' : 'text-accent-light'}`}>
                             {group?.isPublic ? 'Public Group' : 'Private Group'}
                         </span>
                     </div>
@@ -255,25 +226,25 @@ function MainView({ group, currentUserId, setView, setActivePanel, mediaData }) 
                             <button
                                 key={s.label}
                                 onClick={() => s.dest && setView(s.dest)}
-                                className="flex flex-col items-center gap-[3px] py-[10px] flex-1 rounded-xl bg-white/[0.03] border border-white/[0.05] hover:bg-indigo-500/[0.08] hover:border-indigo-500/20 transition-all duration-150 cursor-pointer"
+                                className="flex flex-col items-center gap-[3px] py-[10px] flex-1 rounded-md bg-surface-900 border border-border hover:bg-accent/15 hover:border-accent/25 transition-all duration-150 cursor-pointer"
                             >
-                                <span className="text-[18px] font-bold text-[#818cf8]">{s.value}</span>
-                                <span className="text-[10px] text-[#4a4e6a] font-medium">{s.label}</span>
+                                <span className="text-lg font-bold text-accent-light">{s.value}</span>
+                                <span className="text-2xs text-text-muted font-medium">{s.label}</span>
                             </button>
                         ))}
                     </div>
                 </div>
 
-                <div className="h-px bg-white/[0.06] mx-4 my-3" />
+                <div className="h-px bg-border mx-4 my-3" />
 
                 {/* Navigation rows */}
                 <div className="px-3">
                     {/* Members row (custom — needs avatar stack) */}
                     <div
                         onClick={() => setView('members')}
-                        className="flex items-center gap-[10px] px-3 py-[10px] rounded-[10px] cursor-pointer text-[13.5px] font-medium text-[#c4c6d8] hover:bg-white/[0.05] transition-colors"
+                        className="flex items-center gap-[10px] px-3 py-[10px] rounded-md cursor-pointer text-sm font-medium text-text-secondary hover:bg-surface-hover transition-colors"
                     >
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-indigo-500/[0.15]">
+                        <div className="w-7 h-7 rounded-sm flex items-center justify-center flex-shrink-0 bg-accent/15">
                             <Users size={13} color="#818cf8" />
                         </div>
                         <span>Members</span>
@@ -281,19 +252,19 @@ function MainView({ group, currentUserId, setView, setActivePanel, mediaData }) 
                             {MOCK_MEMBERS.slice(0, 3).map((m, i) => (
                                 <img
                                     key={m._id} src={m.avtar} alt=""
-                                    className="w-5 h-5 rounded-full object-cover border border-[#0e1018]"
+                                    className="w-5 h-5 rounded-full object-cover border border-surface-800"
                                     style={{ marginLeft: i > 0 ? '-6px' : 0, zIndex: 3 - i }}
                                 />
                             ))}
                         </div>
-                        <ChevronRight size={13} color="#4a4e6a" />
+                        <ChevronRight size={13} color="#5e647e" />
                     </div>
 
                     <ActionRow
                         onClick={() => setView('media')}
                         icon={<Image size={13} color="#818cf8" />}
                         label="Media & Files"
-                        right={<ChevronRight size={13} color="#4a4e6a" />}
+                        right={<ChevronRight size={13} color="#5e647e" />}
                     />
 
                     {isOwner && (
@@ -301,26 +272,26 @@ function MainView({ group, currentUserId, setView, setActivePanel, mediaData }) 
                             onClick={() => setView('edit')}
                             icon={<Settings size={13} color="#818cf8" />}
                             label="Group Settings"
-                            right={<ChevronRight size={13} color="#4a4e6a" />}
+                            right={<ChevronRight size={13} color="#5e647e" />}
                         />
                     )}
                 </div>
 
-                <div className="h-px bg-white/[0.06] mx-4 my-3" />
+                <div className="h-px bg-border mx-4 my-3" />
 
                 {/* Invite link */}
                 <div className="px-4 mb-1">
                     <SectionLabel>Invite</SectionLabel>
-                    <div className="flex items-center gap-2 p-2.5 rounded-[10px] bg-white/[0.025] border border-white/[0.06] mt-1">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-indigo-500/[0.12]">
+                    <div className="flex items-center gap-2 p-2.5 rounded-md bg-surface-900 border border-border mt-1">
+                        <div className="w-7 h-7 rounded-sm flex items-center justify-center flex-shrink-0 bg-accent/15">
                             <Link2 size={12} color="#818cf8" />
                         </div>
-                        <p className="text-[11px] text-[#4a4e6a] truncate flex-1">chat.app/invite/{group?._id}</p>
+                        <p className="text-xs text-text-muted truncate flex-1">chat.app/invite/{group?._id}</p>
                         <button
                             onClick={copyLink}
-                            className={`flex items-center gap-1 px-2.5 py-1 rounded-[7px] text-[11px] font-semibold transition-all border ${copied
-                                ? 'bg-emerald-400/[0.15] text-[#22d3a0] border-emerald-400/25'
-                                : 'bg-indigo-500/[0.15] text-[#818cf8] border-indigo-500/25 hover:bg-indigo-500/25'
+                            className={`flex items-center gap-1 px-2.5 py-1 rounded-sm text-xs font-semibold transition-all border ${copied
+                                ? 'bg-success/15 text-success border-success/25'
+                                : 'bg-accent/15 text-accent-light border-accent/25 hover:bg-accent/25'
                                 }`}
                         >
                             {copied ? <><Check size={10} /> Copied</> : <><Copy size={10} /> Copy</>}
@@ -328,18 +299,18 @@ function MainView({ group, currentUserId, setView, setActivePanel, mediaData }) 
                     </div>
                 </div>
 
-                <div className="h-px bg-white/[0.06] mx-4 my-3" />
+                <div className="h-px bg-border mx-4 my-3" />
 
                 {/* Preferences */}
                 <div className="px-3">
                     <SectionLabel>Preferences</SectionLabel>
-                    <div className="flex items-center gap-[10px] px-3 py-[10px] rounded-[10px] text-[#c4c6d8]">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-indigo-500/[0.15]">
+                    <div className="flex items-center gap-[10px] px-3 py-[10px] rounded-md text-text-secondary">
+                        <div className="w-7 h-7 rounded-sm flex items-center justify-center flex-shrink-0 bg-accent/15">
                             {muted ? <BellOff size={13} color="#818cf8" /> : <Bell size={13} color="#818cf8" />}
                         </div>
                         <div>
-                            <p className="text-[13px] font-medium">Mute Notifications</p>
-                            <p className="text-[11px] text-[#4a4e6a]">Silence group messages</p>
+                            <p className="text-sm font-medium">Mute Notifications</p>
+                            <p className="text-xs text-text-muted">Silence group messages</p>
                         </div>
                         <div className="ml-auto">
                             <Toggle on={muted} toggle={() => setMuted(p => !p)} />
@@ -347,7 +318,7 @@ function MainView({ group, currentUserId, setView, setActivePanel, mediaData }) 
                     </div>
                 </div>
 
-                <div className="h-px bg-white/[0.06] mx-4 my-3" />
+                <div className="h-px bg-border mx-4 my-3" />
 
                 {/* Danger zone */}
                 <div className="px-3 pb-5">
@@ -355,7 +326,7 @@ function MainView({ group, currentUserId, setView, setActivePanel, mediaData }) 
                     <ActionRow
                         onClick={handleLeaveGroup}
                         danger
-                        icon={<LogOut size={13} color="#f87171" />}
+                        icon={<LogOut size={13} color="#ef4444" />}
                         label="Leave Group"
                         sublabel="You won't receive messages"
                     />
@@ -363,7 +334,7 @@ function MainView({ group, currentUserId, setView, setActivePanel, mediaData }) 
                         <ActionRow
                             onClick={handleDeleteGroup}
                             danger
-                            icon={<Trash2 size={13} color="#f87171" />}
+                            icon={<Trash2 size={13} color="#ef4444" />}
                             label="Delete Group"
                             sublabel="Permanently remove for everyone"
                         />
@@ -382,39 +353,36 @@ function MembersView({ group, currentUserId, setView }) {
     const [search, setSearch] = useState('')
     const [openMenu, setOpenMenu] = useState(null)
     const [showAddModal, setShowAddModal] = useState(false)
-    const { currentGroupParticipants, setCurrentGroupParticipants, groupChat } = useGroupChatStore();
+    const { currentGroupParticipants, groupChat } = useGroupChatStore();
     const { user } = userAuthStore()
     const { onlineStatus } = useChatStore();
 
     const isOwner = currentUserId === CURRENT_USER_ID
     const currentRole = members.find(m => m._id === currentUserId)?.role || 'member'
     const canManage = isOwner || currentRole === 'admin'
-    // const filtered    = currentGroupParticipants.filter(m => m.username.toLowerCase().includes(search.toLowerCase()))
-
-
 
     const handleRemove = (id) => { setMembers(p => p.filter(m => m._id !== id)); setOpenMenu(null) }
 
     const handleToggleAdmin = async (member) => {
 
         if (member.isAdmin) {
-            const res = await groupApi.unmarkMemberAsAdmin(groupChat._id, member._id)
+            await groupApi.unmarkMemberAsAdmin(groupChat._id, member._id)
         }
         else {
-            const res = await groupApi.markMemberAsAdmin(groupChat._id, member._id)
+            await groupApi.markMemberAsAdmin(groupChat._id, member._id)
         }
         setOpenMenu(null)
     }
 
     return (
-        <div className="flex flex-col h-full bg-[#0e1018]">
+        <div className="flex flex-col h-full bg-surface-800">
             <SubHeader
                 title={`Members · ${new Array(group?.participants).length}`}
                 onBack={() => setView('main')}
                 action={canManage && (
                     <button
                         onClick={() => setShowAddModal(true)}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 hover:scale-110 transition-transform"
+                        className="w-7 h-7 flex items-center justify-center rounded-sm bg-accent hover:scale-110 transition-transform"
                     >
                         <UserPlus size={13} color="#fff" />
                     </button>
@@ -423,9 +391,9 @@ function MembersView({ group, currentUserId, setView }) {
 
             {/* Search */}
             <div className="px-4 pt-3 pb-2 relative">
-                <Search size={13} color="#4a4e6a" className="absolute left-7 top-[50%] -translate-y-[40%] pointer-events-none" />
+                <Search size={13} color="#5e647e" className="absolute left-7 top-[50%] -translate-y-[40%] pointer-events-none" />
                 <input
-                    className="w-full bg-[#141720] border border-white/[0.07] rounded-[10px] py-[9px] pl-8 pr-3 text-[#f1f2f7] text-[12.5px] outline-none placeholder-[#4a4e6a] focus:border-indigo-500/40 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.1)] transition-all"
+                    className="w-full bg-surface-900 border border-border rounded-sm py-[9px] pl-8 pr-3 text-text-primary text-xs outline-none placeholder:text-text-muted focus:border-accent/40 focus:ring-2 focus:ring-accent/15 transition-all"
                     placeholder="Search members…"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
@@ -433,7 +401,7 @@ function MembersView({ group, currentUserId, setView }) {
             </div>
 
             {/* List */}
-            <div className="flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#1a1d28_transparent] px-3 pb-4 flex flex-col gap-0.5">
+            <div className="flex-1 overflow-y-auto custom-scroll px-3 pb-4 flex flex-col gap-0.5">
                 {currentGroupParticipants?.map(member => {
                     const isSelf = member._id === currentUserId
                     const canAct = canManage && !isSelf && member?.role !== 'owner' || ""
@@ -442,20 +410,20 @@ function MembersView({ group, currentUserId, setView }) {
                     return (
                         <div
                             key={member._id}
-                            className="group/member flex items-center gap-[10px] px-3 py-[9px] rounded-[11px] hover:bg-white/[0.04] transition-colors relative"
+                            className="group/member flex items-center gap-[10px] px-3 py-[9px] rounded-md hover:bg-surface-hover transition-colors relative"
                         >
                             {/* Avatar */}
                             <div className="relative flex-shrink-0">
-                                <img src={member.avtar} alt="" className="w-9 h-9 rounded-full object-cover border border-white/[0.07]" />
+                                <img src={member.avtar} alt="" className="w-9 h-9 rounded-full object-cover border border-border" />
                                 {onlineStatus[member._id] && (
-                                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#22d3a0] border-2 border-[#0e1018]" />
+                                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-success border-2 border-surface-800" />
                                 )}
                             </div>
 
                             {/* Info */}
                             <div className="flex flex-col min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                    <span className="text-[13px] font-semibold text-[#f1f2f7] truncate">
+                                    <span className="text-sm font-semibold text-text-primary truncate">
                                         {member._id === user._id ? "you" : member.username}
                                     </span>
                                     <RoleBadge role={
@@ -464,17 +432,17 @@ function MembersView({ group, currentUserId, setView }) {
                                                 null
                                     } />
                                 </div>
-                                <span className="text-[11px] text-[#4a4e6a]">{onlineStatus[member._id] ? 'Online' : 'Offline'}</span>
+                                <span className="text-xs text-text-muted">{onlineStatus[member._id] ? 'Online' : 'Offline'}</span>
                             </div>
 
                             {/* Context menu trigger */}
                             {canAct && (
                                 <div className="relative ml-auto flex-shrink-0">
                                     <button
-                                        className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all
+                                        className={`w-7 h-7 flex items-center justify-center rounded-sm transition-all
                                             ${menuOpen
-                                                ? 'bg-indigo-500/[0.15] text-[#818cf8]'
-                                                : 'text-[#4a4e6a] opacity-0 group-hover/member:opacity-100'
+                                                ? 'bg-accent/15 text-accent-light'
+                                                : 'text-text-muted opacity-0 group-hover/member:opacity-100'
                                             }`}
                                         onClick={e => { e.stopPropagation(); setOpenMenu(menuOpen ? null : member._id) }}
                                     >
@@ -482,9 +450,9 @@ function MembersView({ group, currentUserId, setView }) {
                                     </button>
 
                                     {menuOpen && (
-                                        <div className="absolute right-0 top-8 z-50 rounded-xl overflow-hidden flex flex-col bg-[#1a1d28] border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.5)] min-w-[156px]">
+                                        <div className="absolute right-0 top-8 z-50 rounded-md overflow-hidden flex flex-col bg-surface-900 border border-border shadow-overlay min-w-[156px]">
                                             <button
-                                                className="flex items-center gap-2.5 px-3 py-2.5 text-left text-[12.5px] text-[#c4c6d8] font-medium hover:bg-white/[0.05] transition-colors"
+                                                className="flex items-center gap-2.5 px-3 py-2.5 text-left text-xs text-text-secondary font-medium hover:bg-surface-hover transition-colors"
                                                 onClick={e => { e.stopPropagation(); handleToggleAdmin(member) }}
                                             >
                                                 {member.isAdmin
@@ -493,7 +461,7 @@ function MembersView({ group, currentUserId, setView }) {
                                             </button>
                                             {isOwner && (
                                                 <button
-                                                    className="flex items-center gap-2.5 px-3 py-2.5 text-left text-[12.5px] text-red-400 font-medium hover:bg-white/[0.05] transition-colors"
+                                                    className="flex items-center gap-2.5 px-3 py-2.5 text-left text-xs text-danger font-medium hover:bg-surface-hover transition-colors"
                                                     onClick={e => { e.stopPropagation(); handleRemove(member._id) }}
                                                 >
                                                     <UserMinus size={13} /> Remove Member
@@ -522,8 +490,7 @@ function MembersView({ group, currentUserId, setView }) {
 // ─── Add Member Modal ──────────────────────────────────────────────────────
 function AddMemberModal({ onClose, onAdd, group }) {
     const [q, setQ] = useState('')
-    const { currentGroupParticipants, setCurrentGroupParticipants, groupChat } = useGroupChatStore();
-    const [users, setUsers] = useState([])
+    const { groupChat } = useGroupChatStore();
     const SUGGESTIONS = [
         { _id: '99', username: 'kai_design', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=kai' },
         { _id: '100', username: 'nina.rx', avtar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=nina' },
@@ -540,11 +507,6 @@ function AddMemberModal({ onClose, onAdd, group }) {
     }
 
     const handleAddMember = async (userId, username) => {
-        console.log("Emitting Add Memeber :: ", userId)
-        const payload = {
-            groupId: groupChat._id,
-            userId
-        }
         const res = await groupApi.addMemberToGroup(groupChat._id, userId)
         if (res.success) {
             onAdd()
@@ -564,13 +526,13 @@ function AddMemberModal({ onClose, onAdd, group }) {
 
 
     return (
-        <div className="absolute inset-0 z-50 flex flex-col bg-[#0a0b0f]/95 backdrop-blur-xl overflow-hidden">
+        <div className="absolute inset-0 z-50 flex flex-col bg-background/95 overflow-hidden">
             <SubHeader title="Add Members" onBack={onClose} />
 
             <div className="px-4 pt-3 pb-2 relative">
-                <Search size={13} color="#4a4e6a" className="absolute left-7 top-[50%] -translate-y-[40%] pointer-events-none" />
+                <Search size={13} color="#5e647e" className="absolute left-7 top-[50%] -translate-y-[40%] pointer-events-none" />
                 <input
-                    className="w-full bg-[#141720] border border-white/[0.07] rounded-[10px] py-[9px] pl-8 pr-3 text-[#f1f2f7] text-[12.5px] outline-none placeholder-[#4a4e6a] focus:border-indigo-500/40 transition-all"
+                    className="w-full bg-surface-900 border border-border rounded-sm py-[9px] pl-8 pr-3 text-text-primary text-xs outline-none placeholder:text-text-muted focus:border-accent/40 transition-all"
                     placeholder="Search users…"
                     value={q}
                     onChange={e => setQ(e.target.value)}
@@ -579,12 +541,12 @@ function AddMemberModal({ onClose, onAdd, group }) {
 
             <div className="flex-1 overflow-y-auto px-3">
                 {results?.map(u => (
-                    <div key={u._id} className="flex items-center gap-[10px] px-3 py-[9px] rounded-[11px] hover:bg-white/[0.04] transition-colors">
-                        <img src={u.avtar} alt="" className="w-9 h-9 rounded-full object-cover border border-white/[0.07]" />
-                        <span className="text-[13px] font-semibold text-[#f1f2f7] flex-1">{u.username}</span>
+                    <div key={u._id} className="flex items-center gap-[10px] px-3 py-[9px] rounded-md hover:bg-surface-hover transition-colors">
+                        <img src={u.avtar} alt="" className="w-9 h-9 rounded-full object-cover border border-border" />
+                        <span className="text-sm font-semibold text-text-primary flex-1">{u.username}</span>
                         <button
                             onClick={() => { handleAddMember(u._id, u.username) }}
-                            className="px-2.5 py-1 rounded-[8px] text-[11.5px] font-semibold bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-[0_3px_10px_rgba(99,102,241,0.35)] hover:opacity-85 transition-opacity"
+                            className="px-2.5 py-1 rounded-sm text-xs font-semibold bg-accent text-white shadow-panel hover:opacity-85 transition-opacity"
                         >
                             Add
                         </button>
@@ -598,7 +560,7 @@ function AddMemberModal({ onClose, onAdd, group }) {
 // ═══════════════════════════════════════════════════════════════════════════
 // MEDIA VIEW
 // ═══════════════════════════════════════════════════════════════════════════
-function MediaView({ group, setView, mediaData, mediaLoading }) {
+function MediaView({ setView, mediaData, mediaLoading }) {
     const [tab, setTab] = useState('photos')
     const tabs = [
         { id: 'photos', label: 'Photos', Icon: Image },
@@ -610,7 +572,7 @@ function MediaView({ group, setView, mediaData, mediaLoading }) {
     const links = mediaData?.links || []
 
     return (
-        <div className="flex flex-col h-full bg-[#0e1018]">
+        <div className="flex flex-col h-full bg-surface-800">
             <SubHeader title="Media & Files" onBack={() => setView('main')} />
 
             {/* Tabs */}
@@ -619,9 +581,9 @@ function MediaView({ group, setView, mediaData, mediaLoading }) {
                     <button
                         key={t.id}
                         onClick={() => setTab(t.id)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[12px] font-semibold transition-all border ${tab === t.id
-                            ? 'bg-indigo-500/[0.2] text-[#818cf8] border-indigo-500/30'
-                            : 'bg-transparent text-[#4a4e6a] border-transparent hover:text-[#818cf8]'
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-semibold transition-all border ${tab === t.id
+                            ? 'bg-accent/20 text-accent-light border-accent/30'
+                            : 'bg-transparent text-text-muted border-transparent hover:text-accent-light'
                             }`}
                     >
                         <t.Icon size={11} /> {t.label}
@@ -629,29 +591,29 @@ function MediaView({ group, setView, mediaData, mediaLoading }) {
                 ))}
             </div>
 
-            <div className="flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#1a1d28_transparent] px-4 pb-4">
+            <div className="flex-1 overflow-y-auto custom-scroll px-4 pb-4">
                 {mediaLoading ? (
-                    <div className="flex items-center justify-center h-full text-[13px] text-[#4a4e6a]">Loading...</div>
+                    <div className="flex items-center justify-center h-full text-sm text-text-muted">Loading...</div>
                 ) : tab === 'photos' && (
                     photos.length > 0 ? (
                         <div className="grid grid-cols-3 gap-1.5 mt-1">
                             {photos.map((photo, i) => (
-                                <div key={photo.public_id || i} className="rounded-[8px] overflow-hidden aspect-square cursor-pointer border border-white/[0.06] hover:scale-[1.04] hover:opacity-85 transition-all duration-150">
+                                <div key={photo.public_id || i} className="rounded-sm overflow-hidden aspect-square cursor-pointer border border-border hover:scale-[1.04] hover:opacity-85 transition-all duration-150">
                                     <img src={photo.url} alt="" className="w-full h-full object-cover" />
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center h-40 text-[13px] text-[#4a4e6a] gap-2">
-                            <Image size={24} color="#4a4e6a" />
+                        <div className="flex flex-col items-center justify-center h-40 text-sm text-text-muted gap-2">
+                            <Image size={24} color="#5e647e" />
                             No photos shared yet
                         </div>
                     )
                 )}
 
                 {tab === 'files' && (
-                    <div className="flex flex-col items-center justify-center h-40 text-[13px] text-[#4a4e6a] gap-2 mt-1">
-                        <FileText size={24} color="#4a4e6a" />
+                    <div className="flex flex-col items-center justify-center h-40 text-sm text-text-muted gap-2 mt-1">
+                        <FileText size={24} color="#5e647e" />
                         No files shared yet
                     </div>
                 )}
@@ -665,18 +627,18 @@ function MediaView({ group, setView, mediaData, mediaLoading }) {
                                     href={link.url.startsWith('http') ? link.url : `https://${link.url}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center gap-3 p-3 rounded-[11px] bg-white/[0.03] border border-white/[0.06] hover:bg-indigo-500/[0.08] hover:border-indigo-500/20 transition-all"
+                                    className="flex items-center gap-3 p-3 rounded-md bg-surface-900 border border-border hover:bg-accent/15 hover:border-accent/25 transition-all"
                                 >
-                                    <div className="w-8 h-8 rounded-[9px] flex items-center justify-center flex-shrink-0 bg-emerald-400/[0.1]">
-                                        <Link2 size={14} color="#22d3a0" />
+                                    <div className="w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0 bg-success/10">
+                                        <Link2 size={14} color="#22c55e" />
                                     </div>
-                                    <p className="text-[12px] font-medium text-[#818cf8] truncate flex-1">{link.url}</p>
+                                    <p className="text-xs font-medium text-accent-light truncate flex-1">{link.url}</p>
                                 </a>
                             ))}
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center h-40 text-[13px] text-[#4a4e6a] gap-2 mt-1">
-                            <Hash size={24} color="#4a4e6a" />
+                        <div className="flex flex-col items-center justify-center h-40 text-sm text-text-muted gap-2 mt-1">
+                            <Hash size={24} color="#5e647e" />
                             No links shared yet
                         </div>
                     )
@@ -693,20 +655,18 @@ function EditView({ group, setView }) {
     const { groupChat, setGroupChat } = useGroupChatStore();
     const [name, setName] = useState(groupChat?.groupName || group?.name)
     const [desc, setDesc] = useState(groupChat?.groupDescription || group?.groupDescription)
-    const [isPublic, setPublic] = useState(groupChat?.isPublic || group?.isPublic)
     const [saved, setSaved] = useState(false)
     const [file, setFile] = useState(null);
     const fileRef = useRef(null)
 
     const handleSave = async () => {
-        // groupApi.updateGroup({ name, desc, isPublic })
         if (file) {
             const formData = new FormData();
             formData.append("groupPicture", file);
             const uploadRes = await groupApi.uploadGroupPicture(groupChat._id, formData);
             setGroupChat({ ...groupChat, groupPicture: uploadRes.data.groupPicture })
         }
-        const response = await groupApi.updateGroupChat(groupChat._id, name, desc);
+        await groupApi.updateGroupChat(groupChat._id, name, desc);
         setSaved(true)
         setTimeout(() => setSaved(false), 2500)
     }
@@ -716,15 +676,15 @@ function EditView({ group, setView }) {
     }
 
     return (
-        <div className="flex flex-col h-full bg-[#0e1018]">
+        <div className="flex flex-col h-full bg-surface-800">
             <SubHeader title="Group Settings" onBack={() => setView('main')} />
 
-            <div className="flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#1a1d28_transparent] px-5 pt-4 pb-4 flex flex-col gap-4">
+            <div className="flex-1 overflow-y-auto custom-scroll px-5 pt-4 pb-4 flex flex-col gap-4">
 
                 {/* Avatar */}
                 <div className="flex flex-col items-center gap-2">
                     <div className="relative cursor-pointer group/avatar">
-                        <div className="w-20 h-20 rounded-2xl overflow-hidden border-[2.5px] border-indigo-500/[0.45] shadow-[0_0_24px_rgba(99,102,241,0.2)] group-hover/avatar:opacity-70 transition-opacity">
+                        <div className="w-20 h-20 rounded-lg overflow-hidden border-[2.5px] border-accent/50 shadow-panel group-hover/avatar:opacity-70 transition-opacity">
                             <img src={groupChat && !file ? groupChat?.groupPicture : groupChat && file ? URL.createObjectURL(file) : ""} alt="" className="w-full h-full object-cover" />
                             <input
                                 ref={fileRef}
@@ -736,19 +696,19 @@ function EditView({ group, setView }) {
                         </div>
                         <div
                             onClick={handleFileClick}
-                            className="absolute inset-0 rounded-2xl flex items-center justify-center bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+                            className="absolute inset-0 rounded-lg flex items-center justify-center bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity">
                             <Camera size={18} color="#fff" />
                         </div>
                     </div>
-                    <span className="text-[11px] text-[#4a4e6a]">Tap to change group photo</span>
+                    <span className="text-xs text-text-muted">Tap to change group photo</span>
                 </div>
 
                 {/* Fields */}
                 <div className="flex flex-col gap-3">
                     <div>
-                        <label className="text-[11px] font-semibold text-[#4a4e6a] uppercase tracking-[0.8px] mb-1.5 block">Group Name</label>
+                        <label className="text-xs font-semibold text-text-muted uppercase tracking-[0.8px] mb-1.5 block">Group Name</label>
                         <input
-                            className="w-full bg-[#1a1d28] border border-white/[0.06] rounded-[10px] px-3 py-[10px] text-[#f1f2f7] text-[13px] outline-none placeholder-[#4a4e6a] focus:border-indigo-500/[0.45] focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)] transition-all"
+                            className="w-full bg-surface-900 border border-border rounded-sm px-3 py-[10px] text-text-primary text-sm outline-none placeholder:text-text-muted focus:border-accent/45 focus:ring-2 focus:ring-accent/15 transition-all"
                             value={name}
                             onChange={e => setName(e.target.value)}
                             placeholder="Group name"
@@ -756,40 +716,26 @@ function EditView({ group, setView }) {
                     </div>
 
                     <div>
-                        <label className="text-[11px] font-semibold text-[#4a4e6a] uppercase tracking-[0.8px] mb-1.5 block">Description</label>
+                        <label className="text-xs font-semibold text-text-muted uppercase tracking-[0.8px] mb-1.5 block">Description</label>
                         <textarea
-                            className="w-full bg-[#1a1d28] border border-white/[0.06] rounded-[10px] px-3 py-[10px] text-[#f1f2f7] text-[13px] outline-none placeholder-[#4a4e6a] focus:border-indigo-500/[0.45] focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)] transition-all resize-none leading-relaxed"
+                            className="w-full bg-surface-900 border border-border rounded-sm px-3 py-[10px] text-text-primary text-sm outline-none placeholder:text-text-muted focus:border-accent/45 focus:ring-2 focus:ring-accent/15 transition-all resize-none leading-relaxed"
                             rows={3}
                             value={desc}
                             onChange={e => setDesc(e.target.value)}
                             placeholder="What's this group about?"
                         />
                     </div>
-
-                    {/* Visibility toggle
-                    <div className="flex items-center justify-between p-3 rounded-[11px] bg-white/[0.025] border border-white/[0.06]">
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-indigo-500/[0.15]">
-                                {isPublic ? <Globe size={13} color="#818cf8" /> : <Lock size={13} color="#818cf8" />}
-                            </div>
-                            <div>
-                                <p className="text-[13px] text-[#c4c6d8] font-medium">{isPublic ? 'Public Group' : 'Private Group'}</p>
-                                <p className="text-[11px] text-[#4a4e6a]">{isPublic ? 'Anyone can join' : 'Invite only'}</p>
-                            </div>
-                        </div>
-                        <Toggle on={isPublic} toggle={() => setPublic(p => !p)} />
-                    </div> */}
                 </div>
             </div>
 
             {/* Save button */}
             <div className="px-5 pb-5 pt-2">
-                <div className="h-px bg-white/[0.06] mb-4" />
+                <div className="h-px bg-border mb-4" />
                 <button
                     onClick={handleSave}
-                    className={`w-full py-2.5 rounded-[11px] text-white text-sm font-semibold tracking-wide border-none cursor-pointer flex items-center justify-center gap-2 transition-all duration-200 hover:-translate-y-px active:scale-[0.97] ${saved
-                        ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_4px_14px_rgba(34,211,160,0.3)] hover:shadow-[0_4px_18px_rgba(34,211,160,0.45)]'
-                        : 'bg-gradient-to-br from-indigo-500 to-violet-500 shadow-[0_4px_14px_rgba(99,102,241,0.35)] hover:shadow-[0_4px_18px_rgba(99,102,241,0.5)]'
+                    className={`w-full py-2.5 rounded-md text-white text-sm font-semibold tracking-wide border-none cursor-pointer flex items-center justify-center gap-2 transition-all duration-200 hover:-translate-y-px active:scale-[0.97] ${saved
+                        ? 'bg-success shadow-panel'
+                        : 'bg-accent shadow-panel'
                         }`}
                 >
                     {saved ? <><Check size={15} /> Saved!</> : 'Save Changes'}
